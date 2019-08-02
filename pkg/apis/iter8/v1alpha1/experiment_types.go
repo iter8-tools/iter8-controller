@@ -78,6 +78,10 @@ type ExperimentSpec struct {
 	// +optional.
 	//+kubebuilder:validation:Enum=override_success,override_failure
 	Assessment AssessmentType `json:"assessment,omitempty"`
+
+	// RoutingReference provides references to routing rules set by users
+	// +optional
+	RoutingReference *corev1.ObjectReference `json:"routingReference,omitempty"`
 }
 
 // TargetService defines what to watch in the controller

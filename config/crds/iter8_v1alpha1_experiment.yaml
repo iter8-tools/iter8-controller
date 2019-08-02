@@ -124,6 +124,10 @@ spec:
               - override_success
               - override_failure
               type: string
+            routingReference:
+              description: RoutingReference provides references to routing rules set
+                by users
+              type: object
             targetService:
               description: TargetService is a reference to an object to use as target
                 service

@@ -153,6 +153,22 @@ func TestKubernetesExperiment(t *testing.T) {
 				getStableVirtualService("reviews", "emptycriterion"),
 			},
 		},
+		// "externalference": testCase{
+		// 	initObjects: []runtime.Object{
+		// 		getReviewsService(),
+		// 		getRatingsService(),
+		// 		getReviewsDeployment("v1"),
+		// 		getReviewsDeployment("v2"),
+		// 		getRatingsDeployment(),
+		// 	},
+		// 	object:    getDefaultKubernetesExperiment("emptycriterion", "reviews", "reviews-v1", "reviews-v2"),
+		// 	wantState: test.CheckExperimentFinished,
+		// 	wantResults: []runtime.Object{
+		// 		// rollforward
+		// 		getStableDestinationRule("reviews", "emptycriterion", getReviewsDeployment("v2")),
+		// 		getStableVirtualService("reviews", "emptycriterion"),
+		// 	},
+		// },
 	}
 
 	runTestCases(t, service, testCases)
@@ -262,6 +278,6 @@ func getStableDestinationRule(serviceName, name string, obj runtime.Object) runt
 
 func getStableVirtualService(serviceName, name string) runtime.Object {
 	return experiment.NewVirtualService(serviceName, name, Flags.Namespace).
-		WithStableSet(serviceName).
+		WithNewStableSet(serviceName).
 		Build()
 }

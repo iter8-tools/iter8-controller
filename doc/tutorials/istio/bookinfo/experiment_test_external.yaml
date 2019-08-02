@@ -1,0 +1,20 @@
+apiVersion: iter8.tools/v1alpha1
+kind: Experiment
+metadata:
+  name: reviews-v3-rollout
+spec:
+  routingReference:
+    name: reviews-external
+    apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+  targetService:
+    name: reviews
+    apiVersion: v1
+    baseline: reviews-v2
+    candidate: reviews-v3
+  trafficControl:
+    strategy: increment_without_check
+    interval: 10s
+    trafficStepSize: 20
+    maxIterations: 8
+    maxTrafficPercentage: 80

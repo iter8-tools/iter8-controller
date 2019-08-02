@@ -1,0 +1,34 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: bookinfo-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "bookinfo.sample.dev"
+    - "reviews.com"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: reviews-external
+spec:
+  hosts:
+  - "reviews.com"
+  gateways:
+  - bookinfo-gateway
+  http:
+#  - match:
+#    - uri:
+#        prefix: /reviews
+   - route:
+     - destination:
+        host: reviews
+        port:
+          number: 9080

@@ -5,7 +5,7 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - iter8.tools
+  - iter8-tools
   resources:
   - experiments
   verbs:
@@ -17,7 +17,7 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - iter8.tools
+  - iter8-tools
   resources:
   - experiments/status
   verbs:
