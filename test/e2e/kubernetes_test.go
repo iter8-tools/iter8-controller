@@ -17,12 +17,15 @@ package e2e
 import (
 	"testing"
 
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	cai "github.com/iter8-tools/iter8-controller/pkg/analytics/checkandincrement"
 	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
 	"github.com/iter8-tools/iter8-controller/pkg/controller/experiment"
 	"github.com/iter8-tools/iter8-controller/test"
+	"github.com/knative/pkg/apis/istio/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 )
 
@@ -153,22 +156,30 @@ func TestKubernetesExperiment(t *testing.T) {
 				getStableVirtualService("reviews", "emptycriterion"),
 			},
 		},
-		// "externalference": testCase{
-		// 	initObjects: []runtime.Object{
-		// 		getReviewsService(),
-		// 		getRatingsService(),
-		// 		getReviewsDeployment("v1"),
-		// 		getReviewsDeployment("v2"),
-		// 		getRatingsDeployment(),
-		// 	},
-		// 	object:    getDefaultKubernetesExperiment("emptycriterion", "reviews", "reviews-v1", "reviews-v2"),
-		// 	wantState: test.CheckExperimentFinished,
-		// 	wantResults: []runtime.Object{
-		// 		// rollforward
-		// 		getStableDestinationRule("reviews", "emptycriterion", getReviewsDeployment("v2")),
-		// 		getStableVirtualService("reviews", "emptycriterion"),
-		// 	},
-		// },
+		"externalference": testCase{
+			mocks: map[string]cai.Response{
+				"externalference": test.GetSuccessMockResponse(),
+			},
+			initObjects: []runtime.Object{
+				getReviewsService(),
+				getRatingsService(),
+				getReviewsDeployment("v1"),
+				getReviewsDeployment("v2"),
+				getRatingsDeployment(),
+				getSampleEdgeVirtualService(),
+			},
+			object:    getExperimentWithExternalReference("externalference", "reviews", "reviews-v1", "reviews-v2"),
+			wantState: test.CheckExperimentFinished,
+			wantResults: []runtime.Object{
+				// rollforward
+				getStableDestinationRule("reviews", "externalference", getReviewsDeployment("v2")),
+				getSampleStableEdgeVirtualService(),
+			},
+			finalizers: []test.Hook{
+				test.DeleteObject(getStableDestinationRule("reviews", "externalference", getReviewsDeployment("v2"))),
+				test.DeleteObject(getSampleStableEdgeVirtualService()),
+			},
+		},
 	}
 
 	runTestCases(t, service, testCases)
@@ -208,7 +219,7 @@ func getReviewsDeployment(version string) runtime.Object {
 	}
 
 	return test.NewKubernetesDeployment("reviews-"+version, Flags.Namespace).
-		WithTemplateLabels(labels).
+		WithLabels(labels).
 		WithContainer("reviews", image, ReviewsPort).
 		Build()
 }
@@ -220,7 +231,7 @@ func getRatingsDeployment() runtime.Object {
 	}
 
 	return test.NewKubernetesDeployment("ratings-v1", Flags.Namespace).
-		WithTemplateLabels(labels).
+		WithLabels(labels).
 		WithContainer("ratings", RatingsImage, RatingsPort).
 		Build()
 }
@@ -234,6 +245,17 @@ func getDefaultKubernetesExperiment(name, serviceName, baseline, candidate strin
 	one := 1
 	exp.Spec.TrafficControl.Interval = &onesec
 	exp.Spec.TrafficControl.MaxIterations = &one
+
+	return exp
+}
+
+func getExperimentWithExternalReference(name, serviceName, baseline, candidate string) *iter8v1alpha1.Experiment {
+	exp := getDefaultKubernetesExperiment(name, serviceName, baseline, candidate)
+	exp.Spec.RoutingReference = &corev1.ObjectReference{
+		Name:       "reviews-external",
+		APIVersion: v1alpha3.SchemeGroupVersion.String(),
+		Kind:       "VirtualService",
+	}
 
 	return exp
 }
@@ -280,4 +302,43 @@ func getStableVirtualService(serviceName, name string) runtime.Object {
 	return experiment.NewVirtualService(serviceName, name, Flags.Namespace).
 		WithNewStableSet(serviceName).
 		Build()
+}
+
+func getSampleEdgeVirtualService() runtime.Object {
+	return &v1alpha3.VirtualService{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: v1alpha3.SchemeGroupVersion.String(),
+			Kind:       "VirtualService",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "reviews-external",
+			Namespace: Flags.Namespace,
+		},
+		Spec: v1alpha3.VirtualServiceSpec{
+			Hosts:    []string{"reviews.com"},
+			Gateways: []string{"reviews-gateway"},
+			HTTP: []v1alpha3.HTTPRoute{
+				{
+					Route: []v1alpha3.HTTPRouteDestination{
+						{
+							Destination: v1alpha3.Destination{
+								Host: "reviews",
+								Port: v1alpha3.PortSelector{
+									Number: 9080,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func getSampleStableEdgeVirtualService() runtime.Object {
+	vs := getSampleEdgeVirtualService()
+	vs.(*v1alpha3.VirtualService).Spec.HTTP[0].Route[0].Destination.Subset = "stable"
+	vs.(*v1alpha3.VirtualService).Spec.HTTP[0].Route[0].Weight = 100
+
+	return vs
 }

@@ -43,8 +43,8 @@ type DestinationRuleBuilder v1alpha3.DestinationRule
 type VirtualServiceBuilder v1alpha3.VirtualService
 
 type IstioRoutingSet struct {
-	vs *v1alpha3.VirtualService
-	dr *v1alpha3.DestinationRule
+	VirtualServices  []*v1alpha3.VirtualService
+	DestinationRules []*v1alpha3.DestinationRule
 }
 
 func NewVirtualServiceBuilder(vs *v1alpha3.VirtualService) *VirtualServiceBuilder {
@@ -62,7 +62,7 @@ func NewDestinationRule(serviceName, name, namespace string) *DestinationRuleBui
 			Kind:       "DestinationRule",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name + IstioRuleSuffix,
+			Name:      namespace + IstioRuleSuffix,
 			Namespace: namespace,
 			Labels: map[string]string{
 				experimentLabel: name,
@@ -159,7 +159,7 @@ func NewVirtualService(serviceName, name, namespace string) *VirtualServiceBuild
 			Kind:       "VirtualService",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name + IstioRuleSuffix,
+			Name:      namespace + IstioRuleSuffix,
 			Namespace: namespace,
 			Labels: map[string]string{
 				experimentLabel: name,
@@ -262,7 +262,7 @@ func (b *VirtualServiceBuilder) WithStableToProgressing(service, ns string) *Vir
 	for i, http := range b.Spec.HTTP {
 		stableIndex := -1
 		for j, route := range http.Route {
-			if equalHost(route.Destination.Host, ns, service, ns) && route.Destination.Subset == Stable {
+			if equalHost(route.Destination.Host, ns, service, ns) {
 				stableIndex = j
 				break
 			}

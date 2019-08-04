@@ -87,8 +87,9 @@ func (s *ServiceBuilder) Build() *corev1.Service {
 	return (*corev1.Service)(s)
 }
 
-// WithTemplateLabels adds template labels to the deployment
-func (d *DeploymentBuilder) WithTemplateLabels(l map[string]string) *DeploymentBuilder {
+// WithLabels adds labels to the deployment
+func (d *DeploymentBuilder) WithLabels(l map[string]string) *DeploymentBuilder {
+	d.ObjectMeta.SetLabels(l)
 	d.Spec.Template.ObjectMeta.SetLabels(l)
 	d.Spec.Selector = &metav1.LabelSelector{
 		MatchLabels: make(map[string]string),

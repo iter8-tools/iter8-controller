@@ -113,6 +113,11 @@ func (in *ExperimentSpec) DeepCopyInto(out *ExperimentSpec) {
 	in.TargetService.DeepCopyInto(&out.TargetService)
 	in.TrafficControl.DeepCopyInto(&out.TrafficControl)
 	in.Analysis.DeepCopyInto(&out.Analysis)
+	if in.RoutingReference != nil {
+		in, out := &in.RoutingReference, &out.RoutingReference
+		*out = new(v1.ObjectReference)
+		**out = **in
+	}
 	return
 }
 

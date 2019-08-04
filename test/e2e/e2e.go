@@ -117,6 +117,9 @@ type testCase struct {
 
 	// Want the results
 	wantResults []runtime.Object
+
+	// Finalize the test case
+	finalizers []test.Hook
 }
 
 func (tc *testCase) createInitObjects(ctx context.Context, cl client.Client) error {
@@ -152,6 +155,7 @@ func (tc *testCase) runPostHook(ctx context.Context, cl client.Client) error {
 	if tc.postHook == nil {
 		return nil
 	}
+
 	return tc.postHook(ctx, cl)
 }
 
@@ -200,6 +204,19 @@ func (tc *testCase) checkHasState(ctx context.Context, cl client.Client) error {
 		return nil
 	}
 	return test.WaitForState(ctx, cl, tc.object, tc.wantState)
+}
+
+func (tc *testCase) runFinalizers(ctx context.Context, cl client.Client) error {
+	if tc.finalizers == nil {
+		return nil
+	}
+
+	for _, finalizer := range tc.finalizers {
+		if err := finalizer(ctx, cl); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func getObject(ctx context.Context, cl client.Client, obj runtime.Object) (runtime.Object, error) {
@@ -256,6 +273,10 @@ func runTestCases(t *testing.T, service *test.AnalyticsService, testCases map[st
 
 			if err := tc.checkHasResults(ctx, client); err != nil {
 				t.Fatalf("Failed checking results %v", err)
+			}
+
+			if err := tc.runFinalizers(ctx, client); err != nil {
+				t.Fatalf("Failed running finalizers %v", err)
 			}
 		})
 	}
