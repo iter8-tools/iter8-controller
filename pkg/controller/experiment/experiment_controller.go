@@ -17,6 +17,7 @@ package experiment
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -183,9 +184,6 @@ func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Re
 
 	log.Info("reconciling")
 
-	instance.Status.InitializeConditions()
-	instance.Status.MarkExperimentNotCompleted("Progressing", "")
-
 	// TODO: not sure why this is needed
 	if instance.Status.LastIncrementTime.IsZero() {
 		instance.Status.LastIncrementTime = metav1.NewTime(time.Unix(0, 0))
@@ -202,6 +200,15 @@ func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Re
 		return reconcile.Result{RequeueAfter: time.Second}, nil
 	}
 
+	// Update Grafana URL when experiment is created
+	if instance.Status.StartTimestamp == "" {
+		ts := now.UTC().UnixNano() / int64(time.Millisecond)
+		instance.Status.StartTimestamp = strconv.FormatInt(ts, 10)
+		updateGrafanaURL(instance, getServiceNamespace(instance))
+	}
+
+	instance.Status.InitializeConditions()
+
 	apiVersion := instance.Spec.TargetService.APIVersion
 
 	switch apiVersion {
@@ -210,7 +217,7 @@ func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Re
 	case KnativeServiceV1Alpha1:
 		return r.syncKnative(ctx, instance)
 	default:
-		instance.Status.MarkHasNotService("UnsupportedAPIVersion", "%s", apiVersion)
+		instance.Status.MarkTargetsError("UnsupportedAPIVersion", "%s", apiVersion)
 		err := r.Status().Update(ctx, instance)
 		return reconcile.Result{}, err
 	}
@@ -231,7 +238,7 @@ func (r *ReconcileExperiment) finalize(context context.Context, instance *iter8v
 	return reconcile.Result{}, removeFinalizer(context, r, instance, Finalizer)
 }
 
-func addFinalizerIfAbsent(context context.Context, r *ReconcileExperiment, instance *iter8v1alpha1.Experiment, fName string) (err error) {
+func addFinalizerIfAbsent(context context.Context, c client.Client, instance *iter8v1alpha1.Experiment, fName string) (err error) {
 	for _, finalizer := range instance.ObjectMeta.GetFinalizers() {
 		if finalizer == fName {
 			return
@@ -239,14 +246,14 @@ func addFinalizerIfAbsent(context context.Context, r *ReconcileExperiment, insta
 	}
 
 	instance.SetFinalizers(append(instance.GetFinalizers(), Finalizer))
-	if err = r.Update(context, instance); err != nil {
+	if err = c.Update(context, instance); err != nil {
 		Logger(context).Info("setting finalizer failed. (retrying)", "error", err)
 	}
 
 	return
 }
 
-func removeFinalizer(context context.Context, r *ReconcileExperiment, instance *iter8v1alpha1.Experiment, fName string) (err error) {
+func removeFinalizer(context context.Context, c client.Client, instance *iter8v1alpha1.Experiment, fName string) (err error) {
 	finalizers := make([]string, 0)
 	for _, f := range instance.GetFinalizers() {
 		if f != fName {
@@ -254,7 +261,7 @@ func removeFinalizer(context context.Context, r *ReconcileExperiment, instance *
 		}
 	}
 	instance.SetFinalizers(finalizers)
-	if err = r.Update(context, instance); err != nil {
+	if err = c.Update(context, instance); err != nil {
 		Logger(context).Info("setting finalizer failed. (retrying)", "error", err)
 	}
 

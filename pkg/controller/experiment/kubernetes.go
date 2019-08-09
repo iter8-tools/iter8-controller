@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/iter8-tools/iter8-controller/pkg/analytics/checkandincrement"
@@ -40,17 +39,14 @@ import (
 func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *iter8v1alpha1.Experiment) (reconcile.Result, error) {
 	log := Logger(context)
 	serviceName := instance.Spec.TargetService.Name
-	serviceNamespace := instance.Spec.TargetService.Namespace
-	if serviceNamespace == "" {
-		serviceNamespace = instance.Namespace
-	}
+	serviceNamespace := getServiceNamespace(instance)
 
 	// Get k8s service
 	service := &corev1.Service{}
 	err := r.Get(context, types.NamespacedName{Name: serviceName, Namespace: serviceNamespace}, service)
 	if err != nil {
 		log.Info("TargetServiceNotFound", "service", serviceName)
-		instance.Status.MarkHasNotService("Service Not Found", "")
+		instance.Status.MarkTargetsError("Service Not Found", "")
 		err = r.Status().Update(context, instance)
 		if err != nil {
 			return reconcile.Result{}, err
@@ -59,7 +55,6 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 	}
 
 	// Set up vs and dr for experiment
-	rName := getIstioRuleName(instance)
 	dr := &v1alpha3.DestinationRule{}
 	vs := &v1alpha3.VirtualService{}
 
@@ -78,7 +73,7 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 		log.Info("RoutingRules Found For Experiment", "dr", dr.GetName(), "vs", vs.GetName())
 	} else if len(drl.Items) == 0 && len(vsl.Items) == 0 {
 		// Initialize routing rules if not existed
-		if ruleSet, err := initializeRoutingRules(r, context, instance); err != nil {
+		if ruleSet, err := initializeRoutingRules(context, r, instance); err != nil {
 			log.Error(err, "Fail To Init Routing Rules; Experiment Terminates")
 			// Termintate experiment
 			instance.Status.MarkExperimentCompleted()
@@ -151,7 +146,7 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 		if len(candidate.GetName()) > 0 {
 			if updated := updateSubset(dr, candidate, Candidate); updated {
 				if err := r.Update(context, dr); err != nil {
-					log.Info("ProgressingRuleUpdateFailure", "dr", rName)
+					log.Info("ProgressingRuleUpdateFailure", "dr", dr.GetName())
 					return reconcile.Result{}, err
 				}
 				log.Info("ProgressingRuleUpdated", "dr", dr.GetName())
@@ -162,13 +157,13 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 	if baseline.GetName() == "" || candidate.GetName() == "" {
 		if baseline.GetName() == "" && candidate.GetName() == "" {
 			log.Info("Missing Baseline and Candidate Deployments")
-			instance.Status.MarkHasNotService("Baseline and candidate deployments are missing", "")
+			instance.Status.MarkTargetsError("MissingBaselineAndCandidate", "")
 		} else if candidate.GetName() == "" {
 			log.Info("Missing Candidate Deployment")
-			instance.Status.MarkHasNotService("Candidate deployment is missing", "")
+			instance.Status.MarkTargetsError("MissingCandidateDeployment", "")
 		} else {
 			log.Info("Missing Baseline Deployment")
-			instance.Status.MarkHasNotService("Baseline deployment is missing", "")
+			instance.Status.MarkTargetsError("missingBaselineDeployment", "")
 		}
 
 		if len(baseline.GetName()) > 0 {
@@ -185,60 +180,29 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 		return reconcile.Result{RequeueAfter: 5 * time.Second}, nil
 	}
 
-	// All elements in the targetService are found
-	instance.Status.MarkHasService()
-
-	// Start Experiment Process
-	// Get info on Experiment
-	traffic := instance.Spec.TrafficControl
-	now := time.Now()
-	// TODO: check err in getting the time value
-	interval, _ := traffic.GetIntervalDuration()
-
-	if instance.Status.StartTimestamp == "" {
-		ts := metav1.NewTime(now).UTC().UnixNano() / int64(time.Millisecond)
-		instance.Status.StartTimestamp = strconv.FormatInt(ts, 10)
-		updateGrafanaURL(instance, serviceNamespace)
-	}
+	instance.Status.MarkTargetsFound()
 
 	// check experiment is finished
 	if instance.Spec.TrafficControl.GetMaxIterations() <= instance.Status.CurrentIteration ||
 		instance.Spec.Assessment != iter8v1alpha1.AssessmentNull {
 		log.Info("ExperimentCompleted")
-		// remove experiment labels in Routing Rules and Deployments
-		if err := removeExperimentLabel(context, r, vs); err != nil {
-			return reconcile.Result{}, err
-		}
-		if err := removeExperimentLabel(context, r, dr); err != nil {
-			return reconcile.Result{}, err
-		}
-
-		// Clear analysis state
-		instance.Status.AnalysisState.Raw = []byte("{}")
-
-		ts := metav1.NewTime(now).UTC().UnixNano() / int64(time.Millisecond)
-		instance.Status.EndTimestamp = strconv.FormatInt(ts, 10)
-		updateGrafanaURL(instance, serviceNamespace)
 
 		if instance.Spec.Assessment != iter8v1alpha1.AssessmentNull {
 			log.Info("ExperimentStopWithAssessmentFlagSet", "Action", instance.Spec.Assessment)
 		}
 
-		if (getStrategy(instance) == "check_and_increment" &&
-			(instance.Spec.Assessment == iter8v1alpha1.AssessmentOverrideSuccess || instance.Status.AssessmentSummary.AllSuccessCriteriaMet)) ||
-			(getStrategy(instance) == "increment_without_check" &&
-				(instance.Spec.Assessment == iter8v1alpha1.AssessmentOverrideSuccess || instance.Spec.Assessment == iter8v1alpha1.AssessmentNull)) {
-
+		if experimentSucceeded(instance) {
 			// experiment is successful
-			log.Info("ExperimentSucceeded: AllSuccessCriteriaMet")
+			log.Info("ExperimentSucceeded")
+
+			msg := ""
 			switch instance.Spec.TrafficControl.GetOnSuccess() {
 			case "baseline":
 				dr = NewDestinationRuleBuilder(dr).WithProgressingToStable(baseline).Build()
 				vs = NewVirtualServiceBuilder(vs).
 					WithProgressingToStable(serviceName, serviceNamespace, Baseline).
 					Build()
-
-				instance.Status.MarkNotRollForward("Roll Back to Baseline", "")
+				msg = "AllToBaseline"
 				instance.Status.TrafficSplit.Baseline = 100
 				instance.Status.TrafficSplit.Candidate = 0
 			case "candidate":
@@ -246,29 +210,31 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 				vs = NewVirtualServiceBuilder(vs).
 					WithProgressingToStable(serviceName, serviceNamespace, Candidate).
 					Build()
-
-				instance.Status.MarkRollForward()
+				msg = "AllToCandidate"
 				instance.Status.TrafficSplit.Baseline = 0
 				instance.Status.TrafficSplit.Candidate = 100
 			case "both":
 				// Change the role of current rules as stable
 				vs.ObjectMeta.SetLabels(map[string]string{experimentRole: Stable})
 				dr.ObjectMeta.SetLabels(map[string]string{experimentRole: Stable})
-				instance.Status.MarkNotRollForward("Traffic is maintained as end of experiment", "")
+				msg = "KeepOnBothVersions"
 			}
-		} else {
-			log.Info("ExperimentFailure: NotAllSuccessCriteriaMet")
 
+			markExperimentSuccessStatus(instance, msg)
+		} else {
+			log.Info("ExperimentFailure")
+
+			markExperimentFailureStatus(instance, "AllToBaseline")
 			dr = NewDestinationRuleBuilder(dr).WithProgressingToStable(baseline).Build()
 			vs = NewVirtualServiceBuilder(vs).
 				WithProgressingToStable(serviceName, serviceNamespace, Baseline).
 				Build()
 
-			instance.Status.MarkNotRollForward("ExperimentFailure: Roll Back to Baseline", "")
 			instance.Status.TrafficSplit.Baseline = 100
 			instance.Status.TrafficSplit.Candidate = 0
 		}
 
+		removeExperimentLabel(dr, vs)
 		if err := r.Update(context, vs); err != nil {
 			log.Error(err, "Fail to update vs %s", vs.GetName())
 			return reconcile.Result{}, err
@@ -278,12 +244,17 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 			return reconcile.Result{}, err
 		}
 
-		instance.Status.MarkExperimentCompleted()
+		markExperimentCompleted(instance)
 		// End experiment
 		err = r.Status().Update(context, instance)
 		return reconcile.Result{}, err
 	}
 
+	// Progressing on Experiment
+	traffic := instance.Spec.TrafficControl
+	now := time.Now()
+	// TODO: check err in getting the time value
+	interval, _ := traffic.GetIntervalDuration()
 	// Check experiment rollout status
 	rolloutPercent := float64(getWeight(Candidate, vs))
 	if now.After(instance.Status.LastIncrementTime.Add(interval)) {
@@ -296,7 +267,7 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 			payload := MakeRequest(instance, baseline, candidate)
 			response, err := checkandincrement.Invoke(log, instance.Spec.Analysis.GetServiceEndpoint(), payload)
 			if err != nil {
-				instance.Status.MarkExperimentNotCompleted("Istio Analytics Service is not reachable", "%v", err)
+				instance.Status.MarkAnalyticsServiceError("Istio Analytics Service is not reachable", "%v", err)
 				log.Info("Istio Analytics Service is not reachable", "err", err)
 				err = r.Status().Update(context, instance)
 				return reconcile.Result{RequeueAfter: 5 * time.Second}, err
@@ -310,6 +281,7 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 					WithProgressingToStable(serviceName, serviceNamespace, Baseline).
 					Build()
 
+				removeExperimentLabel(dr, vs)
 				if err := r.Update(context, vs); err != nil {
 					log.Error(err, "Fail to update vs %s", vs.GetName())
 					return reconcile.Result{}, err
@@ -319,23 +291,14 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 					return reconcile.Result{}, err
 				}
 
-				instance.Status.MarkNotRollForward("AbortExperiment: Roll Back to Baseline", "")
 				instance.Status.TrafficSplit.Baseline = 100
 				instance.Status.TrafficSplit.Candidate = 0
-				instance.Status.MarkExperimentCompleted()
-
-				ts := metav1.NewTime(now).UTC().UnixNano() / int64(time.Millisecond)
-				instance.Status.EndTimestamp = strconv.FormatInt(ts, 10)
-				updateGrafanaURL(instance, serviceNamespace)
+				markExperimentCompleted(instance)
+				instance.Status.MarkExperimentFailed("Aborted, Traffic: AllToBaseline.", "")
 				// End experiment
 				err = r.Status().Update(context, instance)
 				return reconcile.Result{}, err
 			}
-
-			baselineTraffic := response.Baseline.TrafficPercentage
-			candidateTraffic := response.Canary.TrafficPercentage
-			log.Info("NewTraffic", "Baseline", baselineTraffic, "Candidate", candidateTraffic)
-			rolloutPercent = candidateTraffic
 
 			instance.Status.AssessmentSummary = response.Assessment.Summary
 			if response.LastState == nil {
@@ -343,18 +306,22 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 			} else {
 				lastState, err := json.Marshal(response.LastState)
 				if err != nil {
-					instance.Status.MarkExperimentNotCompleted("ErrorAnalyticsResponse", "%v", err)
+					instance.Status.MarkAnalyticsServiceError("ErrorAnalyticsResponse", "%v", err)
 					err = r.Status().Update(context, instance)
 					return reconcile.Result{}, err
 				}
 				instance.Status.AnalysisState = runtime.RawExtension{Raw: lastState}
 			}
+
+			rolloutPercent = response.Canary.TrafficPercentage
+			instance.Status.MarkAnalyticsServiceRunning()
 		}
 
 		instance.Status.CurrentIteration++
 		log.Info("IterationUpdated", "count", instance.Status.CurrentIteration)
 		// Increase the traffic upto max traffic amount
-		if rolloutPercent <= traffic.GetMaxTrafficPercentage() && getWeight(Candidate, vs) != int(rolloutPercent) {
+		if rolloutPercent <= traffic.GetMaxTrafficPercentage() &&
+			getWeight(Candidate, vs) != int(rolloutPercent) {
 			// Update Traffic splitting rule
 			log.Info("RolloutPercentUpdated", "NewWeight", rolloutPercent)
 			vs = NewVirtualServiceBuilder(vs).
@@ -373,39 +340,22 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 
 	instance.Status.LastIncrementTime = metav1.NewTime(now)
 
-	instance.Status.MarkExperimentNotCompleted("Progressing", "")
+	instance.Status.MarkExperimentNotCompleted(fmt.Sprintf("Iteration %d Completed", instance.Status.CurrentIteration), "")
 	err = r.Status().Update(context, instance)
 	return reconcile.Result{RequeueAfter: interval}, err
 }
 
-func updateGrafanaURL(instance *iter8v1alpha1.Experiment, namespace string) {
-	endTs := instance.Status.EndTimestamp
-	if endTs == "" {
-		endTs = "now"
+func removeExperimentLabel(objs ...runtime.Object) (err error) {
+	for _, obj := range objs {
+		accessor, err := meta.Accessor(obj)
+		if err != nil {
+			return err
+		}
+		labels := accessor.GetLabels()
+		delete(labels, experimentLabel)
+		accessor.SetLabels(labels)
 	}
-	instance.Status.GrafanaURL = instance.Spec.Analysis.GetGrafanaEndpoint() +
-		"/d/eXPEaNnZz/iter8-application-metrics?" +
-		"var-namespace=" + namespace +
-		"&var-service=" + instance.Spec.TargetService.Name +
-		"&var-baseline=" + instance.Spec.TargetService.Baseline +
-		"&var-candidate=" + instance.Spec.TargetService.Candidate +
-		"&from=" + instance.Status.StartTimestamp +
-		"&to=" + endTs
-}
 
-func removeExperimentLabel(context context.Context, r *ReconcileExperiment, obj runtime.Object) error {
-	accessor, err := meta.Accessor(obj)
-	if err != nil {
-		return err
-	}
-	labels := accessor.GetLabels()
-	delete(labels, experimentLabel)
-	delete(labels, experimentRole)
-	accessor.SetLabels(labels)
-	if err = r.Update(context, obj); err != nil {
-		return err
-	}
-	Logger(context).Info("ExperimentLabelRemoved", "obj", accessor.GetName())
 	return nil
 }
 
@@ -461,10 +411,7 @@ func (r *ReconcileExperiment) finalizeIstio(context context.Context, instance *i
 		// Get baseline deployment
 		baselineName := instance.Spec.TargetService.Baseline
 		baseline := &appsv1.Deployment{}
-		serviceNamespace := instance.Spec.TargetService.Namespace
-		if serviceNamespace == "" {
-			serviceNamespace = instance.Namespace
-		}
+		serviceNamespace := getServiceNamespace(instance)
 
 		if err := r.Get(context, types.NamespacedName{Name: baselineName, Namespace: serviceNamespace}, baseline); err != nil {
 			Logger(context).Info("BaselineNotFoundWhenDeleted", "name", baselineName)
@@ -488,6 +435,7 @@ func (r *ReconcileExperiment) finalizeIstio(context context.Context, instance *i
 
 				Logger(context).Info("StableRoutingRulesAfterFinalizing", "dr", dr, "vs", vs)
 
+				removeExperimentLabel(dr, vs)
 				if err := r.Update(context, vs); err != nil {
 					log.Error(err, "Fail to update vs %s", vs.GetName())
 					return reconcile.Result{}, err
@@ -501,19 +449,6 @@ func (r *ReconcileExperiment) finalizeIstio(context context.Context, instance *i
 	}
 
 	return reconcile.Result{}, removeFinalizer(context, r, instance, Finalizer)
-}
-
-func getIstioRuleName(instance *iter8v1alpha1.Experiment) string {
-	return instance.GetName() + IstioRuleSuffix
-}
-
-func getStrategy(instance *iter8v1alpha1.Experiment) string {
-	strategy := instance.Spec.TrafficControl.GetStrategy()
-	if strategy == "check_and_increment" &&
-		(instance.Spec.Analysis.SuccessCriteria == nil || len(instance.Spec.Analysis.SuccessCriteria) == 0) {
-		strategy = "increment_without_check"
-	}
-	return strategy
 }
 
 func validateVirtualService(instance *iter8v1alpha1.Experiment, vs *v1alpha3.VirtualService) bool {
@@ -552,7 +487,30 @@ func validateVirtualService(instance *iter8v1alpha1.Experiment, vs *v1alpha3.Vir
 	return false
 }
 
-func detectRoutingReferences(r *ReconcileExperiment, context context.Context, instance *iter8v1alpha1.Experiment) (*IstioRoutingSet, error) {
+func getStableSet(context context.Context, c client.Client, instance *iter8v1alpha1.Experiment) *IstioRoutingSet {
+	serviceName := instance.Spec.TargetService.Name
+	vsl, drl := &v1alpha3.VirtualServiceList{}, &v1alpha3.DestinationRuleList{}
+	listOptions := (&client.ListOptions{}).
+		MatchingLabels(map[string]string{experimentRole: Stable, experimentHost: serviceName}).
+		InNamespace(instance.GetNamespace())
+	// No need to retry if non-empty error returned(empty results are expected)
+	c.List(context, listOptions, drl)
+	c.List(context, listOptions, vsl)
+
+	out := &IstioRoutingSet{}
+
+	for _, vs := range vsl.Items {
+		out.VirtualServices = append(out.VirtualServices, &vs)
+	}
+
+	for _, dr := range drl.Items {
+		out.DestinationRules = append(out.DestinationRules, &dr)
+	}
+
+	return out
+}
+
+func detectRoutingReferences(context context.Context, c client.Client, instance *iter8v1alpha1.Experiment) (*IstioRoutingSet, error) {
 	log := Logger(context)
 	if instance.Spec.RoutingReference == nil {
 		log.Info("No RoutingReference Found in experiment")
@@ -568,7 +526,7 @@ func detectRoutingReferences(r *ReconcileExperiment, context context.Context, in
 		if ruleNamespace == "" {
 			ruleNamespace = expNamespace
 		}
-		if err := r.Get(context, types.NamespacedName{Name: rule.Name, Namespace: ruleNamespace}, vs); err != nil {
+		if err := c.Get(context, types.NamespacedName{Name: rule.Name, Namespace: ruleNamespace}, vs); err != nil {
 			log.Error(err, "ReferencedRuleNotExisted", "rule", rule)
 			return nil, err
 		}
@@ -581,17 +539,17 @@ func detectRoutingReferences(r *ReconcileExperiment, context context.Context, in
 
 		// Detect previous stable rules, if exist, delete them
 		// This is based on the assumption that reference rule is of higher priority than iter8 stable rules
-		stableSet := getStableSet(r, context, instance)
+		stableSet := getStableSet(context, c, instance)
 		if len(stableSet.DestinationRules) > 0 {
 			for _, dr := range stableSet.DestinationRules {
-				if err := r.Delete(context, dr); err != nil {
+				if err := c.Delete(context, dr); err != nil {
 					return nil, err
 				}
 			}
 		}
 		if len(stableSet.VirtualServices) > 0 {
 			for _, vs := range stableSet.VirtualServices {
-				if err := r.Delete(context, vs); err != nil {
+				if err := c.Delete(context, vs); err != nil {
 					return nil, err
 				}
 			}
@@ -607,13 +565,13 @@ func detectRoutingReferences(r *ReconcileExperiment, context context.Context, in
 			WithStableLabel().
 			Build()
 
-		if err := r.Create(context, dr); err != nil {
+		if err := c.Create(context, dr); err != nil {
 			log.Error(err, "ReferencedDRCanNotBeCreated", "dr", dr)
 			return nil, err
 		}
 
 		// update vs
-		if err := r.Update(context, vs); err != nil {
+		if err := c.Update(context, vs); err != nil {
 			log.Error(err, "ReferencedRuleCanNotBeUpdated", "vs", vs)
 			return nil, err
 		}
@@ -626,30 +584,7 @@ func detectRoutingReferences(r *ReconcileExperiment, context context.Context, in
 	return nil, fmt.Errorf("Reference Rule not supported")
 }
 
-func getStableSet(r *ReconcileExperiment, context context.Context, instance *iter8v1alpha1.Experiment) *IstioRoutingSet {
-	serviceName := instance.Spec.TargetService.Name
-	vsl, drl := &v1alpha3.VirtualServiceList{}, &v1alpha3.DestinationRuleList{}
-	listOptions := (&client.ListOptions{}).
-		MatchingLabels(map[string]string{experimentRole: Stable, experimentHost: serviceName}).
-		InNamespace(instance.GetNamespace())
-	// No need to retry if non-empty error returned(empty results are expected)
-	r.List(context, listOptions, drl)
-	r.List(context, listOptions, vsl)
-
-	out := &IstioRoutingSet{}
-
-	for _, vs := range vsl.Items {
-		out.VirtualServices = append(out.VirtualServices, &vs)
-	}
-
-	for _, dr := range drl.Items {
-		out.DestinationRules = append(out.DestinationRules, &dr)
-	}
-
-	return out
-}
-
-func initializeRoutingRules(r *ReconcileExperiment, context context.Context, instance *iter8v1alpha1.Experiment) (*IstioRoutingSet, error) {
+func initializeRoutingRules(context context.Context, c client.Client, instance *iter8v1alpha1.Experiment) (*IstioRoutingSet, error) {
 	log := Logger(context)
 	serviceName := instance.Spec.TargetService.Name
 	serviceNamespace := instance.Spec.TargetService.Namespace
@@ -658,7 +593,7 @@ func initializeRoutingRules(r *ReconcileExperiment, context context.Context, ins
 	}
 	vs, dr := &v1alpha3.VirtualService{}, &v1alpha3.DestinationRule{}
 
-	if refset, err := detectRoutingReferences(r, context, instance); err != nil {
+	if refset, err := detectRoutingReferences(context, c, instance); err != nil {
 		log.Error(err, "")
 		return nil, fmt.Errorf("%s", err)
 	} else if refset != nil {
@@ -669,7 +604,7 @@ func initializeRoutingRules(r *ReconcileExperiment, context context.Context, ins
 	}
 
 	// Detect stable rules with the same host
-	stableSet := getStableSet(r, context, instance)
+	stableSet := getStableSet(context, c, instance)
 	drs, vss := stableSet.DestinationRules, stableSet.VirtualServices
 	if len(drs) == 1 && len(vss) == 1 {
 		dr = drs[0].DeepCopy()
@@ -684,10 +619,10 @@ func initializeRoutingRules(r *ReconcileExperiment, context context.Context, ins
 		// Set Experiment Label to the Routing Rules
 		setLabels(dr, map[string]string{experimentLabel: instance.Name})
 		setLabels(vs, map[string]string{experimentLabel: instance.Name})
-		if err := r.Update(context, vs); err != nil {
+		if err := c.Update(context, vs); err != nil {
 			return nil, err
 		}
-		if err := r.Update(context, dr); err != nil {
+		if err := c.Update(context, dr); err != nil {
 			return nil, err
 		}
 	} else if len(drs) == 0 && len(vss) == 0 {
@@ -695,7 +630,7 @@ func initializeRoutingRules(r *ReconcileExperiment, context context.Context, ins
 		dr = NewDestinationRule(serviceName, instance.GetName(), instance.GetNamespace()).
 			WithStableLabel().
 			Build()
-		err := r.Create(context, dr)
+		err := c.Create(context, dr)
 		if err != nil {
 			log.Error(err, "FailToCreateStableDR", "dr", dr.GetName())
 			return nil, err
@@ -705,7 +640,7 @@ func initializeRoutingRules(r *ReconcileExperiment, context context.Context, ins
 		vs = NewVirtualService(serviceName, instance.GetName(), instance.GetNamespace()).
 			WithNewStableSet(serviceName).
 			Build()
-		err = r.Create(context, vs)
+		err = c.Create(context, vs)
 		if err != nil {
 			log.Info("FailToCreateStableVS", "vs", vs)
 			return nil, err
@@ -716,14 +651,14 @@ func initializeRoutingRules(r *ReconcileExperiment, context context.Context, ins
 		log.Info("UnexpectedCondition")
 		if len(drs) > 0 {
 			for _, dr := range drs {
-				if err := r.Delete(context, dr); err != nil {
+				if err := c.Delete(context, dr); err != nil {
 					return nil, err
 				}
 			}
 		}
 		if len(vss) > 0 {
 			for _, vs := range vss {
-				if err := r.Delete(context, vs); err != nil {
+				if err := c.Delete(context, vs); err != nil {
 					return nil, err
 				}
 			}

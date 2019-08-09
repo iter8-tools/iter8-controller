@@ -34,8 +34,8 @@ func TestKnativeExperiment(t *testing.T) {
 	defer service.Close()
 	testCases := map[string]testCase{
 		"missingService": testCase{
-			object:      getDoNotExistExperiment(),
-			wantResults: []runtime.Object{getDoNotExistExperimentReconciled()},
+			object:    getDoNotExistExperiment(),
+			wantState: test.CheckServiceNotFound("ServiceNotFound"),
 		},
 		"missingbaseline": func(name string) testCase {
 			return testCase{
@@ -72,7 +72,8 @@ func TestKnativeExperiment(t *testing.T) {
 			object:  getFastExperimentForService("stock-rollforward", "stock-rollforward", service.GetURL()),
 			wantState: test.WantAllStates(
 				test.CheckExperimentFinished,
-				test.CheckExperimentRollForward),
+				test.CheckExperimentSuccess,
+			),
 			wantResults: []runtime.Object{
 				getRollforwardStockService("stock-rollforward"),
 			},
@@ -88,7 +89,8 @@ func TestKnativeExperiment(t *testing.T) {
 			object:  getFastExperimentForService("stock-rollbackward", "stock-rollbackward", service.GetURL()),
 			wantState: test.WantAllStates(
 				test.CheckExperimentFinished,
-				test.CheckExperimentNotRollForward),
+				test.CheckExperimentFailure,
+			),
 			wantResults: []runtime.Object{
 				getRollBackwardStockService("stock-rollbackward"),
 			},
@@ -179,13 +181,6 @@ func getSlowExperimentForService(name string, serviceName string, analyticsHost 
 	experiment.Spec.TargetService.Candidate = serviceName + "-two"
 	experiment.Spec.TrafficControl.Interval = &twentysecs
 	experiment.Spec.TrafficControl.MaxIterations = &two
-	return experiment
-}
-
-func getDoNotExistExperimentReconciled() *v1alpha1.Experiment {
-	experiment := getDoNotExistExperiment()
-	experiment.Status.MarkExperimentNotCompleted("Progressing", "")
-	experiment.Status.MarkHasNotService("NotFound", "")
 	return experiment
 }
 

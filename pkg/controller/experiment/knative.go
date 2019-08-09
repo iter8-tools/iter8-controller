@@ -18,7 +18,7 @@ package experiment
 import (
 	"context"
 	"encoding/json"
-	"strconv"
+	"fmt"
 	"time"
 
 	servingv1alpha1 "github.com/knative/serving/pkg/apis/serving/v1alpha1"
@@ -45,7 +45,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 	kservice := &servingv1alpha1.Service{}
 	err := r.Get(context, types.NamespacedName{Name: serviceName, Namespace: serviceNamespace}, kservice)
 	if err != nil {
-		instance.Status.MarkHasNotService("NotFound", "")
+		instance.Status.MarkTargetsError("ServiceNotFound", "")
 		err = r.Status().Update(context, instance)
 		if err != nil {
 			return reconcile.Result{}, err
@@ -54,7 +54,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 	}
 
 	if kservice.Spec.Template == nil {
-		instance.Status.MarkHasNotService("MissingTemplate", "")
+		instance.Status.MarkTargetsError("MissingTemplate", "")
 		err = r.Status().Update(context, instance)
 		return reconcile.Result{}, err
 	}
@@ -62,7 +62,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 	// link service to this experiment. Only one experiment can control a service
 	labels := kservice.GetLabels()
 	if experiment, found := labels[experimentLabel]; found && experiment != instance.GetName() {
-		instance.Status.MarkHasNotService("ExistingExperiment", "service is already controlled by %v", experiment)
+		instance.Status.MarkTargetsError("ExistingExperiment", "service is already controlled by %v", experiment)
 		err = r.Status().Update(context, instance)
 		return reconcile.Result{}, err
 	}
@@ -82,7 +82,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 	// Check the experiment targets existing traffic targets
 	ksvctraffic := kservice.Spec.Traffic
 	if ksvctraffic == nil {
-		instance.Status.MarkHasNotService("MissingTraffic", "")
+		instance.Status.MarkTargetsError("MissingTraffic", "")
 		err = r.Status().Update(context, instance)
 		return reconcile.Result{}, err
 	}
@@ -93,7 +93,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 	candidateTraffic := getTrafficByName(kservice, candidate)
 
 	if baselineTraffic == nil {
-		instance.Status.MarkHasNotService("MissingBaselineRevision", "%s", baseline)
+		instance.Status.MarkTargetsError("MissingBaselineRevision", "%s", baseline)
 		instance.Status.TrafficSplit.Baseline = 0
 		if candidateTraffic == nil {
 			instance.Status.TrafficSplit.Candidate = 0
@@ -105,36 +105,28 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 	}
 
 	if candidateTraffic == nil {
-		instance.Status.MarkHasNotService("MissingCandidateRevision", "%s", candidate)
+		instance.Status.MarkTargetsError("MissingCandidateRevision", "%s", candidate)
 		instance.Status.TrafficSplit.Baseline = baselineTraffic.Percent
 		instance.Status.TrafficSplit.Candidate = 0
 		err = r.Status().Update(context, instance)
 		return reconcile.Result{}, err
 	}
 
-	instance.Status.MarkHasService()
+	instance.Status.MarkTargetsFound()
 
 	traffic := instance.Spec.TrafficControl
 	now := time.Now()
 	interval, _ := traffic.GetIntervalDuration() // TODO: admissioncontrollervalidation
-
-	if instance.Status.StartTimestamp == "" {
-		ts := metav1.NewTime(now).UTC().UnixNano() / int64(time.Millisecond)
-		instance.Status.StartTimestamp = strconv.FormatInt(ts, 10)
-		updateGrafanaURL(instance, serviceNamespace)
-	}
 
 	// check experiment is finished
 	if traffic.GetMaxIterations() <= instance.Status.CurrentIteration ||
 		instance.Spec.Assessment != iter8v1alpha1.AssessmentNull {
 
 		update := false
-		if (getStrategy(instance) == "check_and_increment" &&
-			(instance.Spec.Assessment == iter8v1alpha1.AssessmentOverrideSuccess || instance.Status.AssessmentSummary.AllSuccessCriteriaMet)) ||
-			(getStrategy(instance) == "increment_without_check" &&
-				(instance.Spec.Assessment == iter8v1alpha1.AssessmentOverrideSuccess || instance.Spec.Assessment == iter8v1alpha1.AssessmentNull)) {
+		if experimentSucceeded(instance) {
 			log.Info("Experiment completed with success", "onsuccess", traffic.GetOnSuccess())
 			// experiment is successful
+			msg := ""
 			switch traffic.GetOnSuccess() {
 			case "baseline":
 				if candidateTraffic.Percent != 0 {
@@ -145,7 +137,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 					baselineTraffic.Percent = 100
 					update = true
 				}
-				instance.Status.MarkNotRollForward("OnSuccessBaseline", "")
+				msg = "AllToBaseline"
 				instance.Status.TrafficSplit.Baseline = 100
 				instance.Status.TrafficSplit.Candidate = 0
 			case "candidate":
@@ -157,14 +149,17 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 					baselineTraffic.Percent = 0
 					update = true
 				}
-				instance.Status.MarkRollForward()
+				msg = "AllToCandidate"
 				instance.Status.TrafficSplit.Baseline = 0
 				instance.Status.TrafficSplit.Candidate = 100
 			case "both":
-				instance.Status.MarkNotRollForward("OnSuccessBoth", "")
+				msg = "KeepOnBothVersions"
 			}
+			markExperimentSuccessStatus(instance, msg)
 		} else {
 			log.Info("Experiment completed with failure")
+
+			markExperimentFailureStatus(instance, "AllToBaseline")
 
 			// Switch traffic back to baseline
 			if candidateTraffic.Percent != 0 {
@@ -175,8 +170,6 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 				baselineTraffic.Percent = 100
 				update = true
 			}
-
-			instance.Status.MarkNotRollForward("ExperimentFailure", "")
 		}
 
 		labels := kservice.GetLabels()
@@ -192,15 +185,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 			}
 		}
 
-		// Clear analysis state
-		instance.Status.AnalysisState.Raw = []byte("{}")
-
-		ts := metav1.NewTime(now).UTC().UnixNano() / int64(time.Millisecond)
-		instance.Status.EndTimestamp = strconv.FormatInt(ts, 10)
-		updateGrafanaURL(instance, serviceNamespace)
-
-		// End experiment
-		instance.Status.MarkExperimentCompleted()
+		markExperimentCompleted(instance)
 		instance.Status.TrafficSplit.Baseline = baselineTraffic.Percent
 		instance.Status.TrafficSplit.Candidate = candidateTraffic.Percent
 		err = r.Status().Update(context, instance)
@@ -222,14 +207,14 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 			baselineService, err := r.getServiceForRevision(context, kservice, baselineTraffic.RevisionName)
 			if err != nil {
 				// TODO: maybe we want another condition
-				instance.Status.MarkHasNotService("MissingCoreService", "%v", err)
+				instance.Status.MarkTargetsError("MissingCoreService", "%v", err)
 				err = r.Status().Update(context, instance)
 				return reconcile.Result{}, err
 			}
 			candidateService, err := r.getServiceForRevision(context, kservice, candidateTraffic.RevisionName)
 			if err != nil {
 				// TODO: maybe we want another condition
-				instance.Status.MarkHasNotService("MissingCoreService", "%v", err)
+				instance.Status.MarkTargetsError("MissingCoreService", "%v", err)
 				err = r.Status().Update(context, instance)
 				return reconcile.Result{}, err
 			}
@@ -238,12 +223,11 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 			payload := MakeRequest(instance, baselineService, candidateService)
 			response, err := checkandincrement.Invoke(log, instance.Spec.Analysis.GetServiceEndpoint(), payload)
 			if err != nil {
-				instance.Status.MarkExperimentNotCompleted("ErrorAnalytics", "%v", err)
+				instance.Status.MarkAnalyticsServiceError("ErrorAnalytics", "%v", err)
 				err = r.Status().Update(context, instance)
 				return reconcile.Result{RequeueAfter: 5 * time.Second}, err
 			}
 
-			// Abort?
 			if response.Assessment.Summary.AbortExperiment {
 				log.Info("ExperimentAborted. Rollback to Baseline.")
 				if candidateTraffic.Percent != 0 || baselineTraffic.Percent != 100 {
@@ -255,15 +239,11 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 					}
 				}
 
-				instance.Status.MarkNotRollForward("AbortExperiment: Roll Back to Baseline", "")
 				instance.Status.TrafficSplit.Baseline = 100
 				instance.Status.TrafficSplit.Candidate = 0
-				instance.Status.MarkExperimentCompleted()
 
-				ts := metav1.NewTime(now).UTC().UnixNano() / int64(time.Millisecond)
-				instance.Status.EndTimestamp = strconv.FormatInt(ts, 10)
-				updateGrafanaURL(instance, serviceNamespace)
-
+				markExperimentCompleted(instance)
+				instance.Status.MarkExperimentFailed("Aborted, Traffic: AllToBaseline.", "")
 				err := r.Update(context, instance)
 				if err != nil {
 					return reconcile.Result{}, err // retry
@@ -280,7 +260,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 			} else {
 				lastState, err := json.Marshal(response.LastState)
 				if err != nil {
-					instance.Status.MarkExperimentNotCompleted("ErrorAnalyticsResponse", "%v", err)
+					instance.Status.MarkAnalyticsServiceError("ErrorAnalyticsResponse", "%v", err)
 					err = r.Status().Update(context, instance)
 					return reconcile.Result{RequeueAfter: 5 * time.Second}, err
 				}
@@ -324,7 +304,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 		instance.Status.LastIncrementTime = metav1.NewTime(now)
 	}
 
-	instance.Status.MarkExperimentNotCompleted("Progressing", "")
+	instance.Status.MarkExperimentNotCompleted(fmt.Sprintf("Iteration %d Completed", instance.Status.CurrentIteration), "")
 	instance.Status.TrafficSplit.Baseline = baselineTraffic.Percent
 	instance.Status.TrafficSplit.Candidate = candidateTraffic.Percent
 	err = r.Status().Update(context, instance)
@@ -362,10 +342,7 @@ func (r *ReconcileExperiment) finalizeKnative(context context.Context, instance 
 
 		// Get Knative service
 		serviceName := instance.Spec.TargetService.Name
-		serviceNamespace := instance.Spec.TargetService.Namespace
-		if serviceNamespace == "" {
-			serviceNamespace = instance.Namespace
-		}
+		serviceNamespace := getServiceNamespace(instance)
 
 		kservice := &servingv1alpha1.Service{}
 		err := r.Get(context, types.NamespacedName{Name: serviceName, Namespace: serviceNamespace}, kservice)

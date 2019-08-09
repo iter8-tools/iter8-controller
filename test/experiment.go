@@ -105,22 +105,22 @@ func CheckExperimentFinished(obj runtime.Object) (bool, error) {
 	return exp.Status.GetCondition(v1alpha1.ExperimentConditionExperimentCompleted).IsTrue(), nil
 }
 
-func CheckExperimentRollForward(obj runtime.Object) (bool, error) {
+func CheckExperimentSuccess(obj runtime.Object) (bool, error) {
 	exp, ok := obj.(*v1alpha1.Experiment)
 	if !ok {
 		return false, fmt.Errorf("Expected an experiment service (got: %v)", obj)
 	}
 
-	return exp.Status.GetCondition(v1alpha1.ExperimentConditionRollForward).IsTrue(), nil
+	return exp.Status.GetCondition(v1alpha1.ExperimentConditionExperimentSucceeded).IsTrue(), nil
 }
 
-func CheckExperimentNotRollForward(obj runtime.Object) (bool, error) {
+func CheckExperimentFailure(obj runtime.Object) (bool, error) {
 	exp, ok := obj.(*v1alpha1.Experiment)
 	if !ok {
 		return false, fmt.Errorf("Expected an experiment service (got: %v)", obj)
 	}
 
-	return exp.Status.GetCondition(v1alpha1.ExperimentConditionRollForward).IsFalse(), nil
+	return exp.Status.GetCondition(v1alpha1.ExperimentConditionExperimentSucceeded).IsFalse(), nil
 }
 
 func CheckServiceFound(obj runtime.Object) (bool, error) {
@@ -129,7 +129,7 @@ func CheckServiceFound(obj runtime.Object) (bool, error) {
 		return false, fmt.Errorf("Expected an experiment service (got: %v)", obj)
 	}
 
-	return exp.Status.GetCondition(v1alpha1.ExperimentConditionServiceProvided).IsTrue(), nil
+	return exp.Status.GetCondition(v1alpha1.ExperimentConditionTargetsProvided).IsTrue(), nil
 }
 
 func CheckServiceNotFound(reason string) func(obj runtime.Object) (bool, error) {
@@ -138,7 +138,7 @@ func CheckServiceNotFound(reason string) func(obj runtime.Object) (bool, error) 
 		if !ok {
 			return false, fmt.Errorf("Expected an experiment service (got: %v)", obj)
 		}
-		cond := exp.Status.GetCondition(v1alpha1.ExperimentConditionServiceProvided)
+		cond := exp.Status.GetCondition(v1alpha1.ExperimentConditionTargetsProvided)
 
 		return cond.IsFalse() && cond.Reason == reason, nil
 	}
