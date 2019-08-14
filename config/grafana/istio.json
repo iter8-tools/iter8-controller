@@ -16,8 +16,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 17,
-  "iteration": 1561057163257,
+  "id": 9,
+  "iteration": 1565724773125,
   "links": [],
   "panels": [
     {
@@ -1110,7 +1110,7 @@
       }
     }
   ],
-  "refresh": "10s",
+  "refresh": false,
   "schemaVersion": 18,
   "style": "dark",
   "tags": [
@@ -1121,6 +1121,7 @@
       {
         "allValue": null,
         "current": {
+          "selected": true,
           "text": "reviews",
           "value": "reviews"
         },
@@ -1146,12 +1147,12 @@
       {
         "allValue": null,
         "current": {
-          "tags": [],
-          "text": "reviews-v1",
-          "value": "reviews-v1"
+          "selected": true,
+          "text": "reviews-3-master-b70e260b-20190813151406",
+          "value": "reviews-3-master-b70e260b-20190813151406"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(istio_requests_total{destination_service_name = '$service'}, destination_workload)",
+        "definition": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace='$namespace', destination_workload != 'unknown'}, destination_workload)",
         "hide": 0,
         "includeAll": false,
         "label": "Baseline",
@@ -1160,21 +1161,26 @@
         "options": [
           {
             "selected": true,
-            "text": "reviews-v1",
-            "value": "reviews-v1"
+            "text": "reviews-3-master-b70e260b-20190813151406",
+            "value": "reviews-3-master-b70e260b-20190813151406"
           },
           {
             "selected": false,
-            "text": "reviews-v2",
-            "value": "reviews-v2"
+            "text": "reviews-3-master-b70e260b-20190813151406-56b969bdb9",
+            "value": "reviews-3-master-b70e260b-20190813151406-56b969bdb9"
           },
           {
             "selected": false,
-            "text": "reviews-v3",
-            "value": "reviews-v3"
+            "text": "reviews-4-master-b805986c-20190813182619",
+            "value": "reviews-4-master-b805986c-20190813182619"
+          },
+          {
+            "selected": false,
+            "text": "reviews-5-master-34b78aa6-20190813185334",
+            "value": "reviews-5-master-34b78aa6-20190813185334"
           }
         ],
-        "query": "label_values(istio_requests_total{destination_service_name = '$service'}, destination_workload)",
+        "query": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace='$namespace', destination_workload != 'unknown'}, destination_workload)",
         "refresh": 0,
         "regex": "",
         "skipUrlSync": false,
@@ -1188,12 +1194,12 @@
       {
         "allValue": null,
         "current": {
-          "tags": [],
-          "text": "reviews-v2",
-          "value": "reviews-v2"
+          "selected": true,
+          "text": "reviews-5-master-34b78aa6-20190813185334",
+          "value": "reviews-5-master-34b78aa6-20190813185334"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(istio_requests_total{destination_service_name = '$service'}, destination_workload)",
+        "definition": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace = '$namespace', destination_workload != 'unknown'}, destination_workload)",
         "hide": 0,
         "includeAll": false,
         "label": "Candidate",
@@ -1202,21 +1208,26 @@
         "options": [
           {
             "selected": false,
-            "text": "reviews-v1",
-            "value": "reviews-v1"
-          },
-          {
-            "selected": true,
-            "text": "reviews-v2",
-            "value": "reviews-v2"
+            "text": "reviews-3-master-b70e260b-20190813151406",
+            "value": "reviews-3-master-b70e260b-20190813151406"
           },
           {
             "selected": false,
-            "text": "reviews-v3",
-            "value": "reviews-v3"
+            "text": "reviews-3-master-b70e260b-20190813151406-56b969bdb9",
+            "value": "reviews-3-master-b70e260b-20190813151406-56b969bdb9"
+          },
+          {
+            "selected": false,
+            "text": "reviews-4-master-b805986c-20190813182619",
+            "value": "reviews-4-master-b805986c-20190813182619"
+          },
+          {
+            "selected": true,
+            "text": "reviews-5-master-34b78aa6-20190813185334",
+            "value": "reviews-5-master-34b78aa6-20190813185334"
           }
         ],
-        "query": "label_values(istio_requests_total{destination_service_name = '$service'}, destination_workload)",
+        "query": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace = '$namespace', destination_workload != 'unknown'}, destination_workload)",
         "refresh": 0,
         "regex": "",
         "skipUrlSync": false,
@@ -1230,13 +1241,13 @@
       {
         "allValue": null,
         "current": {
-          "tags": [],
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "istio-prod",
+          "value": "istio-prod"
         },
         "datasource": "Prometheus",
         "definition": "label_values(istio_requests_total, destination_service_namespace)",
-        "hide": 0,
+        "hide": 2,
         "includeAll": false,
         "label": "Namespace",
         "multi": false,
@@ -1244,18 +1255,13 @@
         "options": [
           {
             "selected": true,
-            "text": "default",
-            "value": "default"
+            "text": "istio-prod",
+            "value": "istio-prod"
           },
           {
             "selected": false,
             "text": "istio-system",
             "value": "istio-system"
-          },
-          {
-            "selected": false,
-            "text": "unknown",
-            "value": "unknown"
           }
         ],
         "query": "label_values(istio_requests_total, destination_service_namespace)",
@@ -1350,8 +1356,8 @@
     ]
   },
   "time": {
-    "from": "now-1h",
-    "to": "now"
+    "from": "2019-08-13T19:02:10.610Z",
+    "to": "2019-08-13T19:07:54.564Z"
   },
   "timepicker": {
     "refresh_intervals": [
