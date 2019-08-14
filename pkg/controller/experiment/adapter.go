@@ -25,15 +25,27 @@ import (
 	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
 )
 
+const (
+	MetricsConfigMap = "iter8-metrics"
+)
+
 func MakeRequest(instance *iter8v1alpha1.Experiment, baseline, experiment interface{}) *checkandincrement.Request {
 	spec := instance.Spec
 
 	criteria := make([]checkandincrement.SuccessCriterion, len(spec.Analysis.SuccessCriteria))
 	for i, criterion := range spec.Analysis.SuccessCriteria {
+		iter8metric, ok := instance.Metrics[criterion.MetricName]
+		if !ok {
+			// Metric template not found
+			return nil
+		}
 		criteria[i] = checkandincrement.SuccessCriterion{
-			MetricName: criterion.MetricName,
-			Type:       criterion.ToleranceType,
-			Value:      criterion.Tolerance,
+			MetricName:         criterion.MetricName,
+			Type:               criterion.ToleranceType,
+			Value:              criterion.Tolerance,
+			Template:           iter8metric.QueryTemplate,
+			SampleSizeTemplate: iter8metric.SampleSizeTemplate,
+			MetricType:         iter8metric.Type,
 		}
 
 		criteria[i].SampleSize = criterion.GetSampleSize()

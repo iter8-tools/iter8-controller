@@ -62,6 +62,8 @@ spec:
           type: string
         metadata:
           type: object
+        metrics:
+          type: object
         spec:
           properties:
             analysis:
@@ -183,9 +185,6 @@ spec:
           type: object
         status:
           properties:
-            Phase:
-              description: Phase marks the Phase the experiment is at
-              type: string
             analysisState:
               description: AnalysisState is the last analysis state
               type: object
@@ -255,6 +254,9 @@ spec:
                 was last processed by the controller.
               format: int64
               type: integer
+            phase:
+              description: Phase marks the Phase the experiment is at
+              type: string
             startTimestamp:
               description: StartTimestamp is the timestamp when the experiment starts
               type: string

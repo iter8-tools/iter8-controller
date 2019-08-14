@@ -42,8 +42,9 @@ type Experiment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ExperimentSpec   `json:"spec,omitempty"`
-	Status ExperimentStatus `json:"status,omitempty"`
+	Spec    ExperimentSpec    `json:"spec,omitempty"`
+	Status  ExperimentStatus  `json:"status,omitempty"`
+	Metrics ExperimentMetrics `json:"metrics,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -355,6 +356,9 @@ const (
 	// ExperimentConditionAnalyticsServiceNormal has status True when the analytics service is operating normally
 	ExperimentConditionAnalyticsServiceNormal duckv1alpha1.ConditionType = "AnalyticsServiceNormal"
 
+	// ExperimentConditionMetricsSynced has status True when metrics are successfully synced with config map
+	ExperimentConditionMetricsSynced duckv1alpha1.ConditionType = "MetricsSynced"
+
 	// ExperimentConditionExperimentCompleted has status True when the experiment is completed
 	ExperimentConditionExperimentCompleted duckv1alpha1.ConditionType = "ExperimentCompleted"
 
@@ -363,6 +367,7 @@ const (
 )
 
 var experimentCondSet = duckv1alpha1.NewLivingConditionSet(
+	ExperimentConditionMetricsSynced,
 	ExperimentConditionTargetsProvided,
 	ExperimentConditionExperimentCompleted,
 	ExperimentConditionExperimentSucceeded,
@@ -375,6 +380,18 @@ func (s *ExperimentStatus) InitializeConditions() {
 	if s.Phase == "" {
 		s.Phase = PhaseInitializing
 	}
+}
+
+// MarkMetricsSynced sets the condition that the metrics are synced with config map
+func (s *ExperimentStatus) MarkMetricsSynced() {
+	experimentCondSet.Manage(s).MarkTrue(ExperimentConditionMetricsSynced)
+}
+
+// MarkMetricsSyncedError sets the condition that the error occurs when syncing with the config map
+func (s *ExperimentStatus) MarkMetricsSyncedError(reason, messageFormat string, messageA ...interface{}) {
+	experimentCondSet.Manage(s).MarkFalse(ExperimentConditionMetricsSynced, reason, messageFormat, messageA...)
+	s.Phase = PhasePause
+	s.Message = composeMessage(reason, messageFormat, messageA...)
 }
 
 // MarkTargetsFound sets the condition that the all target have been found
@@ -437,4 +454,19 @@ func composeMessage(reason, messageFormat string, messageA ...interface{}) strin
 
 func init() {
 	SchemeBuilder.Register(&Experiment{}, &ExperimentList{})
+}
+
+// ExperimentMetrics is a map from metric name to metric definition
+type ExperimentMetrics map[string]ExperimentMetric
+
+// ExperimentMetric stores details of a metric query template to
+type ExperimentMetric struct {
+	// QueryTemplate is the query template for metric
+	QueryTemplate string `json:"query_template"`
+
+	// SampleSizeTemplate is the query template for sample size
+	SampleSizeTemplate string `json:"sample_size_template"`
+
+	// Type is the type of this metric
+	Type string `json:"type"`
 }

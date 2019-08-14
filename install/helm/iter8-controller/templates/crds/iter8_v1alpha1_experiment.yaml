@@ -7,13 +7,13 @@ metadata:
   name: experiments.iter8.tools
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.conditions[?(@.type == 'ExperimentCompleted')].status
-    description: Whether experiment is completed
+  - JSONPath: .status.phase
+    description: Phase of the experiment
     format: byte
-    name: completed
+    name: phase
     type: string
-  - JSONPath: .status.conditions[?(@.type == 'Ready')].reason
-    description: Status of the experiment
+  - JSONPath: .status.message
+    description: Detailed Status of the experiment
     format: byte
     name: status
     type: string
@@ -62,6 +62,8 @@ spec:
           type: string
         metadata:
           type: object
+        metrics:
+          type: object
         spec:
           properties:
             analysis:
@@ -103,7 +105,7 @@ spec:
                         format: double
                         type: number
                       toleranceType:
-                        description: "\tCriterion type. Options: \"delta\": compares
+                        description: "\tTolerance type. Options: \"delta\": compares
                           the candidate against the baseline version with respect
                           to the metric; \"threshold\": checks the candidate with
                           respect to the metric"
@@ -244,11 +246,17 @@ spec:
                 incremented
               format: date-time
               type: string
+            message:
+              description: Message specifies message to show in the kubectl printer
+              type: string
             observedGeneration:
               description: ObservedGeneration is the 'Generation' of the Service that
                 was last processed by the controller.
               format: int64
               type: integer
+            phase:
+              description: Phase marks the Phase the experiment is at
+              type: string
             startTimestamp:
               description: StartTimestamp is the timestamp when the experiment starts
               type: string

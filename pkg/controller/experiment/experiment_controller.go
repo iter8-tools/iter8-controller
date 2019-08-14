@@ -209,6 +209,18 @@ func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Re
 
 	instance.Status.InitializeConditions()
 
+	// Sync metric definitions from the config map
+	metricsSycned := instance.Status.GetCondition(iter8v1alpha1.ExperimentConditionMetricsSynced)
+	if metricsSycned == nil || metricsSycned.Status != corev1.ConditionTrue {
+		if err := readMetrics(ctx, r, instance); err != nil {
+			instance.Status.MarkMetricsSyncedError("UnableToSyncWithMetricsConfigMap", "%s", err)
+			log.Error(err, "UnableToSyncWithMetricsConfigMap")
+			r.Status().Update(ctx, instance)
+			return reconcile.Result{}, err
+		}
+		instance.Status.MarkMetricsSynced()
+	}
+
 	apiVersion := instance.Spec.TargetService.APIVersion
 
 	switch apiVersion {
@@ -236,37 +248,6 @@ func (r *ReconcileExperiment) finalize(context context.Context, instance *iter8v
 	}
 
 	return reconcile.Result{}, removeFinalizer(context, r, instance, Finalizer)
-}
-
-func addFinalizerIfAbsent(context context.Context, c client.Client, instance *iter8v1alpha1.Experiment, fName string) (err error) {
-	for _, finalizer := range instance.ObjectMeta.GetFinalizers() {
-		if finalizer == fName {
-			return
-		}
-	}
-
-	instance.SetFinalizers(append(instance.GetFinalizers(), Finalizer))
-	if err = c.Update(context, instance); err != nil {
-		Logger(context).Info("setting finalizer failed. (retrying)", "error", err)
-	}
-
-	return
-}
-
-func removeFinalizer(context context.Context, c client.Client, instance *iter8v1alpha1.Experiment, fName string) (err error) {
-	finalizers := make([]string, 0)
-	for _, f := range instance.GetFinalizers() {
-		if f != fName {
-			finalizers = append(finalizers, f)
-		}
-	}
-	instance.SetFinalizers(finalizers)
-	if err = c.Update(context, instance); err != nil {
-		Logger(context).Info("setting finalizer failed. (retrying)", "error", err)
-	}
-
-	Logger(context).Info("FinalizerRemoved")
-	return
 }
 
 // Logger gets the logger from the context.
