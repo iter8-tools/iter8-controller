@@ -63,6 +63,9 @@ mkdir -p bin
 go build -o bin/manager ./cmd/manager/main.go
 chmod +x bin/manager
 
+header "deploy metrics configmap"
+kubectl apply -f install/helm/iter8-controller/templates/metrics/iter8_metrics.yaml -n $NAMESPACE
+
 header "run iter8 controller locally"
 ./bin/manager &
 CONTROLLER_PID=$!

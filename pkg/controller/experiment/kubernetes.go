@@ -337,8 +337,8 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 			response, err := checkandincrement.Invoke(log, instance.Spec.Analysis.GetServiceEndpoint(), payload)
 			if err != nil {
 				instance.Status.MarkAnalyticsServiceError("Istio Analytics Service is not reachable", "%v", err)
-				log.Info("Istio Analytics Service is not reachable", "err", err)
-				err = r.Status().Update(context, instance)
+				log.Error(err, "Istio Analytics Service is not reachable")
+				r.Status().Update(context, instance)
 				return reconcile.Result{RequeueAfter: 5 * time.Second}, err
 			}
 
