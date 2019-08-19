@@ -148,10 +148,12 @@ type Metric struct {
 func readMetrics(context context.Context, c client.Client, instance *iter8v1alpha1.Experiment) error {
 	log := Logger(context)
 	cm := &corev1.ConfigMap{}
-	err := c.Get(context, types.NamespacedName{Name: MetricsConfigMap, Namespace: instance.GetNamespace()}, cm)
+	err := c.Get(context, types.NamespacedName{Name: MetricsConfigMap, Namespace: Iter8Namespace}, cm)
 	if err != nil {
-		log.Error(err, "CanNotReadMetricsConfigMap")
-		return err
+		if err = c.Get(context, types.NamespacedName{Name: MetricsConfigMap, Namespace: instance.GetNamespace()}, cm); err != nil {
+			log.Info("MetricsConfigMapNotFound")
+			return nil
+		}
 	}
 
 	data := cm.Data

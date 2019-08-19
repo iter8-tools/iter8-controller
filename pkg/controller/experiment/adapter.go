@@ -27,6 +27,7 @@ import (
 
 const (
 	MetricsConfigMap = "iter8-metrics"
+	Iter8Namespace   = "iter8"
 )
 
 func MakeRequest(instance *iter8v1alpha1.Experiment, baseline, experiment interface{}) *checkandincrement.Request {
