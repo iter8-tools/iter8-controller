@@ -62,6 +62,8 @@ spec:
           type: string
         metadata:
           type: object
+        metrics:
+          type: object
         spec:
           properties:
             analysis:

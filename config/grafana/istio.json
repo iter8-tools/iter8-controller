@@ -16,7 +16,6 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 17,
   "iteration": 1561057163257,
   "links": [],
   "panels": [
@@ -1125,15 +1124,15 @@
           "value": "reviews"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(istio_requests_total, destination_service_name)",
+        "definition": "label_values(istio_requests_total{destination_service_namespace='$namespace', destination_service_name != 'unknown'}, destination_service_name)",
         "hide": 0,
         "includeAll": false,
         "label": "Service",
         "multi": false,
         "name": "service",
         "options": [],
-        "query": "label_values(istio_requests_total, destination_service_name)",
-        "refresh": 1,
+        "query": "label_values(istio_requests_total{destination_service_namespace='$namespace', destination_service_name != 'unknown'}, destination_service_name)",
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,
@@ -1145,37 +1144,17 @@
       },
       {
         "allValue": null,
-        "current": {
-          "tags": [],
-          "text": "reviews-v1",
-          "value": "reviews-v1"
-        },
+        "current": false,
         "datasource": "Prometheus",
-        "definition": "label_values(istio_requests_total{destination_service_name = '$service'}, destination_workload)",
+        "definition": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace='$namespace', destination_workload != 'unknown'}, destination_workload)",
         "hide": 0,
         "includeAll": false,
         "label": "Baseline",
         "multi": false,
         "name": "baseline",
-        "options": [
-          {
-            "selected": true,
-            "text": "reviews-v1",
-            "value": "reviews-v1"
-          },
-          {
-            "selected": false,
-            "text": "reviews-v2",
-            "value": "reviews-v2"
-          },
-          {
-            "selected": false,
-            "text": "reviews-v3",
-            "value": "reviews-v3"
-          }
-        ],
-        "query": "label_values(istio_requests_total{destination_service_name = '$service'}, destination_workload)",
-        "refresh": 0,
+        "options": [],
+        "query": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace='$namespace', destination_workload != 'unknown'}, destination_workload)",
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -1187,37 +1166,17 @@
       },
       {
         "allValue": null,
-        "current": {
-          "tags": [],
-          "text": "reviews-v2",
-          "value": "reviews-v2"
-        },
+        "current": false,
         "datasource": "Prometheus",
-        "definition": "label_values(istio_requests_total{destination_service_name = '$service'}, destination_workload)",
+        "definition": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace = '$namespace', destination_workload != 'unknown'}, destination_workload)",
         "hide": 0,
         "includeAll": false,
         "label": "Candidate",
         "multi": false,
         "name": "candidate",
-        "options": [
-          {
-            "selected": false,
-            "text": "reviews-v1",
-            "value": "reviews-v1"
-          },
-          {
-            "selected": true,
-            "text": "reviews-v2",
-            "value": "reviews-v2"
-          },
-          {
-            "selected": false,
-            "text": "reviews-v3",
-            "value": "reviews-v3"
-          }
-        ],
-        "query": "label_values(istio_requests_total{destination_service_name = '$service'}, destination_workload)",
-        "refresh": 0,
+        "options": [],
+        "query": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace = '$namespace', destination_workload != 'unknown'}, destination_workload)",
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -1235,7 +1194,7 @@
           "value": "default"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(istio_requests_total, destination_service_namespace)",
+        "definition": "label_values(istio_requests_total{destination_service_namespace!='unknown'}, destination_service_namespace)",
         "hide": 0,
         "includeAll": false,
         "label": "Namespace",
@@ -1246,20 +1205,10 @@
             "selected": true,
             "text": "default",
             "value": "default"
-          },
-          {
-            "selected": false,
-            "text": "istio-system",
-            "value": "istio-system"
-          },
-          {
-            "selected": false,
-            "text": "unknown",
-            "value": "unknown"
           }
         ],
-        "query": "label_values(istio_requests_total, destination_service_namespace)",
-        "refresh": 0,
+        "query": "label_values(istio_requests_total{destination_service_namespace!='unknown'}, destination_service_namespace)",
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -1380,6 +1329,5 @@
   },
   "timezone": "",
   "title": "Iter8 Metrics",
-  "uid": "eXPEaNnZz",
-  "version": 3
+  "uid": "eXPEaNnZz"
 }

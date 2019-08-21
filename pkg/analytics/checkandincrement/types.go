@@ -78,6 +78,15 @@ type SuccessCriterion struct {
 	// "threshold": checks the canary with respect to the metric
 	Type iter8v1alpha1.ToleranceType `json:"type"`
 
+	// MetricType of this metric
+	MetricType string `json:"metric_type"`
+
+	// Template specifies the query template for the metric
+	Template string `json:"metric_query_template"`
+
+	// SampleSizeTemplate specifies the query template for the sample size
+	SampleSizeTemplate string `json:"metric_sample_size_query_template"`
+
 	// Value to check
 	Value float64 `json:"value"`
 

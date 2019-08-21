@@ -220,7 +220,13 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 			}
 
 			// Get latest analysis
-			payload := MakeRequest(instance, baselineService, candidateService)
+			payload, err := MakeRequest(instance, baselineService, candidateService)
+			if err != nil {
+				instance.Status.MarkAnalyticsServiceError("CanNotComposePayload", "%v", err)
+				log.Error(err, "CanNotComposePayload")
+				r.Status().Update(context, instance)
+				return reconcile.Result{RequeueAfter: 5 * time.Second}, err
+			}
 			response, err := checkandincrement.Invoke(log, instance.Spec.Analysis.GetServiceEndpoint(), payload)
 			if err != nil {
 				instance.Status.MarkAnalyticsServiceError("ErrorAnalytics", "%v", err)

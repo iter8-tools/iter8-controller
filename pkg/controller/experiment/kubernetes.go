@@ -264,12 +264,18 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 			rolloutPercent += traffic.GetStepSize()
 		case "check_and_increment":
 			// Get latest analysis
-			payload := MakeRequest(instance, baseline, candidate)
+			payload, err := MakeRequest(instance, baseline, candidate)
+			if err != nil {
+				instance.Status.MarkAnalyticsServiceError("CanNotComposePayload", "%v", err)
+				log.Error(err, "CanNotComposePayload")
+				r.Status().Update(context, instance)
+				return reconcile.Result{RequeueAfter: 5 * time.Second}, err
+			}
 			response, err := checkandincrement.Invoke(log, instance.Spec.Analysis.GetServiceEndpoint(), payload)
 			if err != nil {
 				instance.Status.MarkAnalyticsServiceError("Istio Analytics Service is not reachable", "%v", err)
-				log.Info("Istio Analytics Service is not reachable", "err", err)
-				err = r.Status().Update(context, instance)
+				log.Error(err, "Istio Analytics Service is not reachable")
+				r.Status().Update(context, instance)
 				return reconcile.Result{RequeueAfter: 5 * time.Second}, err
 			}
 
