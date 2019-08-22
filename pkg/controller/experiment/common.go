@@ -173,7 +173,17 @@ func readMetrics(context context.Context, c client.Client, instance *iter8v1alph
 	}
 
 	instance.Metrics = make(map[string]iter8v1alpha1.ExperimentMetric)
+	criteria := make(map[string]bool)
+
+	for _, criterion := range instance.Spec.Analysis.SuccessCriteria {
+		criteria[criterion.MetricName] = true
+	}
+
 	for _, metric := range metrics {
+		if !criteria[metric.Name] {
+			continue
+		}
+
 		m := iter8v1alpha1.ExperimentMetric{
 			Type: metric.Type,
 		}
