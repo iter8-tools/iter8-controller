@@ -62,7 +62,7 @@ func NewDestinationRule(serviceName, name, namespace string) *DestinationRuleBui
 			Kind:       "DestinationRule",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      namespace + IstioRuleSuffix,
+			Name:      serviceName + "." + namespace + IstioRuleSuffix,
 			Namespace: namespace,
 			Labels: map[string]string{
 				experimentLabel: name,
@@ -159,7 +159,7 @@ func NewVirtualService(serviceName, name, namespace string) *VirtualServiceBuild
 			Kind:       "VirtualService",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      namespace + IstioRuleSuffix,
+			Name:      serviceName + "." + namespace + IstioRuleSuffix,
 			Namespace: namespace,
 			Labels: map[string]string{
 				experimentLabel: name,

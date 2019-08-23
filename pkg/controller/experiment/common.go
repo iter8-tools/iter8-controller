@@ -130,7 +130,7 @@ func markExperimentSuccessStatus(instance *iter8v1alpha1.Experiment, trafficMsg 
 func markExperimentFailureStatus(instance *iter8v1alpha1.Experiment, trafficMsg string) {
 	if instance.Spec.Assessment == iter8v1alpha1.AssessmentOverrideFailure {
 		instance.Status.MarkExperimentFailed(fmt.Sprintf("OverrideFailure, Traffic: %s", trafficMsg), "")
-	} else if instance.Status.AssessmentSummary.AllSuccessCriteriaMet {
+	} else if !instance.Status.AssessmentSummary.AllSuccessCriteriaMet {
 		instance.Status.MarkExperimentFailed(fmt.Sprintf("NotAllSuccessCriteriaMet, Traffic: %s", trafficMsg), "")
 	} else {
 		// Should not be reached
