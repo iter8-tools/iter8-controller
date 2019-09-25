@@ -25,8 +25,3 @@ spec:
         toleranceType: threshold
         tolerance: 0.2
         sampleSize: 5
-      - metricName: iter8_error_rate
-        toleranceType: delta
-        tolerance: 0.02
-        sampleSize: 10
-        stopOnFailure: true
