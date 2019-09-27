@@ -81,14 +81,7 @@ spec:
                     properties:
                       metricName:
                         description: 'Name of the metric to which the criterion applies.
-                          Options: "iter8_latency": mean latency of the service "iter8_error_rate":
-                          mean error rate (~5** HTTP Status codes) of the service
-                          "iter8_error_count": total error count (~5** HTTP Status
-                          codes) of the service'
-                        enum:
-                        - iter8_latency
-                        - iter8_error_rate
-                        - iter8_error_count
+                          Options:'
                         type: string
                       sampleSize:
                         description: Minimum number of data points required to make
