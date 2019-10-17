@@ -17,9 +17,10 @@ package experiment
 import (
 	"context"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"strconv"
 	"time"
+
+	"gopkg.in/yaml.v2"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

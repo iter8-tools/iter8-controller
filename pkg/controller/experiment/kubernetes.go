@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/iter8-tools/iter8-controller/pkg/analytics/checkandincrement"
@@ -175,7 +176,14 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 		return reconcile.Result{RequeueAfter: 5 * time.Second}, nil
 	}
 
-	r.MarkTargetsFound(context, instance)
+	newlyFound := r.MarkTargetsFound(context, instance)
+	if newlyFound {
+		// Update GrafanaURL
+		now := metav1.Now()
+		ts := now.UTC().UnixNano() / int64(time.Millisecond)
+		instance.Status.StartTimestamp = strconv.FormatInt(ts, 10)
+		updateGrafanaURL(instance, getServiceNamespace(instance))
+	}
 
 	// check experiment is finished
 	if instance.Spec.TrafficControl.GetMaxIterations() <= instance.Status.CurrentIteration ||

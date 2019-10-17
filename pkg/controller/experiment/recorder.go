@@ -35,12 +35,14 @@ func (r *ReconcileExperiment) MarkTargetsError(context context.Context, instance
 	r.eventRecorder.Eventf(instance, corev1.EventTypeWarning, reason, messageFormat, messageA...)
 }
 
-func (r *ReconcileExperiment) MarkTargetsFound(context context.Context, instance *iter8v1alpha1.Experiment) {
+func (r *ReconcileExperiment) MarkTargetsFound(context context.Context, instance *iter8v1alpha1.Experiment) bool {
 	reason := "TargetsFound"
 	//	Logger(context).Info(reason)
-	if instance.Status.MarkTargetsFound() {
+	value := instance.Status.MarkTargetsFound()
+	if value {
 		r.recordNormalEvent(true, instance, reason, "")
 	}
+	return value
 }
 
 func (r *ReconcileExperiment) MarkAnalyticsServiceError(context context.Context, instance *iter8v1alpha1.Experiment,
@@ -51,12 +53,14 @@ func (r *ReconcileExperiment) MarkAnalyticsServiceError(context context.Context,
 	r.eventRecorder.Eventf(instance, corev1.EventTypeWarning, reason, messageFormat, messageA...)
 }
 
-func (r *ReconcileExperiment) MarkAnalyticsServiceRunning(context context.Context, instance *iter8v1alpha1.Experiment) {
+func (r *ReconcileExperiment) MarkAnalyticsServiceRunning(context context.Context, instance *iter8v1alpha1.Experiment) bool {
 	reason := "AnalyticsServiceRunning"
 	Logger(context).Info(reason)
-	if instance.Status.MarkAnalyticsServiceRunning() {
+	value := instance.Status.MarkAnalyticsServiceRunning()
+	if value {
 		r.recordNormalEvent(true, instance, reason, "")
 	}
+	return value
 }
 
 func (r *ReconcileExperiment) MarkExperimentProgress(context context.Context, instance *iter8v1alpha1.Experiment,
@@ -93,12 +97,14 @@ func (r *ReconcileExperiment) MarkSyncMetricsError(context context.Context, inst
 	r.eventRecorder.Eventf(instance, corev1.EventTypeWarning, reason, messageFormat, messageA...)
 }
 
-func (r *ReconcileExperiment) MarkSyncMetrics(context context.Context, instance *iter8v1alpha1.Experiment) {
+func (r *ReconcileExperiment) MarkSyncMetrics(context context.Context, instance *iter8v1alpha1.Experiment) bool {
 	reason := "SyncMetricsSucceeded"
 	Logger(context).Info(reason)
-	if instance.Status.MarkMetricsSynced() {
+	value := instance.Status.MarkMetricsSynced()
+	if value {
 		r.recordNormalEvent(false, instance, reason, "")
 	}
+	return value
 }
 
 func (r *ReconcileExperiment) MarkRoutingRulesStatus(context context.Context, instance *iter8v1alpha1.Experiment,
