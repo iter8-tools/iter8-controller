@@ -19,7 +19,7 @@
 # to be used in test scripts and the like. It doesn't do anything when
 # called from command line.
 
-export ISTIO_VERSION=1.1.7
+export ISTIO_VERSION=1.3.2
 export KNATIVE_VERSION=0.6.0
 
 function setup_knative() {
