@@ -53,14 +53,12 @@ func (r *ReconcileExperiment) MarkAnalyticsServiceError(context context.Context,
 	r.eventRecorder.Eventf(instance, corev1.EventTypeWarning, reason, messageFormat, messageA...)
 }
 
-func (r *ReconcileExperiment) MarkAnalyticsServiceRunning(context context.Context, instance *iter8v1alpha1.Experiment) bool {
+func (r *ReconcileExperiment) MarkAnalyticsServiceRunning(context context.Context, instance *iter8v1alpha1.Experiment) {
 	reason := "AnalyticsServiceRunning"
 	Logger(context).Info(reason)
-	value := instance.Status.MarkAnalyticsServiceRunning()
-	if value {
+	if instance.Status.MarkAnalyticsServiceRunning() {
 		r.recordNormalEvent(true, instance, reason, "")
 	}
-	return value
 }
 
 func (r *ReconcileExperiment) MarkExperimentProgress(context context.Context, instance *iter8v1alpha1.Experiment,
@@ -97,14 +95,12 @@ func (r *ReconcileExperiment) MarkSyncMetricsError(context context.Context, inst
 	r.eventRecorder.Eventf(instance, corev1.EventTypeWarning, reason, messageFormat, messageA...)
 }
 
-func (r *ReconcileExperiment) MarkSyncMetrics(context context.Context, instance *iter8v1alpha1.Experiment) bool {
+func (r *ReconcileExperiment) MarkSyncMetrics(context context.Context, instance *iter8v1alpha1.Experiment) {
 	reason := "SyncMetricsSucceeded"
 	Logger(context).Info(reason)
-	value := instance.Status.MarkMetricsSynced()
-	if value {
+	if instance.Status.MarkMetricsSynced() {
 		r.recordNormalEvent(false, instance, reason, "")
 	}
-	return value
 }
 
 func (r *ReconcileExperiment) MarkRoutingRulesStatus(context context.Context, instance *iter8v1alpha1.Experiment,
