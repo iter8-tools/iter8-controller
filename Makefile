@@ -52,3 +52,8 @@ docker-build:
 # Push the docker image
 docker-push:
 	docker push ${IMG}
+
+build-default:
+	helm template install/helm/iter8-controller \
+   		--name iter8-controller \
+	> install/iter8-controller.yaml
