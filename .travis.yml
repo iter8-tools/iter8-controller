@@ -13,3 +13,12 @@ before_install:
 script:
   - go test ./test/.
   - ./test/e2e/e2e.sh
+
+after_success:
+  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
+      export IMG="iter8/iter8-controller:$TRAVIS_BUILD_ID-$TRAVIS_COMMIT" ;
+      echo "Building Docker image: $IMG" ;
+      docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_TOKEN ;
+      make docker-build ;
+      make docker-push ;
+    fi
