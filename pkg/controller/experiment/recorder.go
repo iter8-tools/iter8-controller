@@ -99,7 +99,7 @@ func (r *ReconcileExperiment) MarkSyncMetrics(context context.Context, instance 
 	reason := "SyncMetricsSucceeded"
 	Logger(context).Info(reason)
 	if instance.Status.MarkMetricsSynced() {
-		r.recordNormalEvent(false, instance, reason, "")
+		r.recordNormalEvent(true, instance, reason, "")
 	}
 }
 
