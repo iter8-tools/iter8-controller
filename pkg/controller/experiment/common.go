@@ -30,6 +30,11 @@ import (
 	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
 )
 
+const (
+	MetricsConfigMap = "iter8-metrics"
+	Iter8Namespace   = "iter8"
+)
+
 func addFinalizerIfAbsent(context context.Context, c client.Client, instance *iter8v1alpha1.Experiment, fName string) (err error) {
 	for _, finalizer := range instance.ObjectMeta.GetFinalizers() {
 		if finalizer == fName {

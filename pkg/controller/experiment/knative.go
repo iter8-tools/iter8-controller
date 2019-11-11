@@ -210,7 +210,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 			}
 
 			// Get latest analysis
-			payload, err := MakeRequest(instance, baselineService, candidateService)
+			payload, err := checkandincrement.MakeRequest(instance, baselineService, candidateService)
 			if err != nil {
 				r.MarkAnalyticsServiceError(context, instance, "Can Not Compose Payload: %v", err)
 				if err := r.Status().Update(context, instance); err != nil {

@@ -228,7 +228,7 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 			rolloutPercent += traffic.GetStepSize()
 		case "check_and_increment":
 			// Get latest analysis
-			payload, err := MakeRequest(instance, baseline, candidate)
+			payload, err := checkandincrement.MakeRequest(instance, baseline, candidate)
 			if err != nil {
 				r.MarkAnalyticsServiceError(context, instance, "Can Not Compose Payload %v", err)
 				if err := r.Status().Update(context, instance); err != nil {
@@ -299,6 +299,7 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 
 			rolloutPercent = response.Candidate.TrafficPercentage
 			r.MarkAnalyticsServiceRunning(context, instance)
+		case "epsilon_greedy":
 		}
 
 		instance.Status.CurrentIteration++
