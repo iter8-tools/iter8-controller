@@ -421,6 +421,7 @@ rules:
   - watch
   - update
   - patch
+  - delete
 - apiGroups:
   - apps
   resources:
