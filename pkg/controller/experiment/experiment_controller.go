@@ -214,10 +214,6 @@ func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Re
 			return reconcile.Result{}, r.Status().Update(ctx, instance)
 		}
 		r.MarkSyncMetrics(ctx, instance)
-		// err = r.Status().Update(ctx, instance)
-		// if err != nil {
-		// 	return reconcile.Result{}, err
-		// }
 	}
 
 	apiVersion := instance.Spec.TargetService.APIVersion
