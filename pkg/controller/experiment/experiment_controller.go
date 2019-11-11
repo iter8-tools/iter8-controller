@@ -141,7 +141,7 @@ type ReconcileExperiment struct {
 // +kubebuilder:rbac:groups=serving.knative.dev,resources=services/status,verbs=get
 // +kubebuilder:rbac:groups=serving.knative.dev,resources=revisions,verbs=get;list;watch
 // +kubebuilder:rbac:groups=serving.knative.dev,resources=revisions/status,verbs=get
-// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
 func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	ctx := context.Background()
