@@ -107,3 +107,14 @@ func WantAllStates(stateFns ...InStateFunc) InStateFunc {
 		return true, nil
 	}
 }
+
+func CheckObjectDeleted(objects ...runtime.Object) Hook {
+	return func(ctx context.Context, cl client.Client) error {
+		for _, obj := range objects {
+			if err := WaitForDelete(ctx, cl, obj); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}

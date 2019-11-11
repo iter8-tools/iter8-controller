@@ -63,6 +63,13 @@ const (
 	AssessmentNull            AssessmentType = ""
 )
 
+type CleanUpType string
+
+const (
+	CleanUpDelete CleanUpType = "delete"
+	CleanUpNull   CleanUpType = ""
+)
+
 // ExperimentSpec defines the desired state of Experiment
 type ExperimentSpec struct {
 	// TargetService is a reference to an object to use as target service
@@ -80,6 +87,11 @@ type ExperimentSpec struct {
 	// +optional.
 	//+kubebuilder:validation:Enum=override_success,override_failure
 	Assessment AssessmentType `json:"assessment,omitempty"`
+
+	// CleanUp is a flag to determine the action to take at the end of experiment
+	// +optional.
+	//+kubebuilder:validation:Enum=delete
+	CleanUp CleanUpType `json:"cleanup,omitempty"`
 
 	// RoutingReference provides references to routing rules set by users
 	// +optional
@@ -310,7 +322,7 @@ func (t *TrafficControl) GetOnSuccess() string {
 func (a *Analysis) GetServiceEndpoint() string {
 	endpoint := a.AnalyticsService
 	if len(endpoint) == 0 {
-		endpoint = "http://iter8-analytics:5555"
+		return "http://iter8-analytics:5555"
 	}
 
 	return endpoint
@@ -383,8 +395,11 @@ func (s *ExperimentStatus) InitializeConditions() {
 }
 
 // MarkMetricsSynced sets the condition that the metrics are synced with config map
-func (s *ExperimentStatus) MarkMetricsSynced() {
+// Return true if it's converted from false or unknown
+func (s *ExperimentStatus) MarkMetricsSynced() bool {
+	prev := s.GetCondition(ExperimentConditionMetricsSynced).Status
 	experimentCondSet.Manage(s).MarkTrue(ExperimentConditionMetricsSynced)
+	return prev != corev1.ConditionTrue
 }
 
 // MarkMetricsSyncedError sets the condition that the error occurs when syncing with the config map
@@ -395,8 +410,11 @@ func (s *ExperimentStatus) MarkMetricsSyncedError(reason, messageFormat string, 
 }
 
 // MarkTargetsFound sets the condition that the all target have been found
-func (s *ExperimentStatus) MarkTargetsFound() {
+// Return true if it's converted from false or unknown
+func (s *ExperimentStatus) MarkTargetsFound() bool {
+	prev := s.GetCondition(ExperimentConditionTargetsProvided).Status
 	experimentCondSet.Manage(s).MarkTrue(ExperimentConditionTargetsProvided)
+	return prev != corev1.ConditionTrue
 }
 
 // MarkTargetsError sets the condition that the target service hasn't been found.
@@ -407,13 +425,16 @@ func (s *ExperimentStatus) MarkTargetsError(reason, messageFormat string, messag
 }
 
 // MarkAnalyticsServiceRunning sets the condition that the analytics service is operating normally
-func (s *ExperimentStatus) MarkAnalyticsServiceRunning() {
+// Return true if it's converted from false or unknown
+func (s *ExperimentStatus) MarkAnalyticsServiceRunning() bool {
+	prev := s.GetCondition(ExperimentConditionAnalyticsServiceNormal).Status
 	experimentCondSet.Manage(s).MarkTrue(ExperimentConditionAnalyticsServiceNormal)
+	return prev != corev1.ConditionTrue
 }
 
 // MarkAnalyticsServiceError sets the condition that the analytics service has breakdown
 func (s *ExperimentStatus) MarkAnalyticsServiceError(reason, messageFormat string, messageA ...interface{}) {
-	experimentCondSet.Manage(s).MarkFalse(ExperimentConditionTargetsProvided, reason, messageFormat, messageA...)
+	experimentCondSet.Manage(s).MarkFalse(ExperimentConditionAnalyticsServiceNormal, reason, messageFormat, messageA...)
 	s.Message = composeMessage(reason, messageFormat, messageA...)
 	s.Phase = PhasePause
 }

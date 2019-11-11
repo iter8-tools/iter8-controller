@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -37,7 +38,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	servingv1alpha1 "github.com/knative/serving/pkg/apis/serving/v1alpha1"
-	appsv1 "k8s.io/api/apps/v1"
+	//	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
 	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
@@ -51,8 +52,9 @@ const (
 	KubernetesService      = "v1"
 	KnativeServiceV1Alpha1 = "serving.knative.dev/v1alpha1"
 
-	Finalizer = "finalizer.iter8-tools"
-	loggerKey = loggerKeyType("logger")
+	Iter8Controller = "iter8-controller"
+	Finalizer       = "finalizer.iter8-tools"
+	loggerKey       = loggerKeyType("logger")
 )
 
 // Add creates a new Experiment Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
@@ -63,7 +65,11 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileExperiment{Client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return &ReconcileExperiment{
+		Client:        mgr.GetClient(),
+		scheme:        mgr.GetScheme(),
+		eventRecorder: mgr.GetRecorder(Iter8Controller),
+	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -113,16 +119,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		log.Info("NoKnativeServingWatch", zap.Error(err))
 	}
 
-	// Watch for k8s deployment updates
-	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}},
-		&handler.EnqueueRequestsFromMapFunc{ToRequests: mapFn},
-		p)
-
-	if err != nil {
-		// Just log error.
-		log.Info("NoDeployementWatch", zap.Error(err))
-	}
-
 	return nil
 }
 
@@ -131,7 +127,8 @@ var _ reconcile.Reconciler = &ReconcileExperiment{}
 // ReconcileExperiment reconciles a Experiment object
 type ReconcileExperiment struct {
 	client.Client
-	scheme *runtime.Scheme
+	scheme        *runtime.Scheme
+	eventRecorder record.EventRecorder
 }
 
 // Reconcile reads that state of the cluster for a Experiment object and makes changes based on the state read
@@ -213,12 +210,14 @@ func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Re
 	metricsSycned := instance.Status.GetCondition(iter8v1alpha1.ExperimentConditionMetricsSynced)
 	if metricsSycned == nil || metricsSycned.Status != corev1.ConditionTrue {
 		if err := readMetrics(ctx, r, instance); err != nil {
-			instance.Status.MarkMetricsSyncedError("UnableToSyncWithMetricsConfigMap", "%s", err)
-			log.Error(err, "UnableToSyncWithMetricsConfigMap")
-			r.Status().Update(ctx, instance)
-			return reconcile.Result{}, err
+			r.MarkSyncMetricsError(ctx, instance, "Fail to read metrics: %v", err)
+			return reconcile.Result{}, r.Status().Update(ctx, instance)
 		}
-		instance.Status.MarkMetricsSynced()
+		r.MarkSyncMetrics(ctx, instance)
+		// err = r.Status().Update(ctx, instance)
+		// if err != nil {
+		// 	return reconcile.Result{}, err
+		// }
 	}
 
 	apiVersion := instance.Spec.TargetService.APIVersion

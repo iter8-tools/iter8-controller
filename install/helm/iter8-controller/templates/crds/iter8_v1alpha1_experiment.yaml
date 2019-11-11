@@ -119,6 +119,12 @@ spec:
               - override_success
               - override_failure
               type: string
+            cleanup:
+              description: CleanUp is a flag to determine the action to take at the
+                end of experiment
+              enum:
+              - delete
+              type: string
             routingReference:
               description: RoutingReference provides references to routing rules set
                 by users

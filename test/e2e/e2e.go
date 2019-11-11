@@ -181,6 +181,7 @@ func (tc *testCase) checkHasResults(ctx context.Context, cl client.Client) error
 			retries--
 		}
 	}
+
 	return nil
 }
 

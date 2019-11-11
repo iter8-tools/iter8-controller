@@ -34,6 +34,7 @@ const (
 	Stable      = "stable"
 	Progressing = "progressing"
 
+	experimentInit  = "iter8-tools/init"
 	experimentRole  = "iter8-tools/role"
 	experimentLabel = "iter8-tools/experiment"
 	experimentHost  = "iter8-tools/host"

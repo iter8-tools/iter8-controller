@@ -18,7 +18,6 @@ package experiment
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	servingv1alpha1 "github.com/knative/serving/pkg/apis/serving/v1alpha1"
@@ -45,26 +44,24 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 	kservice := &servingv1alpha1.Service{}
 	err := r.Get(context, types.NamespacedName{Name: serviceName, Namespace: serviceNamespace}, kservice)
 	if err != nil {
-		instance.Status.MarkTargetsError("ServiceNotFound", "")
+		r.MarkTargetsError(context, instance, "Missing Service %s", serviceName)
 		err = r.Status().Update(context, instance)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
-		return reconcile.Result{Requeue: true}, nil
+		return reconcile.Result{RequeueAfter: 5 * time.Second}, nil
 	}
 
 	if kservice.Spec.Template == nil {
-		instance.Status.MarkTargetsError("MissingTemplate", "")
-		err = r.Status().Update(context, instance)
-		return reconcile.Result{}, err
+		r.MarkTargetsError(context, instance, "%s", "Missing Template")
+		return reconcile.Result{}, r.Status().Update(context, instance)
 	}
 
 	// link service to this experiment. Only one experiment can control a service
 	labels := kservice.GetLabels()
 	if experiment, found := labels[experimentLabel]; found && experiment != instance.GetName() {
-		instance.Status.MarkTargetsError("ExistingExperiment", "service is already controlled by %v", experiment)
-		err = r.Status().Update(context, instance)
-		return reconcile.Result{}, err
+		r.MarkTargetsError(context, instance, "service is already controlled by experiment %s", experiment)
+		return reconcile.Result{}, r.Status().Update(context, instance)
 	}
 
 	if labels == nil {
@@ -82,9 +79,8 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 	// Check the experiment targets existing traffic targets
 	ksvctraffic := kservice.Spec.Traffic
 	if ksvctraffic == nil {
-		instance.Status.MarkTargetsError("MissingTraffic", "")
-		err = r.Status().Update(context, instance)
-		return reconcile.Result{}, err
+		r.MarkTargetsError(context, instance, "%s", "MissingTraffic")
+		return reconcile.Result{}, r.Status().Update(context, instance)
 	}
 
 	baseline := instance.Spec.TargetService.Baseline
@@ -93,26 +89,26 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 	candidateTraffic := getTrafficByName(kservice, candidate)
 
 	if baselineTraffic == nil {
-		instance.Status.MarkTargetsError("MissingBaselineRevision", "%s", baseline)
+		r.MarkTargetsError(context, instance, "Missing Baseline Revision: %s", baseline)
 		instance.Status.TrafficSplit.Baseline = 0
 		if candidateTraffic == nil {
 			instance.Status.TrafficSplit.Candidate = 0
 		} else {
 			instance.Status.TrafficSplit.Candidate = candidateTraffic.Percent
 		}
-		err = r.Status().Update(context, instance)
-		return reconcile.Result{}, err
+
+		return reconcile.Result{}, r.Status().Update(context, instance)
 	}
 
 	if candidateTraffic == nil {
-		instance.Status.MarkTargetsError("MissingCandidateRevision", "%s", candidate)
+		r.MarkTargetsError(context, instance, "Missing Candidate Revision: %s", candidate)
 		instance.Status.TrafficSplit.Baseline = baselineTraffic.Percent
 		instance.Status.TrafficSplit.Candidate = 0
 		err = r.Status().Update(context, instance)
 		return reconcile.Result{}, err
 	}
 
-	instance.Status.MarkTargetsFound()
+	r.MarkTargetsFound(context, instance)
 
 	traffic := instance.Spec.TrafficControl
 	now := time.Now()
@@ -124,7 +120,6 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 
 		update := false
 		if experimentSucceeded(instance) {
-			log.Info("Experiment completed with success", "onsuccess", traffic.GetOnSuccess())
 			// experiment is successful
 			msg := ""
 			switch traffic.GetOnSuccess() {
@@ -155,11 +150,9 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 			case "both":
 				msg = "KeepOnBothVersions"
 			}
-			markExperimentSuccessStatus(instance, msg)
+			r.MarkExperimentSucceeded(context, instance, "%s", successMsg(instance, msg))
 		} else {
-			log.Info("Experiment completed with failure")
-
-			markExperimentFailureStatus(instance, "AllToBaseline")
+			r.MarkExperimentFailed(context, instance, "%s", failureMsg(instance, "AllToBaseline"))
 
 			// Switch traffic back to baseline
 			if candidateTraffic.Percent != 0 {
@@ -174,7 +167,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 
 		labels := kservice.GetLabels()
 		_, has := labels[experimentLabel]
-		if has {
+		if has || update {
 			delete(labels, experimentLabel)
 		}
 
@@ -185,11 +178,9 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 			}
 		}
 
-		markExperimentCompleted(instance)
 		instance.Status.TrafficSplit.Baseline = baselineTraffic.Percent
 		instance.Status.TrafficSplit.Candidate = candidateTraffic.Percent
-		err = r.Status().Update(context, instance)
-		return reconcile.Result{}, err
+		return reconcile.Result{}, r.Status().Update(context, instance)
 	}
 
 	// Check if traffic should be updated.
@@ -207,30 +198,32 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 			baselineService, err := r.getServiceForRevision(context, kservice, baselineTraffic.RevisionName)
 			if err != nil {
 				// TODO: maybe we want another condition
-				instance.Status.MarkTargetsError("MissingCoreService", "%v", err)
-				err = r.Status().Update(context, instance)
-				return reconcile.Result{}, err
+				r.MarkTargetsError(context, instance, "Missing Core Service: %v", err)
+				return reconcile.Result{}, r.Status().Update(context, instance)
 			}
+
 			candidateService, err := r.getServiceForRevision(context, kservice, candidateTraffic.RevisionName)
 			if err != nil {
 				// TODO: maybe we want another condition
-				instance.Status.MarkTargetsError("MissingCoreService", "%v", err)
-				err = r.Status().Update(context, instance)
-				return reconcile.Result{}, err
+				r.MarkTargetsError(context, instance, "Missing Core Service: %v", err)
+				return reconcile.Result{}, r.Status().Update(context, instance)
 			}
 
 			// Get latest analysis
 			payload, err := MakeRequest(instance, baselineService, candidateService)
 			if err != nil {
-				instance.Status.MarkAnalyticsServiceError("CanNotComposePayload", "%v", err)
-				log.Error(err, "CanNotComposePayload")
-				r.Status().Update(context, instance)
-				return reconcile.Result{RequeueAfter: 5 * time.Second}, err
+				r.MarkAnalyticsServiceError(context, instance, "Can Not Compose Payload: %v", err)
+				if err := r.Status().Update(context, instance); err != nil {
+					return reconcile.Result{}, err
+				}
+				return reconcile.Result{RequeueAfter: 5 * time.Second}, r.Status().Update(context, instance)
 			}
 			response, err := checkandincrement.Invoke(log, instance.Spec.Analysis.GetServiceEndpoint(), payload)
 			if err != nil {
-				instance.Status.MarkAnalyticsServiceError("ErrorAnalytics", "%v", err)
-				err = r.Status().Update(context, instance)
+				r.MarkAnalyticsServiceError(context, instance, "%s", err.Error())
+				if err := r.Status().Update(context, instance); err != nil {
+					return reconcile.Result{}, err
+				}
 				return reconcile.Result{RequeueAfter: 5 * time.Second}, err
 			}
 
@@ -248,8 +241,7 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 				instance.Status.TrafficSplit.Baseline = 100
 				instance.Status.TrafficSplit.Candidate = 0
 
-				markExperimentCompleted(instance)
-				instance.Status.MarkExperimentFailed("Aborted, Traffic: AllToBaseline.", "")
+				r.MarkExperimentFailed(context, instance, "%s", "Aborted, Traffic: AllToBaseline.")
 				err := r.Update(context, instance)
 				if err != nil {
 					return reconcile.Result{}, err // retry
@@ -266,9 +258,8 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 			} else {
 				lastState, err := json.Marshal(response.LastState)
 				if err != nil {
-					instance.Status.MarkAnalyticsServiceError("ErrorAnalyticsResponse", "%v", err)
-					err = r.Status().Update(context, instance)
-					return reconcile.Result{RequeueAfter: 5 * time.Second}, err
+					r.MarkAnalyticsServiceError(context, instance, "ErrorAnalyticsResponse: %v", err)
+					return reconcile.Result{}, r.Status().Update(context, instance)
 				}
 				instance.Status.AnalysisState = runtime.RawExtension{Raw: lastState}
 			}
@@ -298,7 +289,8 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 		}
 		if needUpdate {
 			log.Info("update traffic", "rolloutPercent", newRolloutPercent)
-
+			r.MarkExperimentProgress(context, instance, true, "New Traffic, baseline: %d, candidate: %d",
+				instance.Status.TrafficSplit.Baseline, instance.Status.TrafficSplit.Candidate)
 			err = r.Update(context, kservice) // TODO: patch?
 			if err != nil {
 				// TODO: the analysis service will be called again upon retry. Maybe we do want that.
@@ -310,11 +302,10 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 		instance.Status.LastIncrementTime = metav1.NewTime(now)
 	}
 
-	instance.Status.MarkExperimentNotCompleted(fmt.Sprintf("Iteration %d Completed", instance.Status.CurrentIteration), "")
+	r.MarkExperimentProgress(context, instance, false, "Iteration %d Completed", instance.Status.CurrentIteration)
 	instance.Status.TrafficSplit.Baseline = baselineTraffic.Percent
 	instance.Status.TrafficSplit.Candidate = candidateTraffic.Percent
-	err = r.Status().Update(context, instance)
-	return reconcile.Result{RequeueAfter: interval}, err
+	return reconcile.Result{RequeueAfter: interval}, r.Status().Update(context, instance)
 }
 
 func getTrafficByName(service *servingv1alpha1.Service, name string) *servingv1alpha1.TrafficTarget {

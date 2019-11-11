@@ -17,9 +17,10 @@ package experiment
 import (
 	"context"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"strconv"
 	"time"
+
+	"gopkg.in/yaml.v2"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -117,24 +118,24 @@ func markExperimentCompleted(instance *iter8v1alpha1.Experiment) {
 	instance.Status.MarkExperimentCompleted()
 }
 
-func markExperimentSuccessStatus(instance *iter8v1alpha1.Experiment, trafficMsg string) {
+func successMsg(instance *iter8v1alpha1.Experiment, trafficMsg string) string {
 	if instance.Spec.Assessment == iter8v1alpha1.AssessmentOverrideSuccess {
-		instance.Status.MarkExperimentSucceeded(fmt.Sprintf("OverrideSuccess, Traffic: %s", trafficMsg), "")
+		return fmt.Sprintf("OverrideSuccess, Traffic: %s", trafficMsg)
 	} else if instance.Status.AssessmentSummary.AllSuccessCriteriaMet {
-		instance.Status.MarkExperimentSucceeded(fmt.Sprintf("AllSuccessCriteriaMet, Traffic: %s", trafficMsg), "")
+		return fmt.Sprintf("AllSuccessCriteriaMet, Traffic: %s", trafficMsg)
 	} else {
-		instance.Status.MarkExperimentSucceeded(fmt.Sprintf("IterationsExhausted, Traffic: %s", trafficMsg), "")
+		return fmt.Sprintf("IterationsExhausted, Traffic: %s", trafficMsg)
 	}
 }
 
-func markExperimentFailureStatus(instance *iter8v1alpha1.Experiment, trafficMsg string) {
+func failureMsg(instance *iter8v1alpha1.Experiment, trafficMsg string) string {
 	if instance.Spec.Assessment == iter8v1alpha1.AssessmentOverrideFailure {
-		instance.Status.MarkExperimentFailed(fmt.Sprintf("OverrideFailure, Traffic: %s", trafficMsg), "")
+		return fmt.Sprintf("OverrideFailure, Traffic: %s", trafficMsg)
 	} else if !instance.Status.AssessmentSummary.AllSuccessCriteriaMet {
-		instance.Status.MarkExperimentFailed(fmt.Sprintf("NotAllSuccessCriteriaMet, Traffic: %s", trafficMsg), "")
+		return fmt.Sprintf("NotAllSuccessCriteriaMet, Traffic: %s", trafficMsg)
 	} else {
 		// Should not be reached
-		instance.Status.MarkExperimentFailed(fmt.Sprintf("UnexpectedCondition"), "")
+		return fmt.Sprintf("UnexpectedCondition")
 	}
 }
 

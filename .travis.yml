@@ -13,3 +13,24 @@ before_install:
 script:
   - go test ./test/.
   - ./test/e2e/e2e.sh
+
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+      echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin;
+      if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+        export IMG="iter8/iter8-controller:$TRAVIS_BUILD_NUMBER-PR_$TRAVIS_PULL_REQUEST";
+        echo "Building PR Docker image - $IMG";
+        make docker-build;
+        make docker-push;
+      else
+        export IMG="iter8/iter8-controller:$TRAVIS_BUILD_NUMBER-$TRAVIS_COMMIT";
+        echo "Building Docker image - $IMG";
+        make docker-build;
+        make docker-push;
+        LATEST="iter8/iter8-controller:latest";
+        echo "Tagging image as latest - $LATEST";
+        docker tag $IMG $LATEST;
+        export IMG=$LATEST;
+        make docker-push;
+      fi
+    fi

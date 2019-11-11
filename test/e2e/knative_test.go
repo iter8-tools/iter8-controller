@@ -35,7 +35,7 @@ func TestKnativeExperiment(t *testing.T) {
 	testCases := map[string]testCase{
 		"missingService": testCase{
 			object:    getDoNotExistExperiment(),
-			wantState: test.CheckServiceNotFound("ServiceNotFound"),
+			wantState: test.CheckServiceNotFound("TargetsNotFound"),
 		},
 		"missingbaseline": func(name string) testCase {
 			return testCase{
@@ -46,7 +46,7 @@ func TestKnativeExperiment(t *testing.T) {
 					getBaseStockService(name),
 				},
 				object:    getMissingBaselineExperiment(name, name, service.GetURL()),
-				wantState: test.CheckServiceNotFound("MissingBaselineRevision"),
+				wantState: test.CheckServiceNotFound("TargetsNotFound"),
 			}
 		}("stock-missingbaseline"),
 		"missingcandidate": func(name string) testCase {
@@ -58,7 +58,7 @@ func TestKnativeExperiment(t *testing.T) {
 					getBaseStockService(name),
 				},
 				object:    getMissingCandidateExperiment(name, name, service.GetURL()),
-				wantState: test.CheckServiceNotFound("MissingCandidateRevision"),
+				wantState: test.CheckServiceNotFound("TargetsNotFound"),
 			}
 		}("stock-missingcandidate"),
 		"rollforward": testCase{

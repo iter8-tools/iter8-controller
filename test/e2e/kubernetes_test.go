@@ -169,9 +169,6 @@ func TestKubernetesExperiment(t *testing.T) {
 			},
 		},
 		"externalference": testCase{
-			mocks: map[string]cai.Response{
-				"externalference": test.GetSuccessMockResponse(),
-			},
 			initObjects: []runtime.Object{
 				getReviewsService(),
 				getRatingsService(),
@@ -191,6 +188,21 @@ func TestKubernetesExperiment(t *testing.T) {
 				test.DeleteObject(getStableDestinationRule("reviews", "externalference", getReviewsDeployment("v2"))),
 				test.DeleteObject(getSampleStableEdgeVirtualService()),
 			},
+		},
+		"cleanupdelete": testCase{
+			initObjects: []runtime.Object{
+				getReviewsService(),
+				getRatingsService(),
+				getReviewsDeployment("v1"),
+				getReviewsDeployment("v2"),
+				getRatingsDeployment(),
+			},
+			object: getCleanUpDeleteExperiment("cleanupdelete", "reviews", "reviews-v1", "reviews-v2"),
+			wantState: test.WantAllStates(
+				test.CheckExperimentFinished,
+				test.CheckExperimentSuccess,
+			),
+			postHook: test.CheckObjectDeleted(getReviewsDeployment("v1")),
 		},
 	}
 
@@ -246,6 +258,12 @@ func getRatingsDeployment() runtime.Object {
 		WithLabels(labels).
 		WithContainer("ratings", RatingsImage, RatingsPort).
 		Build()
+}
+
+func getCleanUpDeleteExperiment(name, serviceName, baseline, candidate string) *iter8v1alpha1.Experiment {
+	exp := getDefaultKubernetesExperiment(name, serviceName, baseline, candidate)
+	exp.Spec.CleanUp = iter8v1alpha1.CleanUpDelete
+	return exp
 }
 
 func getDefaultKubernetesExperiment(name, serviceName, baseline, candidate string) *iter8v1alpha1.Experiment {
