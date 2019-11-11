@@ -11,6 +11,18 @@ manager: generate fmt vet
 run: generate fmt vet
 	go run ./cmd/manager/main.go
 
+# Generate iter8 crds and rbac manifests
+manifest:
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd \
+	  --output-dir install/helm/iter8-controller/templates/crds
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go rbac \
+	  --output-dir install/helm/iter8-controller/templates/rbac \
+	  --service-account controller-manager \
+	  --service-account-namespace "{{ .Values.namespace }}"
+	./hack/crd_fix.sh
+	sed -i -e "13s/\'//g" install/helm/iter8-controller/templates/rbac/manager_role_binding.yaml
+	rm -f ./install/helm/iter8-controller/templates/rbac/manager_role_binding.yaml-e
+
 # Prepare Kubernetes cluster for iter8 (running in cluster or locally):
 #   install CRDs
 #   install configmap/iter8-metrics is defined in namespace iter8 (creating namespace if needed)
