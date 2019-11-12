@@ -8,7 +8,7 @@ manager: generate fmt vet
 	go build -o bin/manager github.com/iter8-tools/iter8-controller/cmd/manager
 
 # Run against the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
-run: generate fmt vet
+run: generate fmt vet load
 	go run ./cmd/manager/main.go
 
 # Generate iter8 crds and rbac manifests
@@ -26,7 +26,7 @@ manifest:
 # Prepare Kubernetes cluster for iter8 (running in cluster or locally):
 #   install CRDs
 #   install configmap/iter8-metrics is defined in namespace iter8 (creating namespace if needed)
-load: 
+load: manifest
 	helm template install/helm/iter8-controller \
 	  --name iter8-controller \
 	  -x templates/default/namespace.yaml \
@@ -35,7 +35,7 @@ load:
 	| kubectl apply -f -
 
 # Deploy controller to the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
-deploy: 
+deploy: manifest
 	helm template install/helm/iter8-controller \
 	  --name iter8-controller \
 	  --set image.repository=`echo ${IMG} | cut -f1 -d':'` \
