@@ -19,10 +19,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strconv"
 	"time"
 
+	"github.com/iter8-tools/iter8-controller/pkg/analytics"
 	"github.com/iter8-tools/iter8-controller/pkg/analytics/checkandincrement"
+	"github.com/iter8-tools/iter8-controller/pkg/analytics/epsilongreedy"
 	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -189,6 +192,8 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 	if instance.Spec.TrafficControl.GetMaxIterations() <= instance.Status.CurrentIteration ||
 		instance.Spec.Assessment != iter8v1alpha1.AssessmentNull {
 
+		log.Info("MK MK MK finished")
+
 		switch instance.Spec.CleanUp {
 		case iter8v1alpha1.CleanUpDelete:
 			if err := r.handleDeletion(context, instance, baseline, candidate); err != nil {
@@ -223,12 +228,22 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 	rolloutPercent := float64(getWeight(Candidate, vs))
 	if now.After(instance.Status.LastIncrementTime.Add(interval)) {
 
-		switch getStrategy(instance) {
-		case "increment_without_check":
+		strategy := getStrategy(instance)
+		if "increment_without_check" == strategy {
 			rolloutPercent += traffic.GetStepSize()
-		case "check_and_increment":
+		} else {
+			var analyticsService analytics.AnalyticsService
+			switch getStrategy(instance) {
+			case "check_and_increment":
+				analyticsService = checkandincrement.GetService()
+			case "epsilon_greedy":
+				analyticsService = epsilongreedy.GetService()
+			}
+
+			log.Info("MK MK MK anlyticsService", "service", reflect.TypeOf(analyticsService).String())
+
 			// Get latest analysis
-			payload, err := checkandincrement.MakeRequest(instance, baseline, candidate)
+			payload, err := analyticsService.MakeRequest(instance, baseline, candidate)
 			if err != nil {
 				r.MarkAnalyticsServiceError(context, instance, "Can Not Compose Payload %v", err)
 				if err := r.Status().Update(context, instance); err != nil {
@@ -238,7 +253,10 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 				return reconcile.Result{RequeueAfter: 5 * time.Second}, err
 			}
 
-			response, err := checkandincrement.Invoke(log, instance.Spec.Analysis.GetServiceEndpoint(), payload)
+			log.Info("MK MK MK payload", "payload", payload)
+			log.Info("MK MK MK", "path", analyticsService.GetPath())
+
+			response, err := analyticsService.Invoke(log, instance.Spec.Analysis.GetServiceEndpoint(), payload, analyticsService.GetPath())
 			if err != nil {
 				r.MarkAnalyticsServiceError(context, instance, "Error From Analytics: %s", err.Error())
 				if err := r.Status().Update(context, instance); err != nil {
@@ -299,7 +317,7 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 
 			rolloutPercent = response.Candidate.TrafficPercentage
 			r.MarkAnalyticsServiceRunning(context, instance)
-		case "epsilon_greedy":
+
 		}
 
 		instance.Status.CurrentIteration++

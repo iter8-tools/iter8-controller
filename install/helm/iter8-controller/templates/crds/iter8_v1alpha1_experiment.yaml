@@ -176,6 +176,7 @@ spec:
                   enum:
                   - check_and_increment
                   - increment_without_check
+                  - epsilon_greedy
                   type: string
                 trafficStepSize:
                   description: TrafficStepSize is the traffic increment per interval.

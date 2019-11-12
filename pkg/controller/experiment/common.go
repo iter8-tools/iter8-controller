@@ -104,6 +104,8 @@ func experimentSucceeded(instance *iter8v1alpha1.Experiment) bool {
 		return instance.Spec.Assessment == iter8v1alpha1.AssessmentOverrideSuccess ||
 			instance.Spec.Assessment == iter8v1alpha1.AssessmentNull
 	case "check_and_increment":
+		fallthrough
+	case "epsilon_greedy":
 		return instance.Spec.Assessment == iter8v1alpha1.AssessmentOverrideSuccess ||
 			instance.Status.AssessmentSummary.AllSuccessCriteriaMet && instance.Spec.Assessment == iter8v1alpha1.AssessmentNull
 	default:
