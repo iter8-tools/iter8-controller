@@ -56,7 +56,7 @@ header "creating namespace $NAMESPACE"
 kubectl create ns $NAMESPACE
     
 header "install iter8 CRDs"
-make install
+make load
 
 header "deploy metrics configmap"
 kubectl apply -f ./test/e2e/iter8_metrics_test.yaml -n $NAMESPACE

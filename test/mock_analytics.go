@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	cai "github.com/iter8-tools/iter8-controller/pkg/analytics/checkandincrement"
+	cai "github.com/iter8-tools/iter8-controller/pkg/analytics"
 	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
 )
 

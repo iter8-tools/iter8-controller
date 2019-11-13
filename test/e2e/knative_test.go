@@ -22,7 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	cai "github.com/iter8-tools/iter8-controller/pkg/analytics/checkandincrement"
+	"github.com/iter8-tools/iter8-controller/pkg/analytics"
 
 	"github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
 	"github.com/iter8-tools/iter8-controller/test"
@@ -39,7 +39,7 @@ func TestKnativeExperiment(t *testing.T) {
 		},
 		"missingbaseline": func(name string) testCase {
 			return testCase{
-				mocks: map[string]cai.Response{
+				mocks: map[string]analytics.Response{
 					name: test.GetSuccessMockResponse(),
 				},
 				initObjects: []runtime.Object{
@@ -51,7 +51,7 @@ func TestKnativeExperiment(t *testing.T) {
 		}("stock-missingbaseline"),
 		"missingcandidate": func(name string) testCase {
 			return testCase{
-				mocks: map[string]cai.Response{
+				mocks: map[string]analytics.Response{
 					name: test.GetSuccessMockResponse(),
 				},
 				initObjects: []runtime.Object{
@@ -62,7 +62,7 @@ func TestKnativeExperiment(t *testing.T) {
 			}
 		}("stock-missingcandidate"),
 		"rollforward": testCase{
-			mocks: map[string]cai.Response{
+			mocks: map[string]analytics.Response{
 				"stock-rollforward": test.GetSuccessMockResponse(),
 			},
 			initObjects: []runtime.Object{
@@ -79,7 +79,7 @@ func TestKnativeExperiment(t *testing.T) {
 			},
 		},
 		"rollbackward": testCase{
-			mocks: map[string]cai.Response{
+			mocks: map[string]analytics.Response{
 				"stock-rollbackward": test.GetFailureMockResponse(),
 			},
 			initObjects: []runtime.Object{
@@ -96,7 +96,7 @@ func TestKnativeExperiment(t *testing.T) {
 			},
 		},
 		"ongoingdelete": testCase{
-			mocks: map[string]cai.Response{
+			mocks: map[string]analytics.Response{
 				"stock-ongoingdelete": test.GetSuccessMockResponse(),
 			},
 			initObjects: []runtime.Object{
@@ -111,7 +111,7 @@ func TestKnativeExperiment(t *testing.T) {
 			postHook: test.DeleteExperiment("stock-ongoingdelete", Flags.Namespace),
 		},
 		"completedelete": testCase{
-			mocks: map[string]cai.Response{
+			mocks: map[string]analytics.Response{
 				"stock-completedelete": test.GetDefaultMockResponse(),
 			},
 			initObjects: []runtime.Object{

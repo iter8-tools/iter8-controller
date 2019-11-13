@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	"github.com/iter8-tools/iter8-controller/pkg/analytics/checkandincrement"
+	"github.com/iter8-tools/iter8-controller/pkg/analytics"
 	"github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
 	"github.com/iter8-tools/iter8-controller/test"
 )
@@ -95,7 +95,7 @@ func GetClient() client.Client {
 }
 
 type testCase struct {
-	mocks map[string]checkandincrement.Response
+	mocks map[string]analytics.Response
 
 	// Initial set of objects,
 	initObjects []runtime.Object

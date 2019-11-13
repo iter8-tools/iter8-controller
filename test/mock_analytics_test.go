@@ -18,7 +18,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	cai "github.com/iter8-tools/iter8-controller/pkg/analytics/checkandincrement"
+	cai "github.com/iter8-tools/iter8-controller/pkg/analytics"
+	"github.com/iter8-tools/iter8-controller/pkg/analytics/checkandincrement"
 	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
 )
 
@@ -29,7 +30,8 @@ func TestMockAnalytics(t *testing.T) {
 	want := dummyResponse()
 	service.AddMock("test-0", want)
 
-	got, err := cai.Invoke(logger, service.GetURL(), dummyRequest())
+	analyticsService := checkandincrement.GetService()
+	got, err := analyticsService.Invoke(logger, service.GetURL(), dummyRequest(), analyticsService.GetPath())
 	if err != nil {
 		t.Fatalf("%v", err)
 	}

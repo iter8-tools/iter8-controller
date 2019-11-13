@@ -70,3 +70,7 @@ build-default:
 	helm template install/helm/iter8-controller \
    		--name iter8-controller \
 	>> install/iter8-controller.yaml
+
+tests:
+	go test ./test/.
+	test/e2e/e2e.sh --skip-setup
