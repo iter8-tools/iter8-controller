@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -192,8 +191,6 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 	if instance.Spec.TrafficControl.GetMaxIterations() <= instance.Status.CurrentIteration ||
 		instance.Spec.Assessment != iter8v1alpha1.AssessmentNull {
 
-		log.Info("MK MK MK finished")
-
 		switch instance.Spec.CleanUp {
 		case iter8v1alpha1.CleanUpDelete:
 			if err := r.handleDeletion(context, instance, baseline, candidate); err != nil {
@@ -229,18 +226,16 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 	if now.After(instance.Status.LastIncrementTime.Add(interval)) {
 
 		strategy := getStrategy(instance)
-		if "increment_without_check" == strategy {
+		if iter8v1alpha1.StrategyIncrementWithoutCheck == strategy {
 			rolloutPercent += traffic.GetStepSize()
 		} else {
 			var analyticsService analytics.AnalyticsService
 			switch getStrategy(instance) {
-			case "check_and_increment":
+			case checkandincrement.Strategy:
 				analyticsService = checkandincrement.GetService()
-			case "epsilon_greedy":
+			case epsilongreedy.Strategy:
 				analyticsService = epsilongreedy.GetService()
 			}
-
-			log.Info("MK MK MK anlyticsService", "service", reflect.TypeOf(analyticsService).String())
 
 			// Get latest analysis
 			payload, err := analyticsService.MakeRequest(instance, baseline, candidate)
@@ -252,9 +247,6 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 
 				return reconcile.Result{RequeueAfter: 5 * time.Second}, err
 			}
-
-			log.Info("MK MK MK payload", "payload", payload)
-			log.Info("MK MK MK", "path", analyticsService.GetPath())
 
 			response, err := analyticsService.Invoke(log, instance.Spec.Analysis.GetServiceEndpoint(), payload, analyticsService.GetPath())
 			if err != nil {

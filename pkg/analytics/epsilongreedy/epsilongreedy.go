@@ -17,6 +17,11 @@ import (
 	"github.com/iter8-tools/iter8-controller/pkg/analytics"
 )
 
+const (
+	// Strategy ...
+	Strategy string = "epsilon_greedy"
+)
+
 // Service ...
 type Service struct {
 	analytics.BasicAnalyticsService

@@ -192,14 +192,14 @@ func (r *ReconcileExperiment) syncKnative(context context.Context, instance *ite
 		newRolloutPercent := float64(candidateTraffic.Percent)
 
 		strategy := getStrategy(instance)
-		if "increment_without_check" == strategy {
+		if iter8v1alpha1.StrategyIncrementWithoutCheck == strategy {
 			newRolloutPercent += traffic.GetStepSize()
 		} else {
 			var analyticsService analytics.AnalyticsService
 			switch getStrategy(instance) {
-			case "check_and_increment":
+			case checkandincrement.Strategy:
 				analyticsService = checkandincrement.GetService()
-			case "epsilon_greedy":
+			case epsilongreedy.Strategy:
 				analyticsService = epsilongreedy.GetService()
 			}
 
