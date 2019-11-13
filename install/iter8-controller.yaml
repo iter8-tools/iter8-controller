@@ -219,6 +219,7 @@ spec:
                   enum:
                   - check_and_increment
                   - increment_without_check
+                  - epsilon_greedy
                   type: string
                 trafficStepSize:
                   description: TrafficStepSize is the traffic increment per interval.
@@ -330,7 +331,7 @@ status:
   storedVersions: []
 
 ---
-# Source: iter8-controller/templates/rbac/rbac_role.yaml
+# Source: iter8-controller/templates/rbac/manager_role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -491,8 +492,9 @@ rules:
   - update
   - patch
   - delete
+
 ---
-# Source: iter8-controller/templates/rbac/rbac_role_binding.yaml
+# Source: iter8-controller/templates/rbac/manager_role_binding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
