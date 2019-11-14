@@ -204,6 +204,48 @@ func TestKubernetesExperiment(t *testing.T) {
 			),
 			postHook: test.CheckObjectDeleted(getReviewsDeployment("v1")),
 		},
+		"greedy-rollforward": testCase{
+			mocks: map[string]analytics.Response{
+				"greedy-rollforward": test.GetSuccessMockResponse(),
+			},
+			initObjects: []runtime.Object{
+				getReviewsService(),
+				getRatingsService(),
+				getReviewsDeployment("v1"),
+				getReviewsDeployment("v2"),
+				getRatingsDeployment(),
+			},
+			object: getGreedyFastKubernetesExperiment("greedy-rollforward", "reviews", "reviews-v1", "reviews-v2", service.GetURL()),
+			wantState: test.WantAllStates(
+				test.CheckExperimentFinished,
+				test.CheckExperimentSuccess,
+			),
+			wantResults: []runtime.Object{
+				getStableDestinationRule("reviews", "greedy-rollforward", getReviewsDeployment("v2")),
+				getStableVirtualService("reviews", "greedy-rollforward"),
+			},
+		},
+		"greedy-rollbackward": testCase{
+			mocks: map[string]analytics.Response{
+				"greedy-rollbackward": test.GetFailureMockResponse(),
+			},
+			initObjects: []runtime.Object{
+				getReviewsService(),
+				getRatingsService(),
+				getReviewsDeployment("v1"),
+				getReviewsDeployment("v2"),
+				getRatingsDeployment(),
+			},
+			object: getGreedyFastKubernetesExperiment("greedy-rollbackward", "reviews", "reviews-v1", "reviews-v2", service.GetURL()),
+			wantState: test.WantAllStates(
+				test.CheckExperimentFinished,
+				test.CheckExperimentFailure,
+			),
+			wantResults: []runtime.Object{
+				getStableDestinationRule("reviews", "greedy-rollbackward", getReviewsDeployment("v1")),
+				getStableVirtualService("reviews", "greedy-rollbackward"),
+			},
+		},
 	}
 
 	runTestCases(t, service, testCases)
@@ -301,6 +343,23 @@ func getFastKubernetesExperiment(name, serviceName, baseline, candidate, analyti
 	one := 1
 	experiment.Spec.TrafficControl.Interval = &onesec
 	experiment.Spec.TrafficControl.MaxIterations = &one
+
+	return experiment
+}
+
+func getGreedyFastKubernetesExperiment(name, serviceName, baseline, candidate, analyticsHost string) *iter8v1alpha1.Experiment {
+	experiment := test.NewExperiment(name, Flags.Namespace).
+		WithKubernetesTargetService(serviceName, baseline, candidate).
+		WithAnalyticsHost(analyticsHost).
+		WithDummySuccessCriterion().
+		Build()
+
+	onesec := "1s"
+	one := 1
+	greedy := "epsilon_greedy"
+	experiment.Spec.TrafficControl.Interval = &onesec
+	experiment.Spec.TrafficControl.MaxIterations = &one
+	experiment.Spec.TrafficControl.Strategy = &greedy
 
 	return experiment
 }
