@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	cai "github.com/iter8-tools/iter8-controller/pkg/analytics"
+	"github.com/iter8-tools/iter8-controller/pkg/analytics"
 	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
 )
 
@@ -37,13 +37,13 @@ type AnalyticsService struct {
 	server *httptest.Server
 
 	// Mock maps request to response. The key maps to request.name
-	Mock map[string]cai.Response
+	Mock map[string]analytics.Response
 }
 
 // StartAnalytics starts fake analytics service
 func StartAnalytics() *AnalyticsService {
 	service := &AnalyticsService{
-		Mock: make(map[string]cai.Response),
+		Mock: make(map[string]analytics.Response),
 	}
 	service.server = httptest.NewServer(service)
 	return service
@@ -67,7 +67,7 @@ func (s *AnalyticsService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var request cai.Request
+	var request analytics.Request
 	err = json.Unmarshal(b, &request)
 	if err != nil {
 		w.Write([]byte(err.Error()))
@@ -100,19 +100,19 @@ func (s *AnalyticsService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // Mock adds response for testid
-func (s *AnalyticsService) AddMock(name string, response cai.Response) {
+func (s *AnalyticsService) AddMock(name string, response analytics.Response) {
 	s.Mock[name] = response
 }
 
-func GetDefaultMockResponse() cai.Response {
-	return cai.Response{
-		Baseline: cai.MetricsTraffic{
+func GetDefaultMockResponse() analytics.Response {
+	return analytics.Response{
+		Baseline: analytics.MetricsTraffic{
 			TrafficPercentage: 50,
 		},
-		Candidate: cai.MetricsTraffic{
+		Candidate: analytics.MetricsTraffic{
 			TrafficPercentage: 50,
 		},
-		Assessment: cai.Assessment{
+		Assessment: analytics.Assessment{
 			Summary: iter8v1alpha1.Summary{
 				AbortExperiment: false,
 			},
@@ -120,15 +120,15 @@ func GetDefaultMockResponse() cai.Response {
 	}
 }
 
-func GetSuccessMockResponse() cai.Response {
-	return cai.Response{
-		Baseline: cai.MetricsTraffic{
+func GetSuccessMockResponse() analytics.Response {
+	return analytics.Response{
+		Baseline: analytics.MetricsTraffic{
 			TrafficPercentage: 50,
 		},
-		Candidate: cai.MetricsTraffic{
+		Candidate: analytics.MetricsTraffic{
 			TrafficPercentage: 50,
 		},
-		Assessment: cai.Assessment{
+		Assessment: analytics.Assessment{
 			Summary: iter8v1alpha1.Summary{
 				AllSuccessCriteriaMet: true,
 				AbortExperiment:       false,
@@ -137,9 +137,9 @@ func GetSuccessMockResponse() cai.Response {
 	}
 }
 
-func GetAbortExperimentResponse() cai.Response {
-	return cai.Response{
-		Assessment: cai.Assessment{
+func GetAbortExperimentResponse() analytics.Response {
+	return analytics.Response{
+		Assessment: analytics.Assessment{
 			Summary: iter8v1alpha1.Summary{
 				AbortExperiment: true,
 			},
@@ -147,15 +147,15 @@ func GetAbortExperimentResponse() cai.Response {
 	}
 }
 
-func GetFailureMockResponse() cai.Response {
-	return cai.Response{
-		Baseline: cai.MetricsTraffic{
+func GetFailureMockResponse() analytics.Response {
+	return analytics.Response{
+		Baseline: analytics.MetricsTraffic{
 			TrafficPercentage: 50,
 		},
-		Candidate: cai.MetricsTraffic{
+		Candidate: analytics.MetricsTraffic{
 			TrafficPercentage: 50,
 		},
-		Assessment: cai.Assessment{
+		Assessment: analytics.Assessment{
 			Summary: iter8v1alpha1.Summary{
 				AllSuccessCriteriaMet: false,
 			},
