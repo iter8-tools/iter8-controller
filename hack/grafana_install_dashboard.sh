@@ -26,11 +26,10 @@ echo $status
 if [[ "$status" == "200" ]]; then
   echo "Canary Dashboard already defined in $GRAFANA_URL"
   # Could update by copying id, version from current dashboard
-fi
 else
   echo "Defining canary dashboard on $GRAFANA_URL"
   echo "{ \"dashboard\": $(get_config) }" \
-  | jq 'del(.dashboard.id) | del(.dashboard.version)' #\
+  | jq 'del(.dashboard.id) | del(.dashboard.version)' \
   | curl --request POST \
     --header 'Accept: application/json' \
     --header 'Content-Type: application/json' \
