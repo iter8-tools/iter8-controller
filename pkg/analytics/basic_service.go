@@ -33,8 +33,8 @@ import (
 type BasicAnalyticsService struct {
 }
 
-// Request ...
-type Request struct {
+// type RequestCommon ...
+type RequestCommon struct {
 	// Specifies the name of the experiment
 	Name string `json:"name"`
 
@@ -44,11 +44,16 @@ type Request struct {
 	// Specifies a time interval and key-value pairs for retrieving and processing data pertaining to the candidate version
 	Candidate Window `json:"candidate"`
 
-	// Parameters controlling the behavior of the analytics
-	TrafficControl TrafficControl `json:"traffic_control"`
-
 	// State returned by the server on the previous call
 	LastState interface{} `json:"_last_state"`
+}
+
+// Request ...
+type Request struct {
+	RequestCommon
+
+	// Parameters controlling the behavior of the analytics
+	TrafficControl TrafficControl `json:"traffic_control"`
 }
 
 // Window ...
@@ -169,7 +174,7 @@ type MetricsTraffic struct {
 }
 
 // MakeRequest ...
-func (a BasicAnalyticsService) MakeRequest(instance *iter8v1alpha1.Experiment, baseline, experiment interface{}) (*Request, error) {
+func (a BasicAnalyticsService) MakeRequest(instance *iter8v1alpha1.Experiment, baseline, experiment interface{}) (interface{}, error) {
 	spec := instance.Spec
 
 	criteria := make([]SuccessCriterion, len(spec.Analysis.SuccessCriteria))
@@ -214,34 +219,36 @@ func (a BasicAnalyticsService) MakeRequest(instance *iter8v1alpha1.Experiment, b
 	}
 
 	return &Request{
-		Name: instance.Name,
-		Baseline: Window{
-			StartTime: instance.ObjectMeta.GetCreationTimestamp().Format(time.RFC3339),
-			EndTime:   now,
-			Tags: map[string]string{
-				destinationKey: baseVal,
-				namespaceKey:   baseNsVal,
+		RequestCommon: RequestCommon{
+			Name: instance.Name,
+			Baseline: Window{
+				StartTime: instance.ObjectMeta.GetCreationTimestamp().Format(time.RFC3339),
+				EndTime:   now,
+				Tags: map[string]string{
+					destinationKey: baseVal,
+					namespaceKey:   baseNsVal,
+				},
 			},
-		},
-		Candidate: Window{
-			StartTime: instance.ObjectMeta.GetCreationTimestamp().Format(time.RFC3339),
-			EndTime:   now,
-			Tags: map[string]string{
-				destinationKey: experimentVal,
-				namespaceKey:   experimentNsVal,
+			Candidate: Window{
+				StartTime: instance.ObjectMeta.GetCreationTimestamp().Format(time.RFC3339),
+				EndTime:   now,
+				Tags: map[string]string{
+					destinationKey: experimentVal,
+					namespaceKey:   experimentNsVal,
+				},
 			},
+			LastState: instance.Status.AnalysisState,
 		},
 		TrafficControl: TrafficControl{
 			MaxTrafficPercent: instance.Spec.TrafficControl.GetMaxTrafficPercentage(),
 			StepSize:          instance.Spec.TrafficControl.GetStepSize(),
 			SuccessCriteria:   criteria,
 		},
-		LastState: instance.Status.AnalysisState,
 	}, nil
 }
 
 // Invoke ...
-func (a BasicAnalyticsService) Invoke(log logr.Logger, endpoint string, payload *Request, path string) (*Response, error) {
+func (a BasicAnalyticsService) Invoke(log logr.Logger, endpoint string, payload interface{}, path string) (*Response, error) {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
