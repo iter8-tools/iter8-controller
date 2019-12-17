@@ -25,6 +25,7 @@ import (
 	"github.com/iter8-tools/iter8-controller/pkg/analytics"
 	"github.com/iter8-tools/iter8-controller/pkg/analytics/checkandincrement"
 	"github.com/iter8-tools/iter8-controller/pkg/analytics/epsilongreedy"
+	"github.com/iter8-tools/iter8-controller/pkg/analytics/pbr"
 	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -235,6 +236,8 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 				analyticsService = checkandincrement.GetService()
 			case epsilongreedy.Strategy:
 				analyticsService = epsilongreedy.GetService()
+			case pbr.Strategy:
+				analyticsService = pbr.GetService()
 			}
 
 			// Get latest analysis
