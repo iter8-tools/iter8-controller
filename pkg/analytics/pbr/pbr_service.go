@@ -35,24 +35,6 @@ type PbrAnalyticsService struct {
 	analytics.BasicAnalyticsService
 }
 
-// // Request ...
-// type Request struct {
-// 	// Specifies the name of the experiment
-// 	Name string `json:"name"`
-
-// 	// Specifies a time interval and key-value pairs for retrieving and processing data pertaining to the baseline version
-// 	Baseline analytics.Window `json:"baseline"`
-
-// 	// Specifies a time interval and key-value pairs for retrieving and processing data pertaining to the candidate version
-// 	Candidate analytics.Window `json:"candidate"`
-
-// 	// Parameters controlling the behavior of the analytics
-// 	TrafficControl TrafficControl `json:"traffic_control"`
-
-// 	// State returned by the server on the previous call
-// 	LastState interface{} `json:"_last_state"`
-// }
-
 // Request ...
 type Request struct {
 	analytics.RequestCommon
@@ -62,34 +44,63 @@ type Request struct {
 
 // TrafficControl ...
 type TrafficControl struct {
-	analytics.TrafficControl
+	analytics.TrafficControlCommon
 
 	// PosteriorSampleSize required sample size
 	PosteriorSampleSize int `json:"posterior_sample_size"`
 
 	// NumberOfTrials number of values sampled per iteration from each distribution
 	NumberOfTrials float64 `json:"no_of_trials"`
+
+	// List of criteria for assessing the candidate version
+	SuccessCriteria []SuccessCriterion `json:"success_criteria"`
+}
+
+// SuccessCriterion ...
+type SuccessCriterion struct {
+	analytics.SuccessCriterionCommon
+
+	// Minimum and Maximum value of the metric
+	MinMax MinMax `json:"min_max"`
+
+	// TBD: delete this
+	SampleSize int `json:"sample_size"`
+}
+
+// MinMax ...
+type MinMax struct {
+	// Minimum value of the metric
+	Min float64 `json:"min"`
+
+	// Maximum value of the metric
+	Max float64 `json:"max"`
 }
 
 // MakeRequest ...
 func (a PbrAnalyticsService) MakeRequest(instance *iter8v1alpha1.Experiment, baseline, experiment interface{}) (interface{}, error) {
 	spec := instance.Spec
 
-	criteria := make([]analytics.SuccessCriterion, len(spec.Analysis.SuccessCriteria))
+	criteria := make([]SuccessCriterion, len(spec.Analysis.SuccessCriteria))
 	for i, criterion := range spec.Analysis.SuccessCriteria {
 		iter8metric, ok := instance.Metrics[criterion.MetricName]
 		if !ok {
 			// Metric template not found
 			return nil, fmt.Errorf("Metric %s Not Available", criterion.MetricName)
 		}
-		criteria[i] = analytics.SuccessCriterion{
-			MetricName:         criterion.MetricName,
-			Type:               criterion.ToleranceType,
-			Value:              criterion.Tolerance,
-			Template:           iter8metric.QueryTemplate,
-			SampleSizeTemplate: iter8metric.SampleSizeTemplate,
-			IsCounter:          iter8metric.IsCounter,
-			AbsentValue:        iter8metric.AbsentValue,
+		criteria[i] = SuccessCriterion{
+			SuccessCriterionCommon: analytics.SuccessCriterionCommon{
+				MetricName:         criterion.MetricName,
+				Type:               criterion.ToleranceType,
+				Value:              criterion.Tolerance,
+				Template:           iter8metric.QueryTemplate,
+				SampleSizeTemplate: iter8metric.SampleSizeTemplate,
+				IsCounter:          iter8metric.IsCounter,
+				AbsentValue:        iter8metric.AbsentValue,
+			},
+			MinMax: MinMax{
+				Min: 0.0,
+				Max: 100.0,
+			},
 		}
 
 		criteria[i].SampleSize = criterion.GetSampleSize()
@@ -138,13 +149,13 @@ func (a PbrAnalyticsService) MakeRequest(instance *iter8v1alpha1.Experiment, bas
 			LastState: instance.Status.AnalysisState,
 		},
 		TrafficControl: TrafficControl{
-			TrafficControl: analytics.TrafficControl{
+			TrafficControlCommon: analytics.TrafficControlCommon{
 				MaxTrafficPercent: instance.Spec.TrafficControl.GetMaxTrafficPercentage(),
 				StepSize:          instance.Spec.TrafficControl.GetStepSize(),
-				SuccessCriteria:   criteria,
 			},
 			PosteriorSampleSize: 1000,
 			NumberOfTrials:      10.0,
+			SuccessCriteria:     criteria,
 		},
 	}, nil
 }
