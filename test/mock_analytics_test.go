@@ -43,7 +43,9 @@ func TestMockAnalytics(t *testing.T) {
 
 func dummyRequest() *cai.Request {
 	return &cai.Request{
-		Name: "test-0",
+		RequestCommon: cai.RequestCommon{
+			Name: "test-0",
+		},
 	}
 }
 func dummyResponse() cai.Response {
