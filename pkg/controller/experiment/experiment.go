@@ -372,7 +372,7 @@ func (r *ReconcileExperiment) progressExperiment(context context.Context, instan
 			analyticsService = checkandincrement.GetService()
 		case epsilongreedy.Strategy:
 			analyticsService = epsilongreedy.GetService()
-                case pbr.Strateby:
+		case pbr.Strategy:
 			analyticsService = pbr.GetService()
 		}
 
