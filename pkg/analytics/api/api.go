@@ -113,23 +113,7 @@ type Assessment struct {
 	Summary iter8v1alpha1.Summary `json:"summary"`
 
 	// Summary of results for each success criterion
-	SuccessCriteria []SuccessCriterionOutput `json:"success_criteria"`
-}
-
-// SuccessCriterionOutput contains assessment for a specific metric
-type SuccessCriterionOutput struct {
-	// Name of the metric to which the criterion applies
-	// example: iter8_latency
-	MetricName string `json:"metric_name"`
-
-	// Overall summary based on all success criteria
-	Conclusions []string `json:"conclusions"`
-
-	// Indicates whether or not the success criterion for the corresponding metric has been met
-	SuccessCriteriaMet bool `json:"success_criteria_met"`
-
-	// Indicates whether or not the experiment must be aborted on the basis of the criterion for this metric
-	AbortExperiment bool `json:"abort_experiment"`
+	SuccessCriteria []iter8v1alpha1.SuccessCriterionStatus `json:"success_criteria"`
 }
 
 // MetricsTraffic specifies traffic recommendations and stores states information

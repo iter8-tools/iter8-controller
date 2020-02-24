@@ -390,8 +390,10 @@ func (r *ReconcileExperiment) progressExperiment(context context.Context, instan
 			return err
 		}
 
-		// update summary in instance object
+		// update assessment in instance object
 		instance.Status.AssessmentSummary = response.Assessment.Summary
+		instance.Status.AssessmentSummary.SuccessCriteriaStatus = response.Assessment.SuccessCriteria
+
 		if response.LastState == nil {
 			instance.Status.AnalysisState.Raw = []byte("{}")
 		} else {

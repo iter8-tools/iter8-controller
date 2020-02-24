@@ -322,6 +322,37 @@ spec:
                   items:
                     type: string
                   type: array
+                success_criteria:
+                  description: The list of status for all success criteria applied
+                  items:
+                    description: SuccessCriterionStatus contains assessment for a
+                      specific success criteria
+                    properties:
+                      abort_experiment:
+                        description: Indicates whether or not the experiment must
+                          be aborted on the basis of the criterion for this metric
+                        type: boolean
+                      conclusions:
+                        description: Assessment of this success criteria in plain
+                          English
+                        items:
+                          type: string
+                        type: array
+                      metric_name:
+                        description: 'Name of the metric to which the criterion applies
+                          example: iter8_latency'
+                        type: string
+                      success_criteria_met:
+                        description: Indicates whether or not the success criterion
+                          for the corresponding metric has been met
+                        type: boolean
+                    required:
+                    - abort_experiment
+                    - conclusions
+                    - metric_name
+                    - success_criteria_met
+                    type: object
+                  type: array
               type: object
             conditions:
               description: Conditions the latest available observations of a resource's

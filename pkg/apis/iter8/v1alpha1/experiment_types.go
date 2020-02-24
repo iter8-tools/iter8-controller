@@ -17,7 +17,6 @@ package v1alpha1
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
@@ -254,7 +253,23 @@ type Analysis struct {
 	SuccessCriteria []SuccessCriterion `json:"successCriteria,omitempty"`
 }
 
-// Summary ...
+// SuccessCriterionStatus contains assessment for a specific success criteria
+type SuccessCriterionStatus struct {
+	// Name of the metric to which the criterion applies
+	// example: iter8_latency
+	MetricName string `json:"metric_name"`
+
+	// Assessment of this success criteria in plain English
+	Conclusions []string `json:"conclusions"`
+
+	// Indicates whether or not the success criterion for the corresponding metric has been met
+	SuccessCriteriaMet bool `json:"success_criteria_met"`
+
+	// Indicates whether or not the experiment must be aborted on the basis of the criterion for this metric
+	AbortExperiment bool `json:"abort_experiment"`
+}
+
+// Summary contains assessment summary from the analytics service
 type Summary struct {
 	// Overall summary based on all success criteria
 	Conclusions []string `json:"conclusions,omitempty"`
@@ -265,6 +280,9 @@ type Summary struct {
 
 	// Indicates whether or not the experiment must be aborted based on the success criteria
 	AbortExperiment bool `json:"abort_experiment,omitempty"`
+
+	// The list of status for all success criteria applied
+	SuccessCriteriaStatus []SuccessCriterionStatus `json:"success_criteria,omitempty"`
 }
 
 func (s *Summary) Assessment2String() string {
@@ -272,12 +290,21 @@ func (s *Summary) Assessment2String() string {
 		return "Not Available"
 	}
 
-	out := ""
+	out := "Summary:\n"
 	for _, s := range s.Conclusions {
-		out += " " + s + ";"
+		out += "- " + s + "\n"
 	}
 
-	return strings.TrimRight(out, ";")
+	out += "Success Criteria Status:\n"
+	for _, ss := range s.SuccessCriteriaStatus {
+		out += "- " + ss.MetricName + ":\n"
+		out += "  conclusions:\n"
+		for _, c := range ss.Conclusions {
+			out += "  - " + c + "\n"
+		}
+	}
+
+	return out
 }
 
 type ToleranceType string
