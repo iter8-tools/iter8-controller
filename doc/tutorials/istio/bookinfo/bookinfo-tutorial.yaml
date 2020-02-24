@@ -21,6 +21,7 @@ metadata:
   name: details
   labels:
     app: details
+    service: details
 spec:
   ports:
   - port: 9080
@@ -28,21 +29,36 @@ spec:
   selector:
     app: details
 ---
-apiVersion: extensions/v1beta1
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookinfo-details
+  labels:
+    account: details
+---
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: details-v1
+  labels:
+    app: details
+    version: v1
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: details
+      version: v1
   template:
     metadata:
       labels:
         app: details
         version: v1
     spec:
+      serviceAccountName: bookinfo-details
       containers:
       - name: details
-        image: istio/examples-bookinfo-details-v1:1.8.0
+        image: docker.io/istio/examples-bookinfo-details-v1:1.15.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9080
@@ -56,6 +72,7 @@ metadata:
   name: ratings
   labels:
     app: ratings
+    service: ratings
 spec:
   ports:
   - port: 9080
@@ -63,21 +80,36 @@ spec:
   selector:
     app: ratings
 ---
-apiVersion: extensions/v1beta1
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookinfo-ratings
+  labels:
+    account: ratings
+---
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ratings-v1
+  labels:
+    app: ratings
+    version: v1
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: ratings
+      version: v1
   template:
     metadata:
       labels:
         app: ratings
         version: v1
     spec:
+      serviceAccountName: bookinfo-ratings
       containers:
       - name: ratings
-        image: istio/examples-bookinfo-ratings-v1:1.8.0
+        image: docker.io/istio/examples-bookinfo-ratings-v1:1.15.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9080
@@ -91,12 +123,20 @@ metadata:
   name: reviews
   labels:
     app: reviews
+    service: reviews
 spec:
   ports:
   - port: 9080
     name: http
   selector:
     app: reviews
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookinfo-reviews
+  labels:
+    account: reviews
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -117,9 +157,10 @@ spec:
         app: reviews
         version: v2
     spec:
+      serviceAccountName: bookinfo-reviews
       containers:
       - name: reviews
-        image: iter8/reviews:istio-v2
+        image: docker.io/istio/examples-bookinfo-reviews-v2:1.15.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9080
@@ -133,6 +174,7 @@ metadata:
   name: productpage
   labels:
     app: productpage
+    service: productpage
 spec:
   ports:
   - port: 9080
@@ -140,12 +182,26 @@ spec:
   selector:
     app: productpage
 ---
-apiVersion: extensions/v1beta1
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookinfo-productpage
+  labels:
+    account: productpage
+---
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: productpage-v1
+  labels:
+    app: productpage
+    version: v1
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: productpage
+      version: v1
   template:
     metadata:
       labels:
