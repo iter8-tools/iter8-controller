@@ -11,7 +11,7 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: iter8-metrics
+  name: iter8config-metrics
   namespace: iter8
 data:
   query_templates: |-
@@ -30,6 +30,24 @@ data:
     - name: iter8_error_rate
       is_counter: False
       sample_size_query_template: iter8_sample_size
+
+---
+# Source: iter8-controller/templates/notifier/iter8_notifiers.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: iter8config-notifiers
+  namespace: iter8
+data:
+#####################################################################
+## Add notifier channel info here 
+## Example:
+## channel1: |-
+##    notifier: slack
+##    url: https://hooks.slack.com/services/TXXXXX/BXXXXXX/xxxxxxxx
+##    level: normal
+######################################################################
+  
 
 ---
 # Source: iter8-controller/templates/default/serviceaccount.yaml
@@ -332,6 +350,7 @@ spec:
                   - increment_without_check
                   - epsilon_greedy
                   - posterior_bayesian_routing
+                  - optimistic_bayesian_routing
                   type: string
                 trafficStepSize:
                   description: TrafficStepSize is the traffic increment per interval.
