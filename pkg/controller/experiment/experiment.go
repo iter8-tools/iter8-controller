@@ -419,7 +419,7 @@ func (r *ReconcileExperiment) progressExperiment(context context.Context, instan
 	// skip check for the first iteration
 	if instance.Status.CurrentIteration > 0 && !instance.Succeeded() {
 		r.MarkExperimentProgress(context, instance, true, iter8v1alpha1.ReasonIterationFailed,
-			instance.Status.AssessmentSummary.Assessment2String())
+			"")
 	} else if rolloutPercent <= int32(traffic.GetMaxTrafficPercentage()) &&
 		r.rules.GetWeight(Candidate) != rolloutPercent {
 		// Increase the traffic upto max traffic amount

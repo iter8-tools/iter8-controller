@@ -298,9 +298,9 @@ func (s *Summary) Assessment2String() string {
 	out += "Success Criteria Status:\n"
 	for _, ss := range s.SuccessCriteriaStatus {
 		out += "- metric name: " + ss.MetricName + "\n"
-		out += "  conclusions:\n"
+		out += "   conclusions:\n"
 		for _, c := range ss.Conclusions {
-			out += "  - " + c + "\n"
+			out += "   - " + c + "\n"
 		}
 	}
 
