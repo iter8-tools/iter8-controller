@@ -34,7 +34,7 @@ spec:
       serviceAccountName: bookinfo-reviews
       containers:
       - name: reviews
-        image: docker.io/istio/examples-bookinfo-reviews-v3:1.15.0
+        image: iter8/reviews:istio-v3
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9080
