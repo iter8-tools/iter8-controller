@@ -589,7 +589,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_cpu_usage_seconds_total{pod_name=~\"$baseline.*\", container_name!~\"istio-proxy|\", namespace=\"$namespace\"}[$window_size]))",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod_name=~\"$baseline.*\", container_name!~\"istio-proxy\", namespace=\"$namespace\"}[$window_size]))",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -598,7 +598,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(container_cpu_usage_seconds_total{pod_name=~\"$candidate.*\", container_name!~\"istio-proxy|\", namespace=\"$namespace\"}[$window_size]))",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod_name=~\"$candidate.*\", container_name!~\"istio-proxy\", namespace=\"$namespace\"}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{$candidate}}",
@@ -683,7 +683,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_memory_working_set_bytes{pod_name=~\"$baseline.*\", container_name!~\"istio-proxy|\", namespace=\"$namespace\"}[$window_size]))",
+          "expr": "sum(rate(container_memory_working_set_bytes{pod_name=~\"$baseline.*\", container_name!~\"istio-proxy\", namespace=\"$namespace\"}[$window_size]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -691,7 +691,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(container_memory_working_set_bytes{pod_name=~\"$candidate.*\", container_name!~\"istio-proxy|\", namespace=\"$namespace\"}[$window_size]))",
+          "expr": "sum(rate(container_memory_working_set_bytes{pod_name=~\"$candidate.*\", container_name!~\"istio-proxy\", namespace=\"$namespace\"}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{$candidate}}",
@@ -962,14 +962,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_fs_reads_bytes_total{pod_name=~\"$baseline.*\", container_name!~\"istio-proxy|\", namespace=\"$namespace\"}[$window_size]))",
+          "expr": "sum(rate(container_fs_reads_bytes_total{pod_name=~\"$baseline.*\", container_name!~\"istio-proxy\", namespace=\"$namespace\"}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{$baseline}}",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(container_fs_reads_bytes_total{pod_name=~\"$candidate.*\", container_name!~\"istio-proxy|\", namespace=\"$namespace\"}[$window_size]))",
+          "expr": "sum(rate(container_fs_reads_bytes_total{pod_name=~\"$candidate.*\", container_name!~\"istio-proxy\", namespace=\"$namespace\"}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{$candidate}}",
@@ -1053,14 +1053,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_fs_writes_bytes_total{pod_name=~\"$baseline.*\", container_name!~\"istio-proxy|\", namespace=\"$namespace\"}[$window_size]))",
+          "expr": "sum(rate(container_fs_writes_bytes_total{pod_name=~\"$baseline.*\", container_name!~\"istio-proxy\", namespace=\"$namespace\"}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{$baseline}}",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(container_fs_writes_bytes_total{pod_name=~\"$candidate.*\", container_name!~\"istio-proxy|\", namespace=\"$namespace\"}[$window_size]))",
+          "expr": "sum(rate(container_fs_writes_bytes_total{pod_name=~\"$candidate.*\", container_name!~\"istio-proxy\", namespace=\"$namespace\"}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{$candidate}}",
