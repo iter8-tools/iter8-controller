@@ -37,8 +37,7 @@ function configure_cluster() {
   header "setting KUBECONFIG"
 
   ibmcloud login -a "$IC_API_ENDPOINT" --apikey "$IC_APIKEY" -r $IC_REGION
-  ibmcloud ks region-set "$IC_REGION"
-  $(ibmcloud ks cluster-config "$CLUSTER_NAME" --export -s)
+  ibmcloud ks cluster config --cluster "$CLUSTER_NAME" -s
 }
 
 

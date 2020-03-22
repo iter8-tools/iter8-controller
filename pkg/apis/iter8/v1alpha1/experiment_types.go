@@ -166,11 +166,14 @@ type ExperimentStatus struct {
 	// * Conditions - the latest available observations of a resource's current state.
 	duckv1alpha1.Status `json:",inline"`
 
+	// CreateTimestamp is the timestamp when the experiment is created
+	CreateTimestamp int64 `json:"createTimestamp,omitempty"`
+
 	// StartTimestamp is the timestamp when the experiment starts
-	StartTimestamp string `json:"startTimestamp,omitempty"`
+	StartTimestamp int64 `json:"startTimestamp,omitempty"`
 
 	// EndTimestamp is the timestamp when experiment completes
-	EndTimestamp string `json:"endTimestamp,omitempty"`
+	EndTimestamp int64 `json:"endTimestamp,omitempty"`
 
 	// LastIncrementTime is the last time the traffic has been incremented
 	LastIncrementTime metav1.Time `json:"lastIncrementTime,omitempty"`
@@ -242,7 +245,7 @@ type TrafficControl struct {
 	Confidence *float64 `json:"confidence,omitempty"`
 }
 
-// Analysis ...
+// Analysis specifies the parameters for posting/reading the assessment from analytics server
 type Analysis struct {
 	// AnalyticsService endpoint
 	AnalyticsService string `json:"analyticsService,omitempty"`
@@ -252,60 +255,9 @@ type Analysis struct {
 
 	// List of criteria for assessing the candidate version
 	SuccessCriteria []SuccessCriterion `json:"successCriteria,omitempty"`
-}
 
-// SuccessCriterionStatus contains assessment for a specific success criteria
-type SuccessCriterionStatus struct {
-	// Name of the metric to which the criterion applies
-	// example: iter8_latency
-	MetricName string `json:"metric_name"`
-
-	// Assessment of this success criteria in plain English
-	Conclusions []string `json:"conclusions"`
-
-	// Indicates whether or not the success criterion for the corresponding metric has been met
-	SuccessCriteriaMet bool `json:"success_criteria_met"`
-
-	// Indicates whether or not the experiment must be aborted on the basis of the criterion for this metric
-	AbortExperiment bool `json:"abort_experiment"`
-}
-
-// Summary contains assessment summary from the analytics service
-type Summary struct {
-	// Overall summary based on all success criteria
-	Conclusions []string `json:"conclusions,omitempty"`
-
-	// Indicates whether or not all success criteria for assessing the candidate version
-	// have been met
-	AllSuccessCriteriaMet bool `json:"all_success_criteria_met,omitempty"`
-
-	// Indicates whether or not the experiment must be aborted based on the success criteria
-	AbortExperiment bool `json:"abort_experiment,omitempty"`
-
-	// The list of status for all success criteria applied
-	SuccessCriteriaStatus []SuccessCriterionStatus `json:"success_criteria,omitempty"`
-}
-
-func (s *Summary) Assessment2String() string {
-	if len(s.Conclusions) == 0 {
-		return "Not Available"
-	}
-
-	out := "Conclusions:\n"
-	for _, s := range s.Conclusions {
-		out += "- " + s + "\n"
-	}
-
-	out += "Success Criteria Status:\n"
-	for _, ss := range s.SuccessCriteriaStatus {
-		out += "- metric name: " + ss.MetricName + "\n"
-		out += "   conclusions:\n"
-		for _, c := range ss.Conclusions {
-			out += "   - " + c + "\n"
-		}
-	}
-
-	return out
+	// The reward used by analytics to assess candidate
+	Reward *Reward `json:"reward,omitempty"`
 }
 
 type ToleranceType string
@@ -352,6 +304,69 @@ type SuccessCriterion struct {
 	// defaults to false
 	// +optional
 	StopOnFailure *bool `json:"stopOnFailure,omitempty"`
+}
+
+// Reward specifies the criteria for an experiment to succeed
+type Reward struct {
+	// Name of the metric to which the criterion applies. Options:
+	MetricName string `json:"metricName"`
+
+	// Minimum and maximum values of the metric
+	MinMax *MinMax `json:"min_max,omitempty"`
+}
+
+// SuccessCriterionStatus contains assessment for a specific success criteria
+type SuccessCriterionStatus struct {
+	// Name of the metric to which the criterion applies
+	// example: iter8_latency
+	MetricName string `json:"metric_name"`
+
+	// Assessment of this success criteria in plain English
+	Conclusions []string `json:"conclusions"`
+
+	// Indicates whether or not the success criterion for the corresponding metric has been met
+	SuccessCriterionMet bool `json:"success_criterion_met"`
+
+	// Indicates whether or not the experiment must be aborted on the basis of the criterion for this metric
+	AbortExperiment bool `json:"abort_experiment"`
+}
+
+// Summary contains assessment summary from the analytics service
+type Summary struct {
+	// Overall summary based on all success criteria
+	Conclusions []string `json:"conclusions,omitempty"`
+
+	// Indicates whether or not all success criteria for assessing the candidate version
+	// have been met
+	AllSuccessCriteriaMet bool `json:"all_success_criteria_met,omitempty"`
+
+	// Indicates whether or not the experiment must be aborted based on the success criteria
+	AbortExperiment bool `json:"abort_experiment,omitempty"`
+
+	// The list of status for all success criteria applied
+	SuccessCriteriaStatus []SuccessCriterionStatus `json:"success_criteria,omitempty"`
+}
+
+func (s *Summary) Assessment2String() string {
+	if len(s.Conclusions) == 0 {
+		return "Not Available"
+	}
+
+	out := "Conclusions:\n"
+	for _, s := range s.Conclusions {
+		out += "- " + s + "\n"
+	}
+
+	out += "Success Criteria Status:\n"
+	for _, ss := range s.SuccessCriteriaStatus {
+		out += "- metric name: " + ss.MetricName + "\n"
+		out += "   conclusions:\n"
+		for _, c := range ss.Conclusions {
+			out += "   - " + c + "\n"
+		}
+	}
+
+	return out
 }
 
 // GetStrategy gets the strategy used for traffic control. Default is "check_and_increment".
@@ -509,7 +524,7 @@ const (
 	ReasonAnalyticsServiceRunning = "AnalyticsServiceRunning"
 	ReasonIterationUpdate         = "IterationUpdate"
 	ReasonIterationSucceeded      = "IterationSucceeded"
-	ReasonIterationFailed         = "IterationFailed "
+	ReasonIterationFailed         = "IterationFailed"
 	ReasonExperimentSucceeded     = "ExperimentSucceeded"
 	ReasonExperimentFailed        = "ExperimentFailed"
 	ReasonSyncMetricsError        = "SyncMetricsError"
@@ -518,12 +533,23 @@ const (
 	ReasonRoutingRulesReady       = "RoutingRulesReady"
 )
 
-// InitializeConditions sets relevant unset conditions to Unknown state.
-func (s *ExperimentStatus) InitializeConditions() {
+// Init initialize status values
+func (s *ExperimentStatus) Init() {
+	// sets relevant unset conditions to Unknown state.
 	experimentCondSet.Manage(s).InitializeConditions()
-	if s.Phase == "" {
-		s.Phase = PhaseInitializing
+
+	s.CreateTimestamp = metav1.Now().UTC().UnixNano()
+
+	// TODO: not sure why this is needed
+	if s.LastIncrementTime.IsZero() {
+		s.LastIncrementTime = metav1.NewTime(time.Unix(0, 0))
 	}
+
+	if s.AnalysisState.Raw == nil {
+		s.AnalysisState.Raw = []byte("{}")
+	}
+
+	s.Phase = PhaseInitializing
 }
 
 // MarkMetricsSynced sets the condition that the metrics are synced with config map

@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -275,10 +274,8 @@ func (r *ReconcileExperiment) detectTargets(context context.Context, instance *i
 	}
 
 	if r.MarkTargetsFound(context, instance) {
-		// Update GrafanaURL
-		now := metav1.Now()
-		ts := now.UTC().UnixNano() / int64(time.Millisecond)
-		instance.Status.StartTimestamp = strconv.FormatInt(ts, 10)
+		// Update start timestamp and GrafanaURL
+		instance.Status.StartTimestamp = metav1.Now().UTC().UnixNano()
 		updateGrafanaURL(instance, getServiceNamespace(instance))
 		return true, nil
 	}

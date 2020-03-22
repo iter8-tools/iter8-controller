@@ -93,9 +93,9 @@ func getServiceNamespace(instance *iter8v1alpha1.Experiment) string {
 }
 
 func updateGrafanaURL(instance *iter8v1alpha1.Experiment, namespace string) {
-	endTs := instance.Status.EndTimestamp
-	if endTs == "" {
-		endTs = "now"
+	endTsStr := "now"
+	if instance.Status.EndTimestamp > 0 {
+		endTsStr = strconv.FormatInt(instance.Status.EndTimestamp/int64(time.Millisecond), 10)
 	}
 	instance.Status.GrafanaURL = instance.Spec.Analysis.GetGrafanaEndpoint() +
 		"/d/eXPEaNnZz/iter8-application-metrics?" +
@@ -103,8 +103,8 @@ func updateGrafanaURL(instance *iter8v1alpha1.Experiment, namespace string) {
 		"&var-service=" + instance.Spec.TargetService.Name +
 		"&var-baseline=" + instance.Spec.TargetService.Baseline +
 		"&var-candidate=" + instance.Spec.TargetService.Candidate +
-		"&from=" + instance.Status.StartTimestamp +
-		"&to=" + endTs
+		"&from=" + strconv.FormatInt(instance.Status.StartTimestamp/int64(time.Millisecond), 10) +
+		"&to=" + endTsStr
 }
 
 func markExperimentCompleted(instance *iter8v1alpha1.Experiment) {
@@ -112,8 +112,7 @@ func markExperimentCompleted(instance *iter8v1alpha1.Experiment) {
 	instance.Status.AnalysisState.Raw = []byte("{}")
 
 	// Update grafana url
-	ts := metav1.Now().UTC().UnixNano() / int64(time.Millisecond)
-	instance.Status.EndTimestamp = strconv.FormatInt(ts, 10)
+	instance.Status.EndTimestamp = metav1.Now().UTC().UnixNano()
 	updateGrafanaURL(instance, getServiceNamespace(instance))
 
 	instance.Status.MarkExperimentCompleted()

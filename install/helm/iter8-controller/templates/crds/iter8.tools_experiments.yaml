@@ -103,6 +103,31 @@ spec:
                 grafanaEndpoint:
                   description: Grafana Dashboard endpoint
                   type: string
+                reward:
+                  description: The reward used by analytics to assess candidate
+                  properties:
+                    metricName:
+                      description: 'Name of the metric to which the criterion applies.
+                        Options:'
+                      type: string
+                    min_max:
+                      description: Minimum and maximum values of the metric
+                      properties:
+                        max:
+                          description: Max maximum possible value of the metric
+                          format: float64
+                          type: number
+                        min:
+                          description: Min minimum possible value of the metric
+                          format: float64
+                          type: number
+                      required:
+                      - max
+                      - min
+                      type: object
+                  required:
+                  - metricName
+                  type: object
                 successCriteria:
                   description: List of criteria for assessing the candidate version
                   items:
@@ -344,7 +369,7 @@ spec:
                         description: 'Name of the metric to which the criterion applies
                           example: iter8_latency'
                         type: string
-                      success_criteria_met:
+                      success_criterion_met:
                         description: Indicates whether or not the success criterion
                           for the corresponding metric has been met
                         type: boolean
@@ -352,7 +377,7 @@ spec:
                     - abort_experiment
                     - conclusions
                     - metric_name
-                    - success_criteria_met
+                    - success_criterion_met
                     type: object
                   type: array
               type: object
@@ -397,12 +422,18 @@ spec:
                 - type
                 type: object
               type: array
+            createTimestamp:
+              description: CreateTimestamp is the timestamp when the experiment is
+                created
+              format: int64
+              type: integer
             currentIteration:
               description: CurrentIteration is the current iteration number
               type: integer
             endTimestamp:
               description: EndTimestamp is the timestamp when experiment completes
-              type: string
+              format: int64
+              type: integer
             grafanaURL:
               description: GrafanaURL is the url to the Grafana Dashboard
               type: string
@@ -424,7 +455,8 @@ spec:
               type: string
             startTimestamp:
               description: StartTimestamp is the timestamp when the experiment starts
-              type: string
+              format: int64
+              type: integer
             trafficSplitPercentage:
               description: TrafficSplit tells the current traffic spliting between
                 baseline and candidate

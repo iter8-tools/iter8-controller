@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	AnalyticsAPIPath string = "/api/v1/analytics/canary/"
+	AnalyticsAPIPath string = "/api/v1/experiment/"
 )
 
 // Request defines payload to analytics service
@@ -55,6 +55,8 @@ const (
 	TCKeyMaxTrafficPercent string = "max_traffic_percent"
 
 	TCKeySuccessCriteria string = "success_criteria"
+
+	TCKeyReward string = "reward"
 )
 
 type TrafficControl map[string]interface{}
@@ -87,6 +89,9 @@ const (
 	// SCKeyStopOnFailure indicates whether or not the experiment must finish if this criterion is not satisfied;
 	// defaults to false
 	SCKeyStopOnFailure string = "stop_on_failure"
+
+	// SCKeyMinMax points to min_max metrics used for calculating reward
+	SCKeyMinMax string = "min_max"
 )
 
 // SuccessCriterion stores the fields as key-value pairs

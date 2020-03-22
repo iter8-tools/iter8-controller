@@ -59,6 +59,7 @@ func MakeRequest(instance *iter8v1alpha1.Experiment, baseline, experiment interf
 		}
 		criteria[i] = apiSC
 	}
+
 	now := time.Now().Format(time.RFC3339)
 	destinationKey, namespaceKey, baseVal, experimentVal, baseNsVal, experimentNsVal := "", "", "", "", "", ""
 	switch instance.Spec.TargetService.APIVersion {
@@ -87,10 +88,31 @@ func MakeRequest(instance *iter8v1alpha1.Experiment, baseline, experiment interf
 
 	tc = impl.SupplementTrafficControl(instance, tc)
 
+	if rw := instance.Spec.Analysis.Reward; rw != nil {
+		iter8metric, ok := instance.Metrics[rw.MetricName]
+		if !ok {
+			// Metric template not found
+			return nil, fmt.Errorf("Metric %s Not Available", rw.MetricName)
+		}
+		reward := api.SuccessCriterion{
+			api.SCKeyMetricName:         rw.MetricName,
+			api.SCKeyTemplate:           iter8metric.QueryTemplate,
+			api.SCKeySampleSizeTemplate: iter8metric.SampleSizeTemplate,
+			api.SCKeyIsCounter:          iter8metric.IsCounter,
+			api.SCKeyAbsentValue:        iter8metric.AbsentValue,
+		}
+
+		if rw.MinMax != nil {
+			reward[api.SCKeyMinMax] = rw.MinMax
+		}
+
+		tc[api.TCKeyReward] = reward
+	}
+
 	return &api.Request{
 		Name: instance.Name,
 		Baseline: api.Window{
-			StartTime: instance.ObjectMeta.GetCreationTimestamp().Format(time.RFC3339),
+			StartTime: time.Unix(0, instance.Status.StartTimestamp).Format(time.RFC3339),
 			EndTime:   now,
 			Tags: map[string]string{
 				destinationKey: baseVal,
@@ -98,7 +120,7 @@ func MakeRequest(instance *iter8v1alpha1.Experiment, baseline, experiment interf
 			},
 		},
 		Candidate: api.Window{
-			StartTime: instance.ObjectMeta.GetCreationTimestamp().Format(time.RFC3339),
+			StartTime: time.Unix(0, instance.Status.StartTimestamp).Format(time.RFC3339),
 			EndTime:   now,
 			Tags: map[string]string{
 				destinationKey: experimentVal,

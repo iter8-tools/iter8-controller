@@ -178,11 +178,11 @@ spec:
                         description: Minimum and maximum values of the metric
                         properties:
                           max:
-                            description: Max maximum value of the metric
+                            description: Max maximum possible value of the metric
                             format: float64
                             type: number
                           min:
-                            description: Min minimum value of the metric
+                            description: Min minimum possible value of the metric
                             format: float64
                             type: number
                         required:
@@ -314,6 +314,8 @@ spec:
               description: TrafficControl defines parameters for controlling the traffic
               properties:
                 confidence:
+                  description: The required confidence in the recommeded traffic split.
+                    Defaults to 0.95
                   format: float64
                   type: number
                 interval:
@@ -403,7 +405,7 @@ spec:
                         description: 'Name of the metric to which the criterion applies
                           example: iter8_latency'
                         type: string
-                      success_criteria_met:
+                      success_criterion_met:
                         description: Indicates whether or not the success criterion
                           for the corresponding metric has been met
                         type: boolean
@@ -411,7 +413,7 @@ spec:
                     - abort_experiment
                     - conclusions
                     - metric_name
-                    - success_criteria_met
+                    - success_criterion_met
                     type: object
                   type: array
               type: object

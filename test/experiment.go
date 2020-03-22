@@ -39,11 +39,8 @@ func NewExperiment(name string, namespace string) *ExperimentBuilder {
 			Name:      name,
 			Namespace: namespace,
 		},
-		Status: v1alpha1.ExperimentStatus{
-			AnalysisState: runtime.RawExtension{Raw: []byte("{}")},
-		},
 	}
-	experiment.Status.InitializeConditions()
+	experiment.Status.Init()
 	return (*ExperimentBuilder)(experiment)
 }
 

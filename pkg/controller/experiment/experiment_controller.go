@@ -18,11 +18,9 @@ package experiment
 import (
 	"context"
 	"reflect"
-	"strconv"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	toolscache "k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
@@ -237,30 +235,9 @@ func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Re
 
 	log.Info("reconciling")
 
-	// TODO: not sure why this is needed
-	if instance.Status.LastIncrementTime.IsZero() {
-		instance.Status.LastIncrementTime = metav1.NewTime(time.Unix(0, 0))
+	if instance.Status.CreateTimestamp == 0 {
+		instance.Status.Init()
 	}
-
-	if instance.Status.AnalysisState.Raw == nil {
-		instance.Status.AnalysisState.Raw = []byte("{}")
-	}
-
-	creationts := instance.ObjectMeta.GetCreationTimestamp()
-	now := metav1.Now()
-	if !creationts.Before(&now) {
-		// Delay experiment by 1 sec
-		return reconcile.Result{RequeueAfter: time.Second}, nil
-	}
-
-	// Update Grafana URL when experiment is created
-	if instance.Status.StartTimestamp == "" {
-		ts := now.UTC().UnixNano() / int64(time.Millisecond)
-		instance.Status.StartTimestamp = strconv.FormatInt(ts, 10)
-		updateGrafanaURL(instance, getServiceNamespace(instance))
-	}
-
-	instance.Status.InitializeConditions()
 
 	// Sync metric definitions from the config map
 	metricsSycned := instance.Status.GetCondition(iter8v1alpha1.ExperimentConditionMetricsSynced)
