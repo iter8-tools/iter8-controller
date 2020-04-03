@@ -16,7 +16,9 @@ data:
       sample_size_query_template: iter8_sample_size
     - name: iter8_error_count
       is_counter: True
+      absent_value: 0
       sample_size_query_template: iter8_sample_size
     - name: iter8_error_rate
       is_counter: False
+      absent_value: 0
       sample_size_query_template: iter8_sample_size
