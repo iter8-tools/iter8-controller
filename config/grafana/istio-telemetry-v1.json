@@ -162,14 +162,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(istio_request_duration_milliseconds_sum{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) / sum(increase(istio_requests_total{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
+          "expr": "sum(increase(istio_request_duration_seconds_sum{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) / sum(increase(istio_requests_total{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline",
           "refId": "A"
         },
         {
-          "expr": "sum(increase(istio_request_duration_milliseconds_sum{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) / sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
+          "expr": "sum(increase(istio_request_duration_seconds_sum{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) / sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$candidate",
@@ -197,7 +197,7 @@
       "yaxes": [
         {
           "format": "short",
-          "label": "mean latency (ms)",
+          "label": "mean latency (sec)",
           "logBase": 1,
           "max": null,
           "min": null,
@@ -253,56 +253,56 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.25, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
+          "expr": "histogram_quantile(0.25, sum(rate(istio_request_duration_seconds_bucket{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline-25%",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.25, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
+          "expr": "histogram_quantile(0.25, sum(rate(istio_request_duration_seconds_bucket{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$candidate-25%",
           "refId": "E"
         },
         {
-          "expr": "histogram_quantile(0.50, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(istio_request_duration_seconds_bucket{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline-50%",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.50, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(istio_request_duration_seconds_bucket{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$candidate-50%",
           "refId": "C"
         },
         {
-          "expr": "histogram_quantile(0.75, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
+          "expr": "histogram_quantile(0.75, sum(rate(istio_request_duration_seconds_bucket{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline-75%",
           "refId": "D"
         },
         {
-          "expr": "histogram_quantile(0.75, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
+          "expr": "histogram_quantile(0.75, sum(rate(istio_request_duration_seconds_bucket{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$candidate-75%",
           "refId": "F"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(istio_request_duration_seconds_bucket{destination_workload=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline-95%",
           "refId": "G"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(istio_request_duration_seconds_bucket{destination_workload=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) by (le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$candidate-95%",
