@@ -44,7 +44,7 @@ function configure_cluster() {
 function install_istio() {
   header "installing istio"
 
-  curl -L https://git.io/getLatestIstio | sh -
+  curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${ISTIO_VERSION} sh -
   cd istio-${ISTIO_VERSION}
   for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f $i; done
 
