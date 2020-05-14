@@ -65,6 +65,10 @@ build-default: manifests
 	helm template install/helm/iter8-controller \
    		--name iter8-controller \
 	>> install/iter8-controller.yaml
+	helm template install/helm/iter8-controller \
+   		--name iter8-controller \
+        --set istioTelemetry=v2 \
+	>> install/iter8-controller-telemetry-v2.yaml
 
 tests:
 	go test ./test/.
