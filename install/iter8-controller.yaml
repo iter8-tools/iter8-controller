@@ -26,9 +26,11 @@ data:
       sample_size_query_template: iter8_sample_size
     - name: iter8_error_count
       is_counter: True
+      absent_value: 0
       sample_size_query_template: iter8_sample_size
     - name: iter8_error_rate
       is_counter: False
+      absent_value: 0
       sample_size_query_template: iter8_sample_size
 
 ---
@@ -54,7 +56,7 @@ data:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: controller-manager
+  name: iter8-controller
   namespace: iter8
 
 ---
@@ -550,12 +552,12 @@ status:
   storedVersions: []
 
 ---
-# Source: iter8-controller/templates/rbac/manager_role.yaml
+# Source: iter8-controller/templates/rbac/role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: manager-role
+  name: iter8-controller-role
 rules:
 - apiGroups:
   - iter8.tools
@@ -713,19 +715,19 @@ rules:
   - delete
 
 ---
-# Source: iter8-controller/templates/rbac/manager_role_binding.yaml
+# Source: iter8-controller/templates/rbac/role_binding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   creationTimestamp: null
-  name: manager-rolebinding
+  name: iter8-controller-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: manager-role
+  name: iter8-controller-role
 subjects:
 - kind: ServiceAccount
-  name: controller-manager
+  name: iter8-controller
   namespace: iter8
 
 ---
@@ -733,44 +735,44 @@ subjects:
 apiVersion: v1
 kind: Service
 metadata:
-  name: controller-manager-service
+  name: iter8-controller
   namespace: iter8
   labels:
-    control-plane: controller-manager
+    app: iter8-controller
 spec:
   selector:
-    control-plane: controller-manager
+    app: iter8-controller
   ports:
   - port: 443
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager
+  name: iter8-controller
   namespace: iter8
   labels:
-    control-plane: controller-manager
+    app: iter8-controller
 spec:
   selector:
     matchLabels:
-      control-plane: controller-manager
+      app: iter8-controller
   template:
     metadata:
       labels:
-        control-plane: controller-manager
+        app: iter8-controller
     spec:
-      serviceAccountName: controller-manager
+      serviceAccountName: iter8-controller
       containers:
-      - command:
-        - /manager
-        image: "iter8/iter8-controller:v0.0.1"
+      - name: iter8-controller
+        image: "iter8/iter8-controller:v0.1.1"
         imagePullPolicy: Always
-        name: manager
         env:
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+        command:
+        - /manager
         resources:
           limits:
             cpu: 100m
@@ -778,5 +780,6 @@ spec:
           requests:
             cpu: 100m
             memory: 50Mi
+          
       terminationGracePeriodSeconds: 10
 
