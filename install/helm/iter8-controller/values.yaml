@@ -2,12 +2,34 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# Name to be used when creating Kubernetes resources
+name: iter8-controller
+
+# Namespace where controller should be executed
+namespace: iter8
+
+# number of instances of controller that should be started
+replicaCount: 1
+
+# image to be used
 image:
   repository: iter8/iter8-controller
   tag: stable
   pullPolicy: Always
 
-namespace: iter8
+# optional limits/requirements on needed resources
+resources:
+  limits:             
+    cpu: 100m
+    memory: 75Mi
+  requests:
+    cpu: 100m
+    memory: 50Mi
 
 # Version of Istio telemetry
 istioTelemetry: v1
+
+# Optional restrictions on target node(s)
+nodeSelector: {}
+tolerations: []
+affinity: {}

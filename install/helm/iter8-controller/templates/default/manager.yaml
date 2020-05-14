@@ -1,49 +1,56 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: controller-manager-service
+  name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
   labels:
-    control-plane: controller-manager
+    app: {{ .Values.name }}
 spec:
   selector:
-    control-plane: controller-manager
+    app: {{ .Values.name }}
   ports:
   - port: 443
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager
+  name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
   labels:
-    control-plane: controller-manager
+    app: {{ .Values.name }}
 spec:
   selector:
     matchLabels:
-      control-plane: controller-manager
+      app: {{ .Values.name }}
   template:
     metadata:
       labels:
-        control-plane: controller-manager
+        app: {{ .Values.name }}
     spec:
-      serviceAccountName: controller-manager
+      serviceAccountName: {{ .Values.name }}
       containers:
-      - command:
-        - /manager
+      - name: {{ .Values.name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        name: manager
         env:
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+        command:
+        - /manager
         resources:
-          limits:
-            cpu: 100m
-            memory: 75Mi
-          requests:
-            cpu: 100m
-            memory: 50Mi
+          {{- toYaml .Values.resources | nindent 10 }}
       terminationGracePeriodSeconds: 10
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
