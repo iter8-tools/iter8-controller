@@ -25,3 +25,6 @@ bin
 
 # Go package lock file
 *Gopkg.lock*
+
+# Mac file information
+**/.DS_Store
