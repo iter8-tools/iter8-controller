@@ -17,6 +17,7 @@ package cache
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/go-logr/logr"
@@ -31,7 +32,7 @@ type Interface interface {
 	DeploymentToExperiment(name, namespace string) (experiment, experimentNamespace string, exist bool)
 	// Given name and namespace of the target service, return the experiment key
 	ServiceToExperiment(name, namespace string) (experiment, experimentNamespace string, exist bool)
-	RegisterExperiment(context context.Context, instance *iter8v1alpha1.Experiment) context.Context
+	RegisterExperiment(context context.Context, instance *iter8v1alpha1.Experiment) (context.Context, error)
 	RemoveExperiment(instance *iter8v1alpha1.Experiment)
 
 	MarkTargetDeploymentFound(name, namespace string) bool
@@ -71,29 +72,44 @@ func New(logger logr.Logger) Interface {
 }
 
 // RegisterExperiment creates new abstracts into the cache and snapshot the abstract into context
-func (c *Impl) RegisterExperiment(ctx context.Context, instance *iter8v1alpha1.Experiment) context.Context {
+func (c *Impl) RegisterExperiment(ctx context.Context, instance *iter8v1alpha1.Experiment) (context.Context, error) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
 	eakey := experimentKey(instance)
 	if _, ok := c.experimentAbstractStore[eakey]; !ok {
+		// check duplicate experiment on the same service
 		targetNamespace := instance.ServiceNamespace()
-		ea := abstract.NewExperiment(instance, targetNamespace)
-		c.experimentAbstractStore[eakey] = ea
 		service := instance.Spec.TargetService.Name
 		baseline := instance.Spec.TargetService.Baseline
 		candidate := instance.Spec.TargetService.Candidate
+		svcKey := targetKey(service, targetNamespace)
+		baselineKey := targetKey(baseline, targetNamespace)
+		candidateKey := targetKey(candidate, targetNamespace)
 
-		c.service2Experiment[targetKey(service, targetNamespace)] = eakey
-		c.deployment2Experiment[targetKey(baseline, targetNamespace)] = eakey
-		c.deployment2Experiment[targetKey(candidate, targetNamespace)] = eakey
+		if _, ok := c.service2Experiment[svcKey]; ok {
+			return ctx, fmt.Errorf("Target service is being involved in other experiment")
+		}
+
+		if _, ok := c.deployment2Experiment[baselineKey]; ok {
+			return ctx, fmt.Errorf("Target baseline is being involved in other experiment")
+		}
+
+		if _, ok := c.deployment2Experiment[baselineKey]; ok {
+			return ctx, fmt.Errorf("Target candidate is being involved in other experiment")
+		}
+
+		c.experimentAbstractStore[eakey] = abstract.NewExperiment(instance, targetNamespace)
+		c.service2Experiment[svcKey] = eakey
+		c.deployment2Experiment[baselineKey] = eakey
+		c.deployment2Experiment[candidateKey] = eakey
 	}
 
 	ea := c.experimentAbstractStore[eakey]
 	eas := ea.GetSnapshot()
 	ctx = context.WithValue(ctx, abstract.SnapshotKey, eas)
 	c.logger.Info("ExperimentAbstract", eakey, eas)
-	return ctx
+	return ctx, nil
 }
 
 // DeploymentToExperiment returns the experiment key given name and namespace of target deployment
@@ -198,6 +214,7 @@ func (c *Impl) RemoveExperiment(instance *iter8v1alpha1.Experiment) {
 
 	ta := ea.TargetsAbstract
 	targetNamespace := ta.Namespace
+
 	delete(c.service2Experiment, targetKey(ta.ServiceName, targetNamespace))
 	for name := range ta.Status {
 		delete(c.deployment2Experiment, targetKey(name, targetNamespace))

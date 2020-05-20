@@ -171,3 +171,13 @@ func UpdateObject(obj runtime.Object) Hook {
 		return nil
 	}
 }
+
+func CreateObject(obj runtime.Object) Hook {
+	return func(ctx context.Context, cl client.Client) error {
+		if err := cl.Create(ctx, obj); err != nil {
+			return err
+		}
+
+		return nil
+	}
+}

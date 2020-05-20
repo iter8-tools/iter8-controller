@@ -52,10 +52,8 @@ func TestKubernetesExperiment(t *testing.T) {
 			},
 			initObjects: []runtime.Object{
 				getReviewsService(),
-				getRatingsService(),
 				getReviewsDeployment("v1"),
 				getReviewsDeployment("v2"),
-				getRatingsDeployment(),
 			},
 			object: getFastKubernetesExperiment("rollforward", "reviews", "reviews-v1", "reviews-v2", service.GetURL()),
 			wantState: test.WantAllStates(
@@ -73,10 +71,8 @@ func TestKubernetesExperiment(t *testing.T) {
 			},
 			initObjects: []runtime.Object{
 				getReviewsService(),
-				getRatingsService(),
 				getReviewsDeployment("v1"),
 				getReviewsDeployment("v2"),
-				getRatingsDeployment(),
 			},
 			object: getFastKubernetesExperiment("rollbackward", "reviews", "reviews-v1", "reviews-v2", service.GetURL()),
 			wantState: test.WantAllStates(
@@ -94,10 +90,8 @@ func TestKubernetesExperiment(t *testing.T) {
 			},
 			initObjects: []runtime.Object{
 				getReviewsService(),
-				getRatingsService(),
 				getReviewsDeployment("v1"),
 				getReviewsDeployment("v2"),
-				getRatingsDeployment(),
 			},
 			object:    getSlowKubernetesExperiment("ongoingdelete", "reviews", "reviews-v1", "reviews-v2", service.GetURL()),
 			wantState: test.CheckServiceFound,
@@ -114,10 +108,8 @@ func TestKubernetesExperiment(t *testing.T) {
 			},
 			initObjects: []runtime.Object{
 				getReviewsService(),
-				getRatingsService(),
 				getReviewsDeployment("v1"),
 				getReviewsDeployment("v2"),
-				getRatingsDeployment(),
 			},
 			object:    getFastKubernetesExperiment("completedelete", "reviews", "reviews-v1", "reviews-v2", service.GetURL()),
 			wantState: test.CheckExperimentFinished,
@@ -134,10 +126,8 @@ func TestKubernetesExperiment(t *testing.T) {
 			},
 			initObjects: []runtime.Object{
 				getReviewsService(),
-				getRatingsService(),
 				getReviewsDeployment("v1"),
 				getReviewsDeployment("v2"),
-				getRatingsDeployment(),
 			},
 			object: getSlowKubernetesExperiment("abortexperiment", "reviews", "reviews-v1", "reviews-v2", service.GetURL()),
 			wantState: test.WantAllStates(
@@ -153,10 +143,8 @@ func TestKubernetesExperiment(t *testing.T) {
 		"emptycriterion": testCase{
 			initObjects: []runtime.Object{
 				getReviewsService(),
-				getRatingsService(),
 				getReviewsDeployment("v1"),
 				getReviewsDeployment("v2"),
-				getRatingsDeployment(),
 			},
 			object: getDefaultKubernetesExperiment("emptycriterion", "reviews", "reviews-v1", "reviews-v2"),
 			wantState: test.WantAllStates(
@@ -172,10 +160,8 @@ func TestKubernetesExperiment(t *testing.T) {
 		"externalreference": testCase{
 			initObjects: []runtime.Object{
 				getReviewsService(),
-				getRatingsService(),
 				getReviewsDeployment("v1"),
 				getReviewsDeployment("v2"),
-				getRatingsDeployment(),
 				getSampleEdgeVirtualService(),
 			},
 			preHook: []test.Hook{
@@ -197,10 +183,8 @@ func TestKubernetesExperiment(t *testing.T) {
 		"cleanupdelete": testCase{
 			initObjects: []runtime.Object{
 				getReviewsService(),
-				getRatingsService(),
 				getReviewsDeployment("v1"),
 				getReviewsDeployment("v2"),
-				getRatingsDeployment(),
 			},
 			object: getCleanUpDeleteExperiment("cleanupdelete", "reviews", "reviews-v1", "reviews-v2"),
 			wantState: test.WantAllStates(
@@ -215,10 +199,8 @@ func TestKubernetesExperiment(t *testing.T) {
 			},
 			initObjects: []runtime.Object{
 				getReviewsService(),
-				getRatingsService(),
 				getReviewsDeployment("v1"),
 				getReviewsDeployment("v2"),
-				getRatingsDeployment(),
 			},
 			object: getGreedyFastKubernetesExperiment("greedy-rollforward", "reviews", "reviews-v1", "reviews-v2", service.GetURL()),
 			wantState: test.WantAllStates(
@@ -236,10 +218,8 @@ func TestKubernetesExperiment(t *testing.T) {
 			},
 			initObjects: []runtime.Object{
 				getReviewsService(),
-				getRatingsService(),
 				getReviewsDeployment("v1"),
 				getReviewsDeployment("v2"),
-				getRatingsDeployment(),
 			},
 			object: getGreedyFastKubernetesExperiment("greedy-rollbackward", "reviews", "reviews-v1", "reviews-v2", service.GetURL()),
 			wantState: test.WantAllStates(
@@ -310,6 +290,28 @@ func TestKubernetesExperiment(t *testing.T) {
 				},
 			}
 		}("deletebaseline"),
+		"duplicate-service": func(name string) testCase {
+			return testCase{
+				mocks: map[string]analtyicsapi.Response{
+					name: test.GetSuccessMockResponse(),
+				},
+				initObjects: []runtime.Object{
+					getReviewsService(),
+					getReviewsDeployment("v1"),
+					getReviewsDeployment("v2"),
+				},
+				preHook:   []test.Hook{test.CreateObject(getDefaultKubernetesExperiment(name, "reviews", "reviews-v1", "reviews-v2"))},
+				object:    getDefaultKubernetesExperiment(name+"duplicate", "reviews", "reviews-v1", "reviews-v2"),
+				wantState: test.CheckServiceNotFound("TargetsNotFound"),
+				wantResults: []runtime.Object{
+					getStableDestinationRule("reviews", name, getReviewsDeployment("v2")),
+					getStableVirtualService("reviews", name),
+				},
+				finalizers: []test.Hook{
+					test.DeleteObject(getDefaultKubernetesExperiment(name+"duplicate", "reviews", "reviews-v1", "reviews-v2")),
+				},
+			}
+		}("duplicate-service"),
 	}
 
 	runTestCases(t, service, testCases)

@@ -316,7 +316,12 @@ func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Re
 		return reconcile.Result{}, nil
 	}
 
-	ctx = r.iter8Cache.RegisterExperiment(ctx, instance)
+	ctx, err = r.iter8Cache.RegisterExperiment(ctx, instance)
+	if err != nil {
+		r.MarkTargetsError(ctx, instance, "%v", err)
+		return reconcile.Result{}, r.Status().Update(ctx, instance)
+	}
+
 	r.syncExperiment(ctx, instance)
 
 	if err := r.proceed(ctx, instance); err != nil {
@@ -409,12 +414,10 @@ func (r *ReconcileExperiment) finalize(context context.Context, instance *iter8v
 func (r *ReconcileExperiment) syncExperiment(context context.Context, instance *iter8v1alpha1.Experiment) {
 	eas := experimentAbstract(context)
 	// Abort Experiment by setting action flag
-	util.Logger(context).Info("phase", "before", instance.Status.Phase)
 	if eas.Terminate() {
 		if eas.GetDeletedRole() != "" {
 			onDeletedTarget(instance, eas.GetDeletedRole())
 			r.MarkTargetsError(context, instance, "%s", eas.GetTerminateStatus())
-			util.Logger(context).Info("phase", "after", instance.Status.Phase)
 		}
 	} else if eas.Resume() {
 		instance.Status.Phase = iter8v1alpha1.PhaseProgressing
