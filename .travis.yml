@@ -10,7 +10,8 @@ go_import_path: github.com/iter8-tools/iter8-controller/
 stages:
   - "unit tests"
   - "end-to-end tests"
-  - "build image"
+  - name: "build image"
+    if: branch = master
 
 # Define yaml anchor to be reused across testing matrix
 _end_to_end_script: &end_to_end_script
@@ -30,9 +31,6 @@ jobs:
         - ./test/scripts/tools.sh
       script:
         - go test ./test/.
-      branches:
-        only:
-          - "master"
     - stage: "end-to-end tests"
       env: KUBE_VERSION=v1.15.10 ISTIO_VERSION=1.4.3
       <<: *end_to_end_script
