@@ -14,9 +14,9 @@ helm template install/kubernetes/helm/iter8-controller/ --name iter8-controller 
 --set image.repository=iter8-controller \
 --set image.tag=test \
 --set image.pullPolicy=IfNotPresent \
-> install/kubernetes/iter8-controller.yaml
+> install/iter8-controller.yaml
 
-cat install/kubernetes/iter8-controller.yaml
+cat install/iter8-controller.yaml
 
 # Install Iter8-controller
 kubectl apply -f install/kubernetes/iter8-controller.yaml
