@@ -1,11 +1,7 @@
+dist: xenial
 language: go
-sudo: required
 go:
   - "1.12"
-services:
-  - docker
-
-go_import_path: github.com/iter8-tools/iter8-controller/
 
 stages:
   - "unit tests"
@@ -27,6 +23,7 @@ _end_to_end_script: &end_to_end_script
 jobs:
   include:
     - stage: "unit tests"
+      go_import_path: github.com/iter8-tools/iter8-controller/
       before_install:
         - ./test/scripts/tools.sh
       script:
