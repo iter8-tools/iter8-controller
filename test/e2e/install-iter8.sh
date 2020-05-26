@@ -10,7 +10,7 @@ IMG=iter8-controller:test make docker-build
 curl -fsSL https://get.helm.sh/helm-v2.16.7-linux-amd64.tar.gz | tar xvzf - && sudo mv linux-amd64/helm /usr/local/bin
 
 # Create new Helm template based on the new image
-helm template install/kubernetes/helm/iter8-controller/ --name iter8-controller \
+helm template install/helm/iter8-controller/ --name iter8-controller \
 --set image.repository=iter8-controller \
 --set image.tag=test \
 --set image.pullPolicy=IfNotPresent \
@@ -19,7 +19,7 @@ helm template install/kubernetes/helm/iter8-controller/ --name iter8-controller 
 cat install/iter8-controller.yaml
 
 # Install Iter8-controller
-kubectl apply -f install/kubernetes/iter8-controller.yaml
+kubectl apply -f install/iter8-controller.yaml
 
 # Install Iter8 analytics
 kubectl apply -f https://github.com/iter8-tools/iter8-analytics/releases/latest/download/iter8-analytics.yaml
