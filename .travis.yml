@@ -1,24 +1,9 @@
-dist: xenial
 language: go
 go:
   - "1.12"
 
 stages:
   - "unit tests"
-  - "end-to-end tests"
-  - name: "build image"
-    if: branch = master
-
-# Define yaml anchor to be reused across testing matrix
-_end_to_end_script: &end_to_end_script
-  script:
-    - git clone https://github.com/iter8-tools/iter8-trend.git
-    - iter8-trend/test/install-minikube.sh
-    - iter8-trend/test/sanity-check.sh
-    - iter8-trend/test/install-istio.sh
-    - test/e2e/install-iter8.sh
-    - test/e2e/e2e-test.sh
-    #- ./test/e2e/e2e.sh
 
 jobs:
   include:
@@ -28,32 +13,3 @@ jobs:
         - ./test/scripts/tools.sh
       script:
         - go test ./test/.
-    - stage: "end-to-end tests"
-      env: KUBE_VERSION=v1.15.10 ISTIO_VERSION=1.4.3
-      <<: *end_to_end_script
-    - env: KUBE_VERSION=v1.15.10 ISTIO_VERSION=1.4.6
-      <<: *end_to_end_script
-    - env: KUBE_VERSION=v1.16.0 ISTIO_VERSION=1.4.3
-      <<: *end_to_end_script
-    - env: KUBE_VERSION=v1.16.0 ISTIO_VERSION=1.4.6
-      <<: *end_to_end_script
-    - stage: "build image"
-      - if [ "$TRAVIS_BRANCH" == "master" ]; then
-          echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin;
-          if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-            export IMG="iter8/iter8-controller:$TRAVIS_BUILD_NUMBER-PR_$TRAVIS_PULL_REQUEST";
-            echo "Building PR Docker image - $IMG";
-            make docker-build;
-            make docker-push;
-          else
-            export IMG="iter8/iter8-controller:$TRAVIS_BUILD_NUMBER-$TRAVIS_COMMIT";
-            echo "Building Docker image - $IMG";
-            make docker-build;
-            make docker-push;
-            LATEST="iter8/iter8-controller:latest";
-            echo "Tagging image as latest - $LATEST";
-            docker tag $IMG $LATEST;
-            export IMG=$LATEST;
-            make docker-push;
-          fi
-        fi
