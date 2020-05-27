@@ -6,7 +6,7 @@ stages:
   - "unit tests"
   - "end-to-end tests"
   - "build image"
-    if: branch = master
+    #if: branch = master
 
 # Define yaml anchor to be reused across testing matrix
 _end_to_end_script: &end_to_end_script
