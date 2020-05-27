@@ -3,7 +3,7 @@
 # Exit on error
 set -e
 
-CRD_VERSION ?= v1alpha1
+CRD_VERSION=v1alpha1
 
 # Build a new Iter8-controller image based on the new code
 IMG=iter8-controller:test make docker-build
