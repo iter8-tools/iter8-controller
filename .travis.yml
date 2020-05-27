@@ -16,7 +16,7 @@ _end_to_end_script: &end_to_end_script
     - iter8-trend/test/install-istio.sh
     - test/e2e/install-iter8.sh
     - test/e2e/e2e-test.sh
-    #- ./test/e2e/e2e.sh
+    - test/e2e/e2e.sh
 
 jobs:
   include:
