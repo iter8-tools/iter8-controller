@@ -5,7 +5,7 @@ go:
 stages:
   - "unit tests"
   - "end-to-end tests"
-  - name: "build image"
+  - "build image"
     if: branch = master
 
 # Define yaml anchor to be reused across testing matrix
