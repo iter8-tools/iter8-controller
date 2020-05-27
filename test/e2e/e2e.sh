@@ -3,7 +3,6 @@
 set -e
 
 ROOT=$(dirname $0)
-source $ROOT/../scripts/library.sh
 
 function cleanup() {
   if [ -n "$NAMESPACE" ]
@@ -26,33 +25,31 @@ function traperr() {
   cleanup
 }
 
+function random_namespace() {
+  ns="iter8-testing-$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 6 | head -n 1)"
+  echo $ns
+}
+
 set -o errtrace
 trap traperr ERR
 trap traperr INT
 
-parse_flags $*
-
-if [ -z "$SKIP_SETUP" ]
-then
-    setup_knative
-fi
-
 export NAMESPACE=$(random_namespace)
-header "creating namespace $NAMESPACE"
+echo "creating namespace $NAMESPACE"
 kubectl create ns $NAMESPACE
     
-header "install iter8 CRDs"
+echo "install iter8 CRDs"
 make load
 
-header "deploy metrics configmap"
+echo "deploy metrics configmap"
 kubectl apply -f ./test/e2e/iter8_metrics_test.yaml -n $NAMESPACE
 
-header "build iter8 controller"
+echo "build iter8 controller"
 mkdir -p bin
 go build -o bin/manager ./cmd/manager/main.go
 chmod +x bin/manager
 
-header "run iter8 controller locally"
+echo "run iter8 controller locally"
 ./bin/manager &
 CONTROLLER_PID=$!
 echo "controller started $CONTROLLER_PID"
