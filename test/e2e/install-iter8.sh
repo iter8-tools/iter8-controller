@@ -21,9 +21,9 @@ helm template install/helm/iter8-controller/ --name iter8-controller \
 -x templates/default/serviceaccount.yaml \
 -x templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
 -x templates/metrics/iter8_metrics.yaml \
--x templates/notifier/iter8_notifiers.yaml\
--x templates/rbac/role.yaml\
--x templates/rbac/role_binding.yaml\
+-x templates/notifier/iter8_notifiers.yaml \
+-x templates/rbac/role.yaml \
+-x templates/rbac/role_binding.yaml \
 > install/iter8-controller.yaml
 
 cat install/iter8-controller.yaml
