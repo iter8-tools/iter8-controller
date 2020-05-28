@@ -14,6 +14,7 @@ _end_to_end_script: &end_to_end_script
     - iter8-trend/test/install-minikube.sh
     - iter8-trend/test/sanity-check.sh
     - iter8-trend/test/install-istio.sh
+    - test/e2e/e2e.sh
     - test/e2e/install-iter8.sh
     - test/e2e/e2e-test.sh
 
@@ -25,7 +26,6 @@ jobs:
         - ./test/scripts/tools.sh
       script:
         - go test ./test/.
-        - test/e2e/e2e.sh
     - stage: "end-to-end tests"
       env: KUBE_VERSION=v1.15.10 ISTIO_VERSION=1.4.3
       <<: *end_to_end_script

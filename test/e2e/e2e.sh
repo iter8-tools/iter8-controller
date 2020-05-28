@@ -4,6 +4,9 @@ set -e
 
 # This only runs in the context of Travis (see .travis.yaml), where setup are done
 
+ROOT=$(dirname $0)
+source $ROOT/../../iter8-trend/test/library.sh
+
 function cleanup() {
   if [ -n "$NAMESPACE" ]
   then
@@ -30,24 +33,12 @@ function random_namespace() {
   echo $ns
 }
 
-# Simple header for logging purposes.
-function header() {
-  local upper="$(echo $1 | tr a-z A-Z)"
-  make_banner "=" "${upper}"
-}
-
-# Display a box banner.
-# Parameters: $1 - character to use for the box.
-#             $2 - banner message.
-function make_banner() {
-    local msg="$1$1$1$1 $2 $1$1$1$1"
-    local border="${msg//[-0-9A-Za-z _.,\/()]/$1}"
-    echo -e "${border}\n${msg}\n${border}"
-}
-
 set -o errtrace
 trap traperr ERR
 trap traperr INT
+
+header "install kubectl"
+curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 
 export NAMESPACE=$(random_namespace)
 header "creating namespace $NAMESPACE"
