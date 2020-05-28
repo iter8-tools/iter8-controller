@@ -13,3 +13,5 @@ $DIR/../../iter8-trend/test/e2e-scenario-2.sh
 $DIR/../../iter8-trend/test/e2e-scenario-3.sh
 $DIR/../../iter8-trend/test/e2e-scenario-4.sh
 $DIR/../../iter8-trend/test/e2e-scenario-5.sh
+
+kubectl delete ns iter8
