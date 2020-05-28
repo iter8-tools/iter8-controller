@@ -7,7 +7,7 @@ ROOT=$(dirname $0)
 function cleanup() {
   if [ -n "$NAMESPACE" ]
   then
-    header "deleting namespace $NAMESPACE"
+    echo "deleting namespace $NAMESPACE"
     kubectl delete ns $NAMESPACE
     unset NAMESPACE
   fi
