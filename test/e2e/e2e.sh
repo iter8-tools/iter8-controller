@@ -4,9 +4,6 @@ set -e
 
 # This only runs in the context of Travis (see .travis.yaml), where setup are done
 
-ROOT=$(dirname $0)
-source $ROOT/../../iter8-trend/test/library.sh
-
 function cleanup() {
   if [ -n "$NAMESPACE" ]
   then
@@ -31,6 +28,21 @@ function traperr() {
 function random_namespace() {
   ns="iter8-testing-$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 6 | head -n 1)"
   echo $ns
+}
+
+# Simple header for logging purposes.
+function header() {
+  local upper="$(echo $1 | tr a-z A-Z)"
+  make_banner "=" "${upper}"
+}
+
+# Display a box banner.
+# Parameters: $1 - character to use for the box.
+#             $2 - banner message.
+function make_banner() {
+    local msg="$1$1$1$1 $2 $1$1$1$1"
+    local border="${msg//[-0-9A-Za-z _.,\/()]/$1}"
+    echo -e "${border}\n${msg}\n${border}"
 }
 
 set -o errtrace
