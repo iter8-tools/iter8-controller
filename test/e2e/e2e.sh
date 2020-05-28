@@ -2,12 +2,15 @@
 
 set -e
 
+# This only runs in the context of Travis (see .travis.yaml), where setup are done
+
 ROOT=$(dirname $0)
+source $ROOT/../../iter8-trend/test/library.sh
 
 function cleanup() {
   if [ -n "$NAMESPACE" ]
   then
-    echo "deleting namespace $NAMESPACE"
+    header "deleting namespace $NAMESPACE"
     kubectl delete ns $NAMESPACE
     unset NAMESPACE
   fi
@@ -35,21 +38,21 @@ trap traperr ERR
 trap traperr INT
 
 export NAMESPACE=$(random_namespace)
-echo "creating namespace $NAMESPACE"
+header "creating namespace $NAMESPACE"
 kubectl create ns $NAMESPACE
     
-echo "install iter8 CRDs"
+header "install iter8 CRDs"
 make load
 
-echo "deploy metrics configmap"
+header "deploy metrics configmap"
 kubectl apply -f ./test/e2e/iter8_metrics_test.yaml -n $NAMESPACE
 
-echo "build iter8 controller"
+header "build iter8 controller"
 mkdir -p bin
 go build -o bin/manager ./cmd/manager/main.go
 chmod +x bin/manager
 
-echo "run iter8 controller locally"
+header "run iter8 controller locally"
 ./bin/manager &
 CONTROLLER_PID=$!
 echo "controller started $CONTROLLER_PID"

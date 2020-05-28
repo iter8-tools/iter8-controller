@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
   
 # This script calls each end-to-end scenario sequentially and verifies the
 # result
