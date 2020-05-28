@@ -14,4 +14,7 @@ $DIR/../../iter8-trend/test/e2e-scenario-3.sh
 $DIR/../../iter8-trend/test/e2e-scenario-4.sh
 $DIR/../../iter8-trend/test/e2e-scenario-5.sh
 
+# Do some cleanups
+kubectl delete -f install/iter8-controller.yaml
+kubectl delete -f https://github.com/iter8-tools/iter8-analytics/releases/latest/download/iter8-analytics.yaml
 kubectl delete ns iter8
