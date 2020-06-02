@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -e
+# Setting this might prevent cleanup() getting called
+#set -e
 
 # This only runs in the context of Travis (see .travis.yaml), where setup are done
 
