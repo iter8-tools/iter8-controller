@@ -3,8 +3,6 @@
 # Exit on error
 set -e
 
-CRD_VERSION=v1alpha1
-
 # Build a new Iter8-controller image based on the new code
 IMG=iter8-controller:test make docker-build
 
@@ -19,7 +17,7 @@ helm template install/helm/iter8-controller/ --name iter8-controller \
 -x templates/default/namespace.yaml \
 -x templates/default/manager.yaml \
 -x templates/default/serviceaccount.yaml \
--x templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
+-x templates/crds/iter8.tools_experiments.yaml \
 -x templates/metrics/iter8_metrics.yaml \
 -x templates/notifier/iter8_notifiers.yaml \
 -x templates/rbac/role.yaml \
