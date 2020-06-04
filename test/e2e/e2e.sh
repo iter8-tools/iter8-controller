@@ -6,7 +6,7 @@
 # This only runs in the context of Travis (see .travis.yaml), where setup are done
 
 ROOT=$(dirname $0)
-source $ROOT/../../iter8-trend/test/library.sh
+source $ROOT/library.sh
 
 function cleanup() {
   if [ -n "$NAMESPACE" ]
