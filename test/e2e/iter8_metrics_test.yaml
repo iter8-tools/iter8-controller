@@ -4,10 +4,10 @@ metadata:
   name: iter8config-metrics
 data:
   query_templates: |-
-    iter8_sample_size: "sum(increase(istio_requests_total{job="istio-mesh", reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
-    iter8_latency: "(sum(increase(istio_request_duration_seconds_sum{job="istio-mesh", reporter='source'}[$interval]$offset_str)) by ($entity_labels)) / (sum(increase(istio_request_duration_seconds_count{job="istio-mesh", reporter='source'}[$interval]$offset_str)) by ($entity_labels))"
-    iter8_error_count: "sum(increase(istio_requests_total{job="istio-mesh", response_code=~'5..',reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
-    iter8_error_rate: "sum(increase(istio_requests_total{job="istio-mesh", response_code=~'5..',reporter='source'}[$interval]$offset_str)) by ($entity_labels) / sum(increase(istio_requests_total{job="istio-mesh", reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
+    iter8_sample_size: "sum(increase(istio_requests_total{job='istio-mesh', reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
+    iter8_latency: "(sum(increase(istio_request_duration_seconds_sum{job='istio-mesh', reporter='source'}[$interval]$offset_str)) by ($entity_labels)) / (sum(increase(istio_request_duration_seconds_count{job='istio-mesh', reporter='source'}[$interval]$offset_str)) by ($entity_labels))"
+    iter8_error_count: "sum(increase(istio_requests_total{job='istio-mesh', response_code=~'5..',reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
+    iter8_error_rate: "sum(increase(istio_requests_total{job='istio-mesh', response_code=~'5..',reporter='source'}[$interval]$offset_str)) by ($entity_labels) / sum(increase(istio_requests_total{job='istio-mesh', reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
   metrics: |-
     - name: iter8_latency
       metric_type: Performance
