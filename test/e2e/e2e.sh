@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-set -e
+# Setting this might prevent cleanup() getting called
+#set -e
 
 ROOT=$(dirname $0)
-source $ROOT/../scripts/library.sh
+source $ROOT/library.sh
 
 function cleanup() {
   if [ -n "$NAMESPACE" ]
