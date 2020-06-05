@@ -762,7 +762,7 @@ spec:
       serviceAccountName: iter8-controller
       containers:
       - name: iter8-controller
-        image: "iter8/iter8-controller:stable"
+        image: "iter8/iter8-controller:master"
         imagePullPolicy: Always
         env:
           - name: POD_NAMESPACE
