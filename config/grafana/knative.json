@@ -103,14 +103,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(istio_requests_total{source_workload_namespace!='knative-serving', destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size]))",
+          "expr": "sum(increase(istio_requests_total{job='istio-mesh', source_workload_namespace!='knative-serving', destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline",
           "refId": "A"
         },
         {
-          "expr": "sum(increase(istio_requests_total{source_workload_namespace!='knative-serving', destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size]))",
+          "expr": "sum(increase(istio_requests_total{job='istio-mesh', source_workload_namespace!='knative-serving', destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$candidate",
@@ -196,14 +196,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(istio_request_duration_seconds_sum{source_workload_namespace!='knative-serving', destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) / sum(increase(istio_requests_total{destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
+          "expr": "sum(increase(istio_request_duration_seconds_sum{job='istio-mesh', source_workload_namespace!='knative-serving', destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) / sum(increase(istio_requests_total{job='istio-mesh', destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline",
           "refId": "A"
         },
         {
-          "expr": "sum(increase(istio_request_duration_seconds_sum{source_workload_namespace!='knative-serving', destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) / sum(increase(istio_requests_total{destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
+          "expr": "sum(increase(istio_request_duration_seconds_sum{job='istio-mesh', source_workload_namespace!='knative-serving', destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter='source'}[$window_size])) / sum(increase(istio_requests_total{job='istio-mesh', destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$candidate",
@@ -424,14 +424,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(istio_requests_total{source_workload_namespace!='knative-serving', destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter = 'source', response_code =~ \"5..\"}[$window_size])) / sum(increase(istio_requests_total{destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
+          "expr": "sum(increase(istio_requests_total{job='istio-mesh', source_workload_namespace!='knative-serving', destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter = 'source', response_code =~ \"5..\"}[$window_size])) / sum(increase(istio_requests_total{job='istio-mesh', destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline",
           "refId": "A"
         },
         {
-          "expr": "sum(increase(istio_requests_total{source_workload_namespace!='knative-serving', destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter = 'source', response_code =~ \"5..\"}[$window_size])) / sum(increase(istio_requests_total{destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
+          "expr": "sum(increase(istio_requests_total{job='istio-mesh', source_workload_namespace!='knative-serving', destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter = 'source', response_code =~ \"5..\"}[$window_size])) / sum(increase(istio_requests_total{job='istio-mesh', destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter = 'source'}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$candidate",
@@ -517,14 +517,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(istio_requests_total{source_workload_namespace!='knative-serving', destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter = 'source', response_code =~ \"5..\"}[$window_size]))",
+          "expr": "sum(increase(istio_requests_total{job='istio-mesh', source_workload_namespace!='knative-serving', destination_service_name=~'[[baseline]]', destination_service_namespace='$namespace', reporter = 'source', response_code =~ \"5..\"}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline",
           "refId": "A"
         },
         {
-          "expr": "sum(increase(istio_requests_total{source_workload_namespace!='knative-serving', destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter = 'source', response_code =~ \"5..\"}[$window_size]))",
+          "expr": "sum(increase(istio_requests_total{job='istio-mesh', source_workload_namespace!='knative-serving', destination_service_name=~'[[candidate]]', destination_service_namespace='$namespace', reporter = 'source', response_code =~ \"5..\"}[$window_size]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$candidate",
