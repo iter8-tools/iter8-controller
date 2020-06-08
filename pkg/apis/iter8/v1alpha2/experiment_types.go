@@ -35,7 +35,7 @@ type Experiment struct {
 
 	Spec ExperimentSpec `json:"spec"`
 	// +optional
-	Status *ExperimentStatus `json:"status,omitempty"`
+	Status ExperimentStatus `json:"status,omitempty"`
 }
 
 // ExperimentList contains a list of Experiment

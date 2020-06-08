@@ -199,6 +199,11 @@ spec:
               enum:
               - delete
               type: string
+            gateways:
+              description: Gateways provides references to istio gateways
+              items:
+                type: string
+              type: array
             routingReference:
               description: RoutingReference provides references to routing rules set
                 by users

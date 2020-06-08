@@ -295,6 +295,10 @@ func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Re
 	// Init metadata of experiment instance
 	if instance.Status.CreateTimestamp == 0 {
 		instance.Status.Init()
+		if err := targets.ValidateSpec(instance); err != nil {
+			r.MarkTargetsError(ctx, instance, "%v", err)
+			return r.endRequest(ctx, instance)
+		}
 		if err := r.Status().Update(ctx, instance); err != nil && !validUpdateErr(err) {
 			log.Info("Fail to update status: %v", err)
 			return reconcile.Result{}, nil
@@ -395,28 +399,15 @@ func (r *ReconcileExperiment) finalize(context context.Context, instance *iter8v
 	log := util.Logger(context)
 	log.Info("finalizing")
 
-	apiVersion := instance.Spec.TargetService.APIVersion
-	switch apiVersion {
-	case KubernetesV1:
-		return r.finalizeIstio(context, instance)
-	}
-
-	return reconcile.Result{}, removeFinalizer(context, r, instance, Finalizer)
+	return r.finalizeIstio(context, instance)
 }
 
 func (r *ReconcileExperiment) syncExperiment(context context.Context, instance *iter8v1alpha1.Experiment) {
-	eas := experimentAbstract(context)
-	// Abort Experiment by setting action flag
-	if eas.Terminate() {
-		if eas.GetDeletedRole() != "" {
-			onDeletedTarget(instance, eas.GetDeletedRole())
-			r.MarkTargetsError(context, instance, "%s", eas.GetTerminateStatus())
-		}
-	} else if eas.Resume() {
-		instance.Status.Phase = iter8v1alpha1.PhaseProgressing
-	}
-
 	r.initState()
+	eas := experimentAbstract(context)
+	if eas.Refresh() || eas.Resume() {
+		r.markRefresh()
+	}
 }
 
 func (r *ReconcileExperiment) proceed(context context.Context, instance *iter8v1alpha1.Experiment) (err error) {
@@ -433,20 +424,26 @@ func (r *ReconcileExperiment) proceed(context context.Context, instance *iter8v1
 		return
 	}
 
+	if r.needRefresh() {
+		return nil
+	}
+
+	if instance.Action == iter8v1alpha1.ActionResume {
+		// revert action field
+		instance.Action = ""
+		if err := r.Update(context, instance); err != nil && !validUpdateErr(err) {
+			log.Error(err, "Fail to update instance")
+			return err
+		}
+
+		r.MarkActionResume(context, instance)
+		return
+	}
+
 	if instance.Status.Phase == iter8v1alpha1.PhasePause {
 		// termination request overrides pause phase
 		if instance.Action.TerminateExperiment() {
 			return
-		}
-		if instance.Action == iter8v1alpha1.ActionResume {
-			// revert action field
-			instance.Action = ""
-			if err := r.Update(context, instance); err != nil && !validUpdateErr(err) {
-				log.Error(err, "Fail to update instance")
-				return err
-			}
-
-			r.MarkActionResume(context, instance)
 		} else {
 			err = fmt.Errorf("phase: %s, action: %s", instance.Status.Phase, instance.Action)
 		}

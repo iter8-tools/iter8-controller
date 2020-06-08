@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/go-logr/logr"
+	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
 )
 
 type loggerKeyType string
@@ -38,4 +39,24 @@ func EqualHost(host1, ns1, host2, ns2 string) bool {
 		return true
 	}
 	return false
+}
+
+func ServiceToFullHostName(svcName, namespace string) string {
+	return svcName + "." + namespace + ".svc.cluster.local"
+}
+
+func FullExperimentName(instance *iter8v1alpha1.Experiment) string {
+	return instance.GetName() + "." + instance.GetNamespace()
+}
+
+func GetHost(instance *iter8v1alpha1.Experiment) string {
+	if instance.Spec.TargetService.Name != "" {
+		return ServiceToFullHostName(instance.Spec.TargetService.Name, instance.ServiceNamespace())
+	}
+
+	if len(instance.Spec.TargetService.Hosts) > 0 {
+		return instance.Spec.TargetService.Hosts[0].Name
+	}
+
+	return ""
 }

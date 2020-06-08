@@ -73,6 +73,12 @@ func (b *ExperimentBuilder) WithKubernetesTargetService(name, baseline, candidat
 	return b
 }
 
+// WithKubernetesTargetServiceKind specifies kind of baseline/candidate
+func (b *ExperimentBuilder) WithKubernetesTargetServiceKind(kind string) *ExperimentBuilder {
+	b.Spec.TargetService.Kind = kind
+	return b
+}
+
 // WithDummySuccessCriterion adds a dummy success criterion
 func (b *ExperimentBuilder) WithDummySuccessCriterion() *ExperimentBuilder {
 	return b.WithSuccessCriterion(v1alpha1.SuccessCriterion{
