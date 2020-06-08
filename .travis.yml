@@ -9,6 +9,7 @@ stages:
 
 # Define yaml anchor to be reused across testing matrix
 _end_to_end_script: &end_to_end_script
+  if: (type = pull_request) AND (head_branch != master) AND (head_branch !~ /^v[0-9]+\.[0-9]+$/)
   script:
     - test/e2e/install-minikube.sh
     - test/e2e/sanity-check.sh
@@ -22,6 +23,7 @@ jobs:
       go_import_path: github.com/iter8-tools/iter8-controller/
       before_install:
         - ./test/scripts/tools.sh
+      if: (type = pull_request) AND (head_branch != master) AND (head_branch !~ /^v[0-9]+\.[0-9]+$/)
       script:
         - go test ./test/.
     - stage: "end-to-end tests"
@@ -34,5 +36,6 @@ jobs:
     - env: KUBE_VERSION=v1.16.0 ISTIO_VERSION=1.4.6
       <<: *end_to_end_script
     - stage: "build image"
+      if: (type = push) AND (branch = master OR branch =~ /^v[0-9]+\.[0-9]+$/)
       script:
         - test/e2e/build-image.sh
