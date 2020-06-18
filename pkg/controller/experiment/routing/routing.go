@@ -67,7 +67,7 @@ func (r *IstioRoutingRules) GetRoutingRules(instance *iter8v1alpha1.Experiment, 
 		return err
 	}
 
-	if targetKind == "Deployment" {
+	if targetKind == "Deployment" || targetKind == "" {
 		return r.validateDetectedRulesForDeployments(drl, vsl, instance)
 	} else if targetKind == "Service" {
 		return r.validateDetectedRulesForServices(drl, vsl, instance)
@@ -149,19 +149,19 @@ func (r *IstioRoutingRules) validateDetectedRulesForDeployments(drl *v1alpha3.De
 					return fmt.Errorf("Experiment label missing in dr or vs")
 				}
 			}
-		} else if len(drl.Items) == 0 && len(vsl.Items) == 1 {
-			vsrole, vsok := vsl.Items[0].GetLabels()[ExperimentRole]
-			if vsok && vsrole == Stable {
-				// Valid stable rules detected
-				r.VirtualService = vsl.Items[0].DeepCopy()
-				r.DestinationRule = NewDestinationRule(host, expFullName, svcNamespace).
-					WithInitLabel().
-					Build()
-			} else {
-				return fmt.Errorf("0 dr and 1 unstable vs found")
-			}
 		} else {
 			return fmt.Errorf("experiment role label missing in dr or vs")
+		}
+	} else if len(drl.Items) == 0 && len(vsl.Items) == 1 {
+		vsrole, vsok := vsl.Items[0].GetLabels()[ExperimentRole]
+		if vsok && vsrole == Stable {
+			// Valid stable rules detected
+			r.VirtualService = vsl.Items[0].DeepCopy()
+			r.DestinationRule = NewDestinationRule(host, expFullName, svcNamespace).
+				WithInitLabel().
+				Build()
+		} else {
+			return fmt.Errorf("0 dr and 1 unstable vs found")
 		}
 	} else {
 		return fmt.Errorf("%d dr and %d vs detected", len(drl.Items), len(vsl.Items))

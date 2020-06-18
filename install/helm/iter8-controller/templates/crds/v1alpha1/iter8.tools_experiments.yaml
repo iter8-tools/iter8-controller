@@ -199,11 +199,6 @@ spec:
               enum:
               - delete
               type: string
-            gateways:
-              description: Gateways provides references to istio gateways
-              items:
-                type: string
-              type: array
             routingReference:
               description: RoutingReference provides references to routing rules set
                 by users
@@ -267,6 +262,21 @@ spec:
                     TODO: this design is not final and this field is subject to change
                     in the future.'
                   type: string
+                hosts:
+                  description: List of hosts related to this service
+                  items:
+                    properties:
+                      gateway:
+                        description: The gateway
+                        type: string
+                      name:
+                        description: Name of the Host
+                        type: string
+                    required:
+                    - gateway
+                    - name
+                    type: object
+                  type: array
                 kind:
                   description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                   type: string
@@ -276,6 +286,10 @@ spec:
                 namespace:
                   description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
                   type: string
+                port:
+                  description: Port number exposed by internal services
+                  format: int32
+                  type: integer
                 resourceVersion:
                   description: 'Specific resourceVersion to which this reference is
                     made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'

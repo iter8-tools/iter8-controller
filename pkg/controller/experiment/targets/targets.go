@@ -71,6 +71,13 @@ func InitTargets(instance *iter8v1alpha1.Experiment, client client.Client) *Targ
 		}
 	}
 
+	for _, host := range ts.Hosts {
+		out.Hosts = append(out.Hosts, host.Name)
+		out.Gateways = append(out.Gateways, host.Gateway)
+	}
+
+	out.Port = ts.Port
+
 	kind := DefaultKind
 	if instance.Spec.TargetService.Kind != "" {
 		kind = instance.Spec.TargetService.Kind
