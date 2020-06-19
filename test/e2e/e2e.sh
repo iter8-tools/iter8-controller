@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
-set -e
+# Setting this might prevent cleanup() getting called
+#set -e
+
+# This only runs in the context of Travis (see .travis.yaml), where setup are done
 
 ROOT=$(dirname $0)
-source $ROOT/../scripts/library.sh
+source $ROOT/library.sh
 
 function cleanup() {
   if [ -n "$NAMESPACE" ]
@@ -26,16 +29,20 @@ function traperr() {
   cleanup
 }
 
+function random_namespace() {
+  ns="iter8-testing-$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 6 | head -n 1)"
+  echo $ns
+}
+
 set -o errtrace
 trap traperr ERR
 trap traperr INT
 
-parse_flags $*
+header "install kubectl"
+curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 
-if [ -z "$SKIP_SETUP" ]
-then
-    setup_knative
-fi
+header "install helm"
+curl -fsSL https://get.helm.sh/helm-v2.16.7-linux-amd64.tar.gz | tar xvzf - && sudo mv linux-amd64/helm /usr/local/bin
 
 export NAMESPACE=$(random_namespace)
 header "creating namespace $NAMESPACE"
