@@ -71,9 +71,17 @@ func InitTargets(instance *iter8v1alpha1.Experiment, client client.Client) *Targ
 		}
 	}
 
+	mHosts, mGateways := make(map[string]bool), make(map[string]bool)
 	for _, host := range ts.Hosts {
-		out.Hosts = append(out.Hosts, host.Name)
-		out.Gateways = append(out.Gateways, host.Gateway)
+		if _, ok := mHosts[host.Name]; !ok {
+			out.Hosts = append(out.Hosts, host.Name)
+			mHosts[host.Name] = true
+		}
+
+		if _, ok := mHosts[host.Gateway]; !ok {
+			out.Gateways = append(out.Gateways, host.Gateway)
+			mGateways[host.Gateway] = true
+		}
 	}
 
 	out.Port = ts.Port
