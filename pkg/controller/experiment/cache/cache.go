@@ -54,7 +54,6 @@ type Impl struct {
 	experimentAbstractStore map[string]*abstract.Experiment
 
 	// a lookup map from target to experiment
-	// targetName.targetNamespace -> experimentName.experimentNamespace
 	deployment2Experiment map[string]string
 
 	// a lookup map from target service to experiment
@@ -71,6 +70,58 @@ func New(logger logr.Logger) Interface {
 	}
 }
 
+func (c *Impl) checkAndGetServices(instance *iter8v1alpha1.Experiment) ([]string, error) {
+	out := []string{}
+	ts := instance.Spec.TargetService
+	ns := instance.ServiceNamespace()
+
+	if ts.Name != "" {
+		key := targetKey(ts.Name, ns)
+		if _, ok := c.service2Experiment[key]; ok {
+			return nil, fmt.Errorf("Service %s is being involved in other experiment", key)
+		}
+		out = append(out, key)
+	}
+
+	if ts.Kind == "Service" {
+		baselineKey := targetKey(ts.Baseline, ns)
+		if _, ok := c.service2Experiment[baselineKey]; ok {
+			return nil, fmt.Errorf("Baseline %s is being involved in other experiment", baselineKey)
+		}
+		out = append(out, baselineKey)
+
+		candidateKey := targetKey(ts.Candidate, ns)
+		if _, ok := c.service2Experiment[candidateKey]; ok {
+			return nil, fmt.Errorf("Candidate %s is being involved in other experiment", baselineKey)
+		}
+		out = append(out, candidateKey)
+	}
+
+	return out, nil
+}
+
+func (c *Impl) checkAndGetDeployments(instance *iter8v1alpha1.Experiment) ([]string, error) {
+	ts := instance.Spec.TargetService
+	if ts.Kind == "Deployment" {
+		out := []string{}
+		ts := instance.Spec.TargetService
+		ns := instance.ServiceNamespace()
+		baselineKey := targetKey(ts.Baseline, ns)
+		if _, ok := c.deployment2Experiment[baselineKey]; ok {
+			return nil, fmt.Errorf("Baseline %s is being involved in other experiment", baselineKey)
+		}
+		out = append(out, baselineKey)
+
+		candidateKey := targetKey(ts.Candidate, ns)
+		if _, ok := c.deployment2Experiment[candidateKey]; ok {
+			return nil, fmt.Errorf("Candidate %s is being involved in other experiment", baselineKey)
+		}
+		out = append(out, candidateKey)
+		return out, nil
+	}
+	return nil, nil
+}
+
 // RegisterExperiment creates new abstracts into the cache and snapshot the abstract into context
 func (c *Impl) RegisterExperiment(ctx context.Context, instance *iter8v1alpha1.Experiment) (context.Context, error) {
 	c.m.Lock()
@@ -78,31 +129,26 @@ func (c *Impl) RegisterExperiment(ctx context.Context, instance *iter8v1alpha1.E
 
 	eakey := experimentKey(instance)
 	if _, ok := c.experimentAbstractStore[eakey]; !ok {
-		// check duplicate experiment on the same service
-		targetNamespace := instance.ServiceNamespace()
-		service := instance.Spec.TargetService.Name
-		baseline := instance.Spec.TargetService.Baseline
-		candidate := instance.Spec.TargetService.Candidate
-		svcKey := targetKey(service, targetNamespace)
-		baselineKey := targetKey(baseline, targetNamespace)
-		candidateKey := targetKey(candidate, targetNamespace)
-
-		if _, ok := c.service2Experiment[svcKey]; ok {
-			return ctx, fmt.Errorf("Target service is being involved in other experiment")
+		serviceKeys, err := c.checkAndGetServices(instance)
+		if err != nil {
+			return ctx, err
 		}
 
-		if _, ok := c.deployment2Experiment[baselineKey]; ok {
-			return ctx, fmt.Errorf("Target baseline is being involved in other experiment")
+		deploymentKeys, err := c.checkAndGetDeployments(instance)
+		if err != nil {
+			return ctx, err
 		}
 
-		if _, ok := c.deployment2Experiment[baselineKey]; ok {
-			return ctx, fmt.Errorf("Target candidate is being involved in other experiment")
+		c.experimentAbstractStore[eakey] = abstract.NewExperiment(serviceKeys, deploymentKeys)
+		for _, svc := range serviceKeys {
+			c.service2Experiment[svc] = eakey
 		}
 
-		c.experimentAbstractStore[eakey] = abstract.NewExperiment(instance, targetNamespace)
-		c.service2Experiment[svcKey] = eakey
-		c.deployment2Experiment[baselineKey] = eakey
-		c.deployment2Experiment[candidateKey] = eakey
+		for _, dep := range deploymentKeys {
+			c.deployment2Experiment[dep] = eakey
+		}
+
+		c.experimentAbstractStore[eakey] = abstract.NewExperiment(serviceKeys, deploymentKeys)
 	}
 
 	ea := c.experimentAbstractStore[eakey]
@@ -181,7 +227,7 @@ func (c *Impl) MarkTargetServiceFound(targetName, targetNamespace string) bool {
 		return false
 	}
 
-	c.experimentAbstractStore[eaKey].MarkServiceFound(true)
+	c.experimentAbstractStore[eaKey].MarkTargetFound(tKey, true)
 
 	return true
 }
@@ -196,7 +242,7 @@ func (c *Impl) MarkTargetServiceMissing(targetName, targetNamespace string) bool
 		return false
 	}
 
-	c.experimentAbstractStore[eaKey].MarkServiceFound(false)
+	c.experimentAbstractStore[eaKey].MarkTargetFound(tKey, false)
 
 	return true
 }
@@ -212,12 +258,12 @@ func (c *Impl) RemoveExperiment(instance *iter8v1alpha1.Experiment) {
 		return
 	}
 
-	ta := ea.TargetsAbstract
-	targetNamespace := ta.Namespace
+	for _, key := range ea.ServiceKeys {
+		delete(c.service2Experiment, key)
+	}
 
-	delete(c.service2Experiment, targetKey(ta.ServiceName, targetNamespace))
-	for name := range ta.Status {
-		delete(c.deployment2Experiment, targetKey(name, targetNamespace))
+	for _, key := range ea.DeploymentKeys {
+		delete(c.deployment2Experiment, key)
 	}
 	delete(c.experimentAbstractStore, eakey)
 }

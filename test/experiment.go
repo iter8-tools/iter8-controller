@@ -73,6 +73,21 @@ func (b *ExperimentBuilder) WithKubernetesTargetService(name, baseline, candidat
 	return b
 }
 
+func (b *ExperimentBuilder) WithHostInTargetService(host, gateway string) *ExperimentBuilder {
+	b.Spec.TargetService.Hosts = []v1alpha1.Host{{
+		Name:    host,
+		Gateway: gateway,
+	}}
+
+	return b
+}
+
+// WithKubernetesTargetServiceKind specifies kind of baseline/candidate
+func (b *ExperimentBuilder) WithKubernetesTargetServiceKind(kind string) *ExperimentBuilder {
+	b.Spec.TargetService.Kind = kind
+	return b
+}
+
 // WithDummySuccessCriterion adds a dummy success criterion
 func (b *ExperimentBuilder) WithDummySuccessCriterion() *ExperimentBuilder {
 	return b.WithSuccessCriterion(v1alpha1.SuccessCriterion{

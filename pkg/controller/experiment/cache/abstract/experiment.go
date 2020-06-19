@@ -15,31 +15,23 @@ limitations under the License.
 
 package abstract
 
-import (
-	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
-	"github.com/iter8-tools/iter8-controller/pkg/controller/experiment/targets"
-)
-
 type snapshotKeyType string
-type action string
+type targetAction string
 
 const (
 	SnapshotKey = snapshotKeyType("experimentAbstract")
 
-	actionTerminate action = "terminate"
-	actionResume    action = "resume"
+	targetActionDetected = targetAction("detected")
+	targetActionDeleted  = targetAction("deleted")
 )
 
 type ExperimentInterface interface {
 	MarkTargetFound(name string, found bool)
-	MarkServiceFound(found bool)
 }
 
 type Snapshot interface {
-	Terminate() bool
+	Refresh() bool
 	Resume() bool
-	GetTerminateStatus() string
-	GetDeletedRole() targets.Role
 }
 
 var _ ExperimentInterface = &Experiment{}
@@ -47,62 +39,35 @@ var _ Snapshot = &Experiment{}
 
 // Experiment includes abstract info for one Experiment
 type Experiment struct {
-	Namespace       string
-	TargetsAbstract *Targets
-
-	action          action
-	terminateStatus string
-	deletedRole     targets.Role
+	ServiceKeys    []string
+	DeploymentKeys []string
+	targetAction   targetAction
 }
 
-func NewExperiment(instance *iter8v1alpha1.Experiment, targetNamespace string) *Experiment {
+func NewExperiment(services, deployments []string) *Experiment {
 	return &Experiment{
-		Namespace:       instance.Namespace,
-		TargetsAbstract: NewTargets(instance, targetNamespace),
+		ServiceKeys:    services,
+		DeploymentKeys: deployments,
 	}
 }
 
-func (e *Experiment) Terminate() bool {
-	return e.action == actionTerminate
+func (e *Experiment) Refresh() bool {
+	return e.targetAction == targetActionDeleted
 }
 
 func (e *Experiment) Resume() bool {
-	return e.action == actionResume
+	return e.targetAction == targetActionDetected
 }
 
 func (e *Experiment) clear() {
-	e.action = ""
-	e.terminateStatus = ""
-	e.deletedRole = ""
-}
-
-func (e *Experiment) GetTerminateStatus() string {
-	return e.terminateStatus
-}
-
-func (e *Experiment) GetDeletedRole() targets.Role {
-	return e.deletedRole
+	e.targetAction = ""
 }
 
 func (e *Experiment) MarkTargetFound(name string, found bool) {
-	e.TargetsAbstract.markTargetFound(name, found)
 	if found == false {
-		e.action = actionTerminate
-		e.terminateStatus = e.TargetsAbstract.targetToString(name)
-		e.deletedRole = e.TargetsAbstract.targetRole(name)
+		e.targetAction = targetActionDetected
 	} else {
-		e.action = actionResume
-	}
-}
-
-func (e *Experiment) MarkServiceFound(found bool) {
-	e.TargetsAbstract.markServiceFound(found)
-	if found == false {
-		e.action = actionTerminate
-		e.terminateStatus = e.TargetsAbstract.serviceToString()
-		e.deletedRole = targets.RoleService
-	} else {
-		e.action = actionResume
+		e.targetAction = targetActionDeleted
 	}
 }
 

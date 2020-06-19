@@ -29,8 +29,11 @@ import (
 )
 
 const (
-	destinationKey = "destination_workload"
-	namespaceKey   = "destination_service_namespace"
+	destinationWorkloadKey          = "destination_workload"
+	destinationWorkloadNamespaceKey = "destination_workload_namespace"
+
+	destinationServiceNameKey      = "destination_service_name"
+	destinationServiceNamespaceKey = "destination_service_namespace"
 )
 
 // MakeRequest generates request payload to analytics
@@ -92,6 +95,14 @@ func MakeRequest(instance *iter8v1alpha1.Experiment, impl algorithm.Interface) (
 		tc[api.TCKeyReward] = reward
 	}
 
+	destinationKey := destinationWorkloadKey
+	destinationNamespaceKey := destinationWorkloadNamespaceKey
+
+	if instance.Spec.TargetService.Kind == "Service" {
+		destinationKey = destinationServiceNameKey
+		destinationNamespaceKey = destinationServiceNamespaceKey
+	}
+
 	serviceNamespace := instance.ServiceNamespace()
 	return &api.Request{
 		Name: instance.Name,
@@ -99,16 +110,16 @@ func MakeRequest(instance *iter8v1alpha1.Experiment, impl algorithm.Interface) (
 			StartTime: time.Unix(0, instance.Status.StartTimestamp).Format(time.RFC3339),
 			EndTime:   now,
 			Tags: map[string]string{
-				destinationKey: instance.Spec.TargetService.Baseline,
-				namespaceKey:   serviceNamespace,
+				destinationKey:          instance.Spec.TargetService.Baseline,
+				destinationNamespaceKey: serviceNamespace,
 			},
 		},
 		Candidate: api.Window{
 			StartTime: time.Unix(0, instance.Status.StartTimestamp).Format(time.RFC3339),
 			EndTime:   now,
 			Tags: map[string]string{
-				destinationKey: instance.Spec.TargetService.Candidate,
-				namespaceKey:   serviceNamespace,
+				destinationKey:          instance.Spec.TargetService.Candidate,
+				destinationNamespaceKey: serviceNamespace,
 			},
 		},
 		LastState:      instance.Status.AnalysisState,

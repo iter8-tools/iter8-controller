@@ -22,12 +22,8 @@ import (
 	"strconv"
 	"time"
 
-	networkingv1alpha3 "istio.io/api/networking/v1alpha3"
-	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	runtime "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/iter8-tools/iter8-controller/pkg/analytics"
 	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
@@ -56,7 +52,7 @@ func (r *ReconcileExperiment) completeExperiment(context context.Context, instan
 // cleanUp cleans up the resources related to experiment to an end status
 func (r *ReconcileExperiment) cleanUp(context context.Context, instance *iter8v1alpha1.Experiment) error {
 	r.iter8Cache.RemoveExperiment(instance)
-	r.targets.Cleanup(context, instance, r.Client)
+	targets.Cleanup(context, instance, r.Client)
 	if err := r.rules.Cleanup(context, instance, r.istioClient); err != nil {
 		return err
 	}
@@ -68,9 +64,7 @@ func (r *ReconcileExperiment) cleanUp(context context.Context, instance *iter8v1
 // returns hard-coded termination message
 func completeStatusMessage(context context.Context, instance *iter8v1alpha1.Experiment) string {
 	out := ""
-	if experimentAbstract(context) != nil && experimentAbstract(context).Terminate() {
-		out = experimentAbstract(context).GetTerminateStatus()
-	} else if instance.Action.TerminateExperiment() {
+	if instance.Action.TerminateExperiment() {
 		out = "Abort"
 	} else if len(instance.Status.AssessmentSummary.SuccessCriteriaStatus) > 0 {
 		if instance.Status.AssessmentSummary.AllSuccessCriteriaMet {
@@ -122,7 +116,7 @@ func (r *ReconcileExperiment) detectRoutingReferences(instance *iter8v1alpha1.Ex
 		// set stable labels
 		vs.SetLabels(map[string]string{
 			routing.ExperimentLabel: instance.Name,
-			routing.ExperimentHost:  instance.Spec.TargetService.Name,
+			routing.ExperimentHost:  util.ServiceToFullHostName(instance.Spec.TargetService.Name, expNamespace),
 			routing.ExperimentRole:  routing.Stable,
 		})
 
@@ -138,7 +132,8 @@ func (r *ReconcileExperiment) detectRoutingReferences(instance *iter8v1alpha1.Ex
 		r.rules.DestinationRule = dr
 
 		// update vs
-		vs, err = r.istioClient.NetworkingV1alpha3().VirtualServices(ruleNamespace).Update(vs)
+		vs, err = r.istioClient.NetworkingV1alpha3().VirtualServices(ruleNamespace).Update(
+			routing.NewVirtualServiceBuilder(vs).WithExternalLabel().Build())
 		if err != nil {
 			return err
 		}
@@ -146,135 +141,22 @@ func (r *ReconcileExperiment) detectRoutingReferences(instance *iter8v1alpha1.Ex
 		r.rules.VirtualService = vs
 		return nil
 	}
+
 	return fmt.Errorf("Referenced rule not supported")
 }
 
-func (r *ReconcileExperiment) getRoutingLists(namespace string, m map[string]string) (*v1alpha3.DestinationRuleList, *v1alpha3.VirtualServiceList, error) {
-	if drl, err := r.istioClient.NetworkingV1alpha3().DestinationRules(namespace).
-		List(metav1.ListOptions{LabelSelector: labels.Set(m).String()}); err != nil {
-
-		return nil, nil, err
-	} else {
-		if vsl, err := r.istioClient.NetworkingV1alpha3().VirtualServices(namespace).
-			List(metav1.ListOptions{LabelSelector: labels.Set(m).String()}); err == nil {
-			return drl, vsl, nil
-
-		}
-		return nil, nil, err
-	}
-}
-
 func (r *ReconcileExperiment) checkOrInitRules(context context.Context, instance *iter8v1alpha1.Experiment) error {
-	log := util.Logger(context)
-	serviceNs := instance.ServiceNamespace()
-	drl, vsl, err := r.getRoutingLists(serviceNs,
-		map[string]string{routing.ExperimentHost: instance.Spec.TargetService.Name})
+	r.rules = &routing.IstioRoutingRules{}
 
-	if err != nil || len(drl.Items) == 0 && len(vsl.Items) == 0 {
-		log.Info("NoRulesDetected")
-		// Initialize routing rules
-		if err = r.initializeRoutingRules(instance); err != nil {
-			markExperimentCompleted(instance)
-			r.MarkRoutingRulesError(context, instance, "Error in Initializing routing rules: %s, Experiment Ended.", err.Error())
-			r.MarkExperimentFailed(context, instance, "Error in Initializing routing rules: %s, Experiment Ended.", err.Error())
-			r.iter8Cache.RemoveExperiment(instance)
-		} else {
-			r.MarkRoutingRulesReady(context, instance,
-				"Init Routing Rules Suceeded, DR: %s, VS: %s",
-				r.rules.DestinationRule.GetName(), r.rules.VirtualService.GetName())
-		}
+	err := r.rules.GetRoutingRules(instance, r.istioClient)
+	if err != nil {
+		r.MarkRoutingRulesError(context, instance,
+			"UnexpectedCondition: %s , Experiment Pause", err.Error())
 	} else {
-		if r.rules, err = validateDetectedRules(drl, vsl, instance); err == nil {
-			r.MarkRoutingRulesReady(context, instance,
-				"RoutingRules detected, DR: %s, VS: %s",
-				r.rules.DestinationRule.GetName(), r.rules.VirtualService.GetName())
-		} else {
-			markExperimentCompleted(instance)
-			r.MarkRoutingRulesError(context, instance,
-				"UnexpectedCondition: %s , Experiment Ended", err.Error())
-			r.MarkExperimentFailed(context, instance, "UnexpectedCondition: %s , Experiment Ended", err.Error())
-			r.iter8Cache.RemoveExperiment(instance)
-		}
+		r.MarkRoutingRulesReady(context, instance, "%s", r.rules.ToString())
 	}
 
 	return err
-}
-
-func (r *ReconcileExperiment) initializeRoutingRules(instance *iter8v1alpha1.Experiment) (err error) {
-	serviceName := instance.Spec.TargetService.Name
-	serviceNamespace := instance.ServiceNamespace()
-
-	r.rules = &routing.IstioRoutingRules{}
-
-	if instance.Spec.RoutingReference != nil {
-		if err = r.detectRoutingReferences(instance); err != nil {
-			return err
-		}
-	} else {
-		// Create Dummy Stable rules
-		dr := routing.NewDestinationRule(serviceName, instance.GetName(), serviceNamespace).
-			WithStableLabel().
-			WithInitLabel().
-			Build()
-		dr, err = r.istioClient.NetworkingV1alpha3().DestinationRules(serviceNamespace).Create(dr)
-		if err != nil {
-			return err
-		}
-
-		vs := routing.NewVirtualService(serviceName, instance.GetName(), serviceNamespace).
-			WithNewStableSet(serviceName).
-			WithInitLabel().
-			Build()
-		vs, err = r.istioClient.NetworkingV1alpha3().VirtualServices(serviceNamespace).Create(vs)
-		if err != nil {
-			return err
-		}
-
-		r.rules.DestinationRule = dr
-		r.rules.VirtualService = vs
-	}
-
-	return nil
-}
-
-// To validate whether the detected rules can be handled by the experiment
-func validateDetectedRules(drl *v1alpha3.DestinationRuleList, vsl *v1alpha3.VirtualServiceList, instance *iter8v1alpha1.Experiment) (*routing.IstioRoutingRules, error) {
-	out := &routing.IstioRoutingRules{}
-	// should only be one set of rules for stable or progressing
-	if len(drl.Items) == 1 && len(vsl.Items) == 1 {
-		drrole, drok := drl.Items[0].GetLabels()[routing.ExperimentRole]
-		vsrole, vsok := vsl.Items[0].GetLabels()[routing.ExperimentRole]
-		if drok && vsok {
-			if drrole == routing.Stable && vsrole == routing.Stable {
-				// Valid stable rules detected
-				out.DestinationRule = drl.Items[0].DeepCopy()
-				out.VirtualService = vsl.Items[0].DeepCopy()
-			} else if drrole == routing.Progressing && vsrole == routing.Progressing {
-				drLabel, drok := drl.Items[0].GetLabels()[routing.ExperimentLabel]
-				vsLabel, vsok := vsl.Items[0].GetLabels()[routing.ExperimentLabel]
-				if drok && vsok {
-					expName := instance.GetName()
-					if drLabel == expName && vsLabel == expName {
-						// valid progressing rules found
-						out.DestinationRule = drl.Items[0].DeepCopy()
-						out.VirtualService = vsl.Items[0].DeepCopy()
-					} else {
-						return nil, fmt.Errorf("Progressing rules of other experiment are detected")
-					}
-				} else {
-					return nil, fmt.Errorf("Host label missing in dr or vs")
-				}
-			} else {
-				return nil, fmt.Errorf("Invalid role specified in dr or vs")
-			}
-		} else {
-			return nil, fmt.Errorf("experiment role label missing in dr or vs")
-		}
-	} else {
-		return nil, fmt.Errorf("%d dr and %d vs detected", len(drl.Items), len(vsl.Items))
-	}
-
-	return out, nil
 }
 
 func validateVirtualService(instance *iter8v1alpha1.Experiment, vs *v1alpha3.VirtualService) error {
@@ -316,14 +198,9 @@ func validateVirtualService(instance *iter8v1alpha1.Experiment, vs *v1alpha3.Vir
 // return true if instance status should be updated
 // returns non-nil error if current reconcile request should be terminated right after this function
 func (r *ReconcileExperiment) detectTargets(context context.Context, instance *iter8v1alpha1.Experiment) error {
-	serviceName := instance.Spec.TargetService.Name
-	serviceNamespace := instance.ServiceNamespace()
-
-	if r.targets == nil {
-		r.targets = targets.InitTargets()
-	}
+	r.targets = targets.InitTargets(instance, r.Client)
 	// Get k8s service
-	err := r.Get(context, types.NamespacedName{Name: serviceName, Namespace: serviceNamespace}, r.targets.Service)
+	err := r.targets.GetService(context)
 	if err != nil {
 		if instance.Status.TargetsFound() {
 			r.MarkTargetsError(context, instance, "Service Deleted")
@@ -335,16 +212,11 @@ func (r *ReconcileExperiment) detectTargets(context context.Context, instance *i
 		}
 	}
 
-	baselineName, candidateName := instance.Spec.TargetService.Baseline, instance.Spec.TargetService.Candidate
 	// Get baseline deployment and candidate deployment
-	if err = r.Get(context, types.NamespacedName{Name: baselineName, Namespace: serviceNamespace}, r.targets.Baseline); err == nil {
-		//	Convert state from stable to progressing
-		if r.rules.IsStable() {
-			// Need to pass baseline into the builder
-			if err := r.rules.StableToProgressing(instance, r.targets, r.istioClient); err != nil {
-				r.MarkTargetsError(context, instance, "%s", err.Error())
-				return err
-			}
+	if err = r.targets.GetBaseline(context); err == nil {
+		if err := r.rules.Initialize(context, instance, r.targets, r.istioClient); err != nil {
+			r.MarkTargetsError(context, instance, "%s", err.Error())
+			return err
 		}
 	} else {
 		if instance.Status.TargetsFound() {
@@ -357,15 +229,10 @@ func (r *ReconcileExperiment) detectTargets(context context.Context, instance *i
 		}
 	}
 
-	if err = r.Get(context, types.NamespacedName{Name: candidateName, Namespace: serviceNamespace}, r.targets.Candidate); err == nil {
-		if updateSubset(r.rules.DestinationRule, r.targets.Candidate, routing.Candidate) {
-			uddr, err := r.istioClient.NetworkingV1alpha3().
-				DestinationRules(r.rules.DestinationRule.GetNamespace()).
-				Update(r.rules.DestinationRule)
-			if err != nil {
-				return err
-			}
-			r.rules.DestinationRule = uddr
+	if err = r.targets.GetCandidate(context); err == nil {
+		if err = r.rules.UpdateCandidate(context, r.targets, r.istioClient); err != nil {
+			r.MarkRoutingRulesError(context, instance, "Fail in updating routing rule: %v", err)
+			return err
 		}
 	} else {
 		if instance.Status.TargetsFound() {
@@ -381,31 +248,6 @@ func (r *ReconcileExperiment) detectTargets(context context.Context, instance *i
 	r.MarkTargetsFound(context, instance)
 
 	return nil
-}
-
-func updateSubset(dr *v1alpha3.DestinationRule, d *appsv1.Deployment, name string) bool {
-	update, found := true, false
-	for idx, subset := range dr.Spec.Subsets {
-		if subset.Name == routing.Stable && name == routing.Baseline {
-			dr.Spec.Subsets[idx].Name = name
-			dr.Spec.Subsets[idx].Labels = d.Spec.Template.Labels
-			found = true
-			break
-		}
-		if subset.Name == name {
-			found = true
-			update = false
-			break
-		}
-	}
-
-	if !found {
-		dr.Spec.Subsets = append(dr.Spec.Subsets, &networkingv1alpha3.Subset{
-			Name:   name,
-			Labels: d.Spec.Template.Labels,
-		})
-	}
-	return update
 }
 
 // returns non-nil error if reconcile process should be terminated right after this function

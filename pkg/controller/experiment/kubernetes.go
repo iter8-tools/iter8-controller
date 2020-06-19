@@ -87,13 +87,6 @@ func (r *ReconcileExperiment) finalizeIstio(context context.Context, instance *i
 }
 
 func (r *ReconcileExperiment) toDetectTargets(context context.Context, instance *iter8v1alpha1.Experiment) bool {
-	// Skip targets check if termination request issued from cache or
-	// targets have been marked found during the experiment
-	// refesh command force to do a new check
-	if experimentAbstract(context) != nil && experimentAbstract(context).Terminate() {
-		return false
-	}
-
 	if instance.Status.TargetsFound() && !r.needRefresh() {
 		return false
 	}
@@ -115,13 +108,13 @@ func (r *ReconcileExperiment) toProgress(context context.Context, instance *iter
 
 func (r *ReconcileExperiment) toComplete(context context.Context, instance *iter8v1alpha1.Experiment) bool {
 	return instance.Spec.TrafficControl.GetMaxIterations() < instance.Status.CurrentIteration ||
-		instance.Action.TerminateExperiment() || experimentAbstract(context).Terminate()
+		instance.Action.TerminateExperiment()
 }
 
 func (r *ReconcileExperiment) endRequest(context context.Context, instance *iter8v1alpha1.Experiment) (reconcile.Result, error) {
 	if r.needStatusUpdate() {
 		if err := r.Status().Update(context, instance); err != nil && !validUpdateErr(err) {
-			log.Info("Fail to update status: %v", err)
+			log.Info("Fail to update status", "", err)
 		}
 	}
 	return reconcile.Result{}, nil

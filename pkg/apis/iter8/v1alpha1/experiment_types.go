@@ -96,6 +96,14 @@ const (
 	CleanUpNull CleanUpType = ""
 )
 
+type Host struct {
+	// Name of the Host
+	Name string `json:"name"`
+
+	// The gateway
+	Gateway string `json:"gateway"`
+}
+
 // TargetService defines what to watch in the controller
 type TargetService struct {
 	// defines the characteristics of the service
@@ -106,6 +114,12 @@ type TargetService struct {
 
 	// Candidate tells the name of candidate
 	Candidate string `json:"candidate,omitempty"`
+
+	// List of hosts related to this service
+	Hosts []Host `json:"hosts,omitempty"`
+
+	// Port number exposed by internal services
+	Port *int32 `json:"port,omitempty"`
 }
 
 // Phase the experiment is in
