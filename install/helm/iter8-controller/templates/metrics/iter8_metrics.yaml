@@ -12,7 +12,7 @@ data:
     iter8_error_rate: "sum(increase(istio_requests_total{job='istio-mesh', response_code=~'5..',reporter='source'}[$interval]$offset_str)) by ($entity_labels) / sum(increase(istio_requests_total{job='istio-mesh', reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
     {{- else }}
     iter8_sample_size: "sum(increase(istio_requests_total{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
-    iter8_latency: "(sum(increase(istio_request_duration_milliseconds_sum{job=envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels)) / (sum(increase(istio_request_duration_milliseconds_count{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels))"
+    iter8_latency: "(sum(increase(istio_request_duration_milliseconds_sum{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels)) / (sum(increase(istio_request_duration_milliseconds_count{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels))"
     iter8_error_count: "sum(increase(istio_requests_total{job='envoy-stats', response_code=~'5..',reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
     iter8_error_rate: "sum(increase(istio_requests_total{job='envoy-stats', response_code=~'5..',reporter='source'}[$interval]$offset_str)) by ($entity_labels) / sum(increase(istio_requests_total{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
     {{- end }}
