@@ -27,11 +27,11 @@ jobs:
       script:
         - go test ./test/.
     - stage: "end-to-end tests"
-      env: KUBE_VERSION=v1.17.8 ISTIO_VERSION=1.4.6
+      env: KUBE_VERSION=v1.17.7 ISTIO_VERSION=1.4.6
       <<: *end_to_end_script
-    - env: KUBE_VERSION=v1.17.8 ISTIO_VERSION=1.5.6
+    - env: KUBE_VERSION=v1.17.7 ISTIO_VERSION=1.5.6
       <<: *end_to_end_script
-    - env: KUBE_VERSION=v1.17.8 ISTIO_VERSION=1.6.3
+    - env: KUBE_VERSION=v1.17.7 ISTIO_VERSION=1.6.3
       <<: *end_to_end_script
     - stage: "build image"
       if: (type = push) AND (branch = master OR branch =~ /^v[0-9]+\.[0-9]+$/)
