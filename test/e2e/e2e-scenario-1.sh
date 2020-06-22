@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # Exit on error
-set -e
+#TODO: temporarily disable to debug
+#set -e
 
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 source "$DIR/library.sh"
