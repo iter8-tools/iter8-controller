@@ -29,3 +29,10 @@ if [ "$conclusion" != "All success criteria were  met" ]; then
   exit 1
 fi
 echo "Experiment succeeded as expected!"
+
+header "Clean up"
+kubectl -n bookinfo-iter8 delete deployment productpage-v1
+sleep 1
+kubectl -n bookinfo-iter8 wait --for=delete deployment/productpage-v1 --timeout=540s
+echo "Deployment productpage-v1 deleted"
+

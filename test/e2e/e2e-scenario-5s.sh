@@ -58,5 +58,5 @@ echo "Experiment succeeded as expected!"
 header "Clean up"
 kubectl -n bookinfo-iter8 delete deployment productpage-v1
 sleep 1
-kubectl wait --for=delete deployment/productpage-v1 --timeout=540s
+kubectl -n bookinfo-iter8 wait --for=delete deployment/productpage-v1 --timeout=540s
 echo "Deployment productpage-v1 deleted"
