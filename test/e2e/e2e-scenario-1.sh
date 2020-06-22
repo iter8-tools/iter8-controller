@@ -60,6 +60,3 @@ echo "Experiment succeeded as expected!"
 
 header "Clean up"
 kubectl -n bookinfo-iter8 delete deployment reviews-v2
-sleep 1
-kubectl -n bookinfo-iter8 wait --for=delete deployment/reviews-v2 --timeout=540s
-echo "Deployment reviews-v2 deleted"
