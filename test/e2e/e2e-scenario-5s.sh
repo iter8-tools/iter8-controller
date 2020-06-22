@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Exit on error
-set -e
+#set -e
 
 NAMESPACE=bookinfo-service
 
@@ -18,7 +18,7 @@ header "Create $NAMESPACE app"
 kubectl apply -n $NAMESPACE -f $DIR/../../doc/tutorials/istio/bookinfo/bookinfo-tutorial.yaml \
               -f $DIR/../../doc/tutorials/istio/bookinfo/service/productpage-v1.yaml
 sleep 1
-kubectl wait --for=condition=Ready pods --all -n $NAMESPACE --timeout=600s
+kubectl wait --for=condition=Ready pods --all -n $NAMESPACE --timeout=540s
 kubectl get pods,services -n $NAMESPACE
 
 header "Create $NAMESPACE gateway"
@@ -42,7 +42,7 @@ header "Deploy canary version"
 kubectl apply -n $NAMESPACE -f $DIR/../../doc/tutorials/istio/bookinfo/productpage-v2.yaml \
               -f $DIR/../../doc/tutorials/istio/bookinfo/service/productpage-v2.yaml
 sleep 1
-kubectl wait --for=condition=ExperimentCompleted -n $NAMESPACE experiments.iter8.tools productpage-v2-rollout --timeout=600s
+kubectl wait --for=condition=ExperimentCompleted -n $NAMESPACE experiments.iter8.tools productpage-v2-rollout --timeout=540s
 kubectl get experiments -n $NAMESPACE
 kubectl get vs -n $NAMESPACE -o yaml
 
@@ -54,3 +54,9 @@ if [ "$conclusion" != "All success criteria were  met" ]; then
   exit 1
 fi
 echo "Experiment succeeded as expected!"
+
+header "Clean up"
+kubectl -n bookinfo-iter8 delete deployment productpage-v1
+sleep 1
+kubectl wait --for=delete deployment/productpage-v1 --timeout=540s
+echo "Deployment productpage-v1 deleted"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Exit on error
-set -e
+#set -e
 
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 source "$DIR/library.sh"
@@ -15,7 +15,7 @@ kubectl get experiments -n bookinfo-iter8
 header "Deploy canary version"
 kubectl apply -n bookinfo-iter8 -f $DIR/../../doc/tutorials/istio/bookinfo/reviews-v5.yaml
 sleep 1
-kubectl wait --for=condition=ExperimentCompleted -n bookinfo-iter8 experiments.iter8.tools reviews-v5-rollout --timeout=600s
+kubectl wait --for=condition=ExperimentCompleted -n bookinfo-iter8 experiments.iter8.tools reviews-v5-rollout --timeout=540s
 kubectl get experiments -n bookinfo-iter8
 
 header "Test results"
@@ -26,3 +26,9 @@ if [ "$conclusion" = "All success criteria were  met" ]; then
   exit 1
 fi
 echo "Experiment failed as expected!"
+
+header "Clean up"
+kubectl -n bookinfo-iter8 delete deployment reviews-v5
+sleep 1
+kubectl wait --for=delete deployment/reviews-v5 --timeout=540s
+echo "Deployment reviews-v5 deleted"
