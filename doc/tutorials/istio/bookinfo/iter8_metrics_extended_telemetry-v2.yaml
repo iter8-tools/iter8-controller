@@ -6,7 +6,7 @@ metadata:
 data:
   query_templates: |-
     iter8_sample_size: "sum(increase(istio_requests_total{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
-    iter8_latency: "(((sum(increase(istio_request_duration_milliseconds_sum{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels)) / (sum(increase(istio_request_duration_milliseconds_count{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels))*1000)"
+    iter8_latency: "(sum(increase(istio_request_duration_milliseconds_sum{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels)) / (sum(increase(istio_request_duration_milliseconds_count{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels))"
     iter8_error_count: "sum(increase(istio_requests_total{job='envoy-stats', response_code=~'5..',reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
     iter8_error_rate: "sum(increase(istio_requests_total{job='envoy-stats', response_code=~'5..',reporter='source'}[$interval]$offset_str)) by ($entity_labels) / sum(increase(istio_requests_total{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
     iter8_90_perc_latency: "histogram_quantile(0.90, sum(increase(istio_request_duration_milliseconds_bucket{job='envoy-stats', reporter='source'}[$interval]$offset_str)) by ($entity_labels, le))"
