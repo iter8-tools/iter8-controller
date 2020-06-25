@@ -116,9 +116,10 @@ func MakeRequest(instance *iter8v1alpha2.Experiment) (*v1alpha2.Request, error) 
 		request.IterationNumber = instance.Status.CurrentIteration
 	}
 
-	if nil != instance.Status.AnalysisState {
-		request.LastState = instance.Status.AnalysisState
-	}
+	// TODO sent lastState; currently this is broken
+	// if nil != instance.Status.AnalysisState {
+	// 	request.LastState = instance.Status.AnalysisState
+	// }
 
 	return request, nil
 }

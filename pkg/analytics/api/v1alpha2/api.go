@@ -37,7 +37,7 @@ type Request struct {
 	Candidate []Version `json:"candidates"`
 
 	// State returned by the server on the previous call
-	LastState interface{} `json:"last_state"`
+	LastState interface{} `json:"last_state,omitempty"`
 
 	// Parameters controlling the behavior of the analytics
 	TrafficControl *TrafficControl `json:"traffic_control,omitempty"`
