@@ -1,0 +1,20 @@
+apiVersion: iter8.tools/v1alpha1
+kind: Experiment
+metadata:
+  name: productpage-bootstrap
+spec:
+  targetService:
+    kind: Service
+    baseline: productpage-v1
+    candidate: productpage-v1
+    hosts:
+      - name: productpage.example.com
+        gateway: productpage-service
+  trafficControl:
+    strategy: check_and_increment
+    interval: 10s
+    trafficStepSize: 90
+    maxIterations: 1
+    maxTrafficPercentage: 90
+  analysis:
+    analyticsService: "http://iter8-analytics:8080"
