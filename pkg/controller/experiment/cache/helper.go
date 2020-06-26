@@ -26,13 +26,14 @@ const (
 )
 
 func experimentKey(instance *iter8v1alpha1.Experiment) string {
-	return instance.Name + keySeparator + instance.Namespace
+	return instance.Namespace + keySeparator + instance.Name
 }
 
 func targetKey(name, namespace string) string {
-	return name + keySeparator + namespace
+	return namespace + keySeparator + name
 }
 
+// return namespace, name
 func resolveExperimentKey(val string) (string, string) {
 	out := strings.Split(val, keySeparator)
 	if len(out) != 2 {

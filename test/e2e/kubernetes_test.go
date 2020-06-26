@@ -158,29 +158,6 @@ func TestKubernetesExperiment(t *testing.T) {
 				getStableVirtualService("reviews", "emptycriterion", "candidate"),
 			},
 		},
-		// "externalreference": testCase{
-		// 	initObjects: []runtime.Object{
-		// 		getReviewsService(),
-		// 		getReviewsDeployment("v1"),
-		// 		getReviewsDeployment("v2"),
-		// 		getSampleEdgeVirtualService(),
-		// 	},
-		// 	preHook: []test.Hook{
-		// 		test.DeleteObjectIfExists(getStableDestinationRule("reviews", "", "candidate", getReviewsDeployment("v2"))),
-		// 		test.DeleteObjectIfExists(getStableVirtualService("reviews", "", "candidate")),
-		// 	},
-		// 	object:    getExperimentWithExternalReference("externalreference", "reviews", "reviews-v1", "reviews-v2"),
-		// 	wantState: test.CheckExperimentFinished,
-		// 	wantResults: []runtime.Object{
-		// 		// rollforward
-		// 		getStableDestinationRule("reviews", "externalreference", "candidate", getReviewsDeployment("v2")),
-		// 		getSampleStableEdgeVirtualService(),
-		// 	},
-		// 	finalizers: []test.Hook{
-		// 		test.DeleteObject(getStableDestinationRule("reviews", "externalreference", "candidate", getReviewsDeployment("v2"))),
-		// 		test.DeleteObject(getSampleStableEdgeVirtualService()),
-		// 	},
-		// },
 		"cleanupdelete": testCase{
 			initObjects: []runtime.Object{
 				getReviewsService(),
@@ -372,6 +349,25 @@ func TestKubernetesExperiment(t *testing.T) {
 				},
 			}
 		}("rollbackward-service"),
+		"same-service": func(name string) testCase {
+			return testCase{
+				mocks: map[string]analtyicsapi.Response{
+					name: test.GetSuccessMockResponse(),
+				},
+				initObjects: []runtime.Object{
+					getReviewsService(),
+					getReviewsServiceWithVersion("v1"),
+				},
+				object: getFastKubernetesExperimentWithService(name, "reviews", "reviews-v1", "reviews-v1", service.GetURL()),
+				wantState: test.WantAllStates(
+					test.CheckExperimentFinished,
+					test.CheckExperimentSuccess,
+				),
+				wantResults: []runtime.Object{
+					getVirtualServiceWithService("reviews", name, Flags.Namespace, "reviews-v1"),
+				},
+			}
+		}("same-service"),
 	}
 
 	runTestCases(t, service, testCases)

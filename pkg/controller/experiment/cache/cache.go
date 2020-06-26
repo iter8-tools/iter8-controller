@@ -167,7 +167,7 @@ func (c *Impl) DeploymentToExperiment(targetName, targetNamespace string) (strin
 	if _, ok := c.deployment2Experiment[tKey]; !ok {
 		return "", "", false
 	}
-	name, namespace := resolveExperimentKey(c.deployment2Experiment[tKey])
+	namespace, name := resolveExperimentKey(c.deployment2Experiment[tKey])
 
 	return name, namespace, true
 }
@@ -212,7 +212,7 @@ func (c *Impl) ServiceToExperiment(targetName, targetNamespace string) (string, 
 		return "", "", false
 	}
 
-	name, namespace := resolveExperimentKey(c.service2Experiment[tKey])
+	namespace, name := resolveExperimentKey(c.service2Experiment[tKey])
 
 	return name, namespace, true
 }

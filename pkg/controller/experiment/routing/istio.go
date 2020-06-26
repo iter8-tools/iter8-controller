@@ -204,13 +204,24 @@ func (b *VirtualServiceBuilder) RemoveExperimentLabel() *VirtualServiceBuilder {
 }
 
 func (b *VirtualServiceBuilder) WithRolloutPercent(rolloutFilter *networkingv1alpha3.HTTPRouteDestination, rolloutPercent int32) *VirtualServiceBuilder {
-	if b.Spec.Http != nil || len(b.Spec.Http) > 0 {
+	// Note: only applies to route with 2 entries
+	if b.Spec.Http != nil && len(b.Spec.Http) > 0 && len(b.Spec.Http[0].Route) == 2 {
 		http := b.Spec.Http[0]
-		for _, route := range http.Route {
+		matchIdx := -1
+		for i, route := range http.Route {
 			if routeFilter(route, rolloutFilter) {
-				route.Weight = rolloutPercent
-			} else {
-				route.Weight = 100 - rolloutPercent
+				matchIdx = i
+				break
+			}
+		}
+
+		if matchIdx >= 0 {
+			for i, route := range http.Route {
+				if i == matchIdx {
+					route.Weight = rolloutPercent
+				} else {
+					route.Weight = 100 - rolloutPercent
+				}
 			}
 		}
 	}
