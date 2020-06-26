@@ -13,4 +13,4 @@ $DIR/e2e-scenario-2.sh
 $DIR/e2e-scenario-3.sh
 $DIR/e2e-scenario-4.sh
 $DIR/e2e-scenario-5.sh
-$DIR/e2e-scenario-5s.sh
+$DIR/e2e-scenario-6.sh
