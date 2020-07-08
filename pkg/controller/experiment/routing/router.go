@@ -35,8 +35,9 @@ const (
 	SubsetCandidate = "iter8-candidate"
 	SubsetStable    = "iter8-stable"
 
-	RoleStable      = "stable"
-	RoleProgressing = "progressing"
+	RoleInitializing = "initializing"
+	RoleStable       = "stable"
+	RoleProgressing  = "progressing"
 
 	ExperimentInit  = "iter8-tools/init"
 	ExperimentRole  = "iter8-tools/role"
@@ -105,7 +106,7 @@ func (r *Router) UpdateBaseline(instance *iter8v1alpha2.Experiment, targets *tar
 		drb = NewDestinationRuleBuilder(r.rules.destinationRule)
 	} else {
 		drb = NewDestinationRule(instance.Spec.Service.Name, instance.GetName(), instance.ServiceNamespace()).
-			WithInitLabel()
+			WithInitLabel().WithInitializingLabel()
 	}
 	drb = drb.
 		InitSubsets(1).
@@ -344,7 +345,11 @@ func (r *Router) validateDetectedRules(drl *v1alpha3.DestinationRuleList, vsl *v
 		drrole, drok := drl.Items[0].GetLabels()[ExperimentRole]
 		vsrole, vsok := vsl.Items[0].GetLabels()[ExperimentRole]
 		if drok && vsok {
-			if drrole == RoleStable && vsrole == RoleStable {
+			if drrole == RoleInitializing || vsrole == RoleInitializing {
+				// Valid initializing rules detected
+				r.rules.destinationRule = drl.Items[0].DeepCopy()
+				r.rules.virtualService = vsl.Items[0].DeepCopy()
+			} else if drrole == RoleStable && vsrole == RoleStable {
 				// Valid stable rules detected
 				r.rules.destinationRule = drl.Items[0].DeepCopy()
 				r.rules.virtualService = vsl.Items[0].DeepCopy()

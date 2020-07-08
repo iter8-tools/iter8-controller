@@ -70,56 +70,56 @@ func (r *ReconcileExperiment) checkOrInitRules(context context.Context, instance
 
 // return true if instance status should be updated
 // returns non-nil error if current reconcile request should be terminated right after this function
-func (r *ReconcileExperiment) detectTargets(context context.Context, instance *iter8v1alpha2.Experiment) (err error) {
-	if err = r.targets.GetService(context, instance); err != nil {
+func (r *ReconcileExperiment) detectTargets(context context.Context, instance *iter8v1alpha2.Experiment) (bool, error) {
+	if err := r.targets.GetService(context, instance); err != nil {
 		if instance.Status.TargetsFound() {
 			r.markTargetsError(context, instance, "Service Deleted")
 			onDeletedTarget(instance, targets.RoleService)
-			return nil
+			return false, err
 		} else {
 			r.markTargetsError(context, instance, "Missing Service")
-			return err
+			return false, nil
 		}
 	}
 
-	if err = r.targets.GetBaseline(context, instance); err != nil {
+	if err := r.targets.GetBaseline(context, instance); err != nil {
 		if instance.Status.TargetsFound() {
 			r.markTargetsError(context, instance, "Baseline Deleted")
 			onDeletedTarget(instance, targets.RoleBaseline)
-			return nil
+			return false, err
 		} else {
 			r.markTargetsError(context, instance, "Missing Baseline")
-			return err
+			return false, nil
 		}
 	} else {
 		// UpdateBaseline will create DestinationRule and VirtualService if needed
 		if err = r.router.UpdateBaseline(instance, r.targets); err != nil {
 			r.markRoutingRulesError(context, instance, "Fail in updating routing rule: %v", err)
-			return err
+			return false, err
 		}
 	}
 
-	if err = r.targets.GetCandidates(context, instance); err != nil {
+	if err := r.targets.GetCandidates(context, instance); err != nil {
 		if instance.Status.TargetsFound() {
 			r.markTargetsError(context, instance, "Candidate Deleted")
 			onDeletedTarget(instance, targets.RoleCandidate)
-			return nil
+			return false, err
 		} else {
 			r.markTargetsError(context, instance, "Err in getting candidates: %v", err)
-			return err
+			return false, nil
 		}
 	} else {
 		// Update DestinationRule for candidates
 		// If baseline is also configured (see above), we move set rule to progressing
 		if err = r.router.UpdateCandidates(r.targets); err != nil {
 			r.markRoutingRulesError(context, instance, "Fail in updating routing rule: %v", err)
-			return err
+			return false, err
 		}
 	}
 
 	r.markTargetsFound(context, instance, "")
 
-	return nil
+	return true, nil
 }
 
 // returns non-nil error if reconcile process should be terminated right after this function
