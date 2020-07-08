@@ -106,7 +106,7 @@ func (r *Router) UpdateBaseline(instance *iter8v1alpha2.Experiment, targets *tar
 		drb = NewDestinationRuleBuilder(r.rules.destinationRule)
 	} else {
 		drb = NewDestinationRule(instance.Spec.Service.Name, instance.GetName(), instance.ServiceNamespace()).
-			WithInitLabel()
+			WithInitLabel().WithInitializingLabel()
 	}
 	drb = drb.
 		InitSubsets(1).
