@@ -1,0 +1,53 @@
+##################################################################################################
+# Productpage services
+##################################################################################################
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: productpage
+#   labels:
+#     app: productpage
+#     service: productpage
+# spec:
+#   ports:
+#   - port: 9080
+#     name: v1port
+#   - port: 9081
+#     name: v2port
+#   selector:
+#     app: productpage
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: productpage-v2
+  labels:
+    app: productpage
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: productpage
+      version: v2
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      labels:
+        app: productpage
+        version: v2
+    spec:
+      serviceAccountName: bookinfo-productpage
+      containers:
+      - name: productpage
+        image: iter8/productpage:reward-v2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        env:
+          - name: DEPLOYMENT
+            value: "productpage-v2"
+          - name: namespace
+            value: "bookinfo-iter8"
+---
