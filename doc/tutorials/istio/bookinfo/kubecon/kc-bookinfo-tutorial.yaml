@@ -184,9 +184,9 @@ metadata:
 spec:
   ports:
   - port: 9080
-    name: v1port
+    name: http-1
   - port: 9081
-    name: v2port
+    name: http-2
   selector:
     app: productpage
 ---
