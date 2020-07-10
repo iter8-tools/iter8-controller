@@ -41,7 +41,7 @@ spec:
       serviceAccountName: bookinfo-productpage
       containers:
       - name: productpage
-        image: iter8/productpage:reward-v3
+        image: iter8/productpage:reward-v2
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9080
