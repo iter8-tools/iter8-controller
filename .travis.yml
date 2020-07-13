@@ -28,13 +28,11 @@ jobs:
       script:
         - go test ./test/.
     - stage: "end-to-end tests"
-      env: KUBE_VERSION=v1.15.10 ISTIO_VERSION=1.4.3
+      env: KUBE_VERSION=v1.17.7 ISTIO_VERSION=1.4.6
       <<: *end_to_end_script
-    - env: KUBE_VERSION=v1.15.10 ISTIO_VERSION=1.4.6
+    - env: KUBE_VERSION=v1.17.7 ISTIO_VERSION=1.5.6
       <<: *end_to_end_script
-    - env: KUBE_VERSION=v1.16.0 ISTIO_VERSION=1.4.3
-      <<: *end_to_end_script
-    - env: KUBE_VERSION=v1.16.0 ISTIO_VERSION=1.4.6
+    - env: KUBE_VERSION=v1.17.7 ISTIO_VERSION=1.6.3
       <<: *end_to_end_script
     - stage: "build image"
       # only build images for master and release branches + tagged releases
