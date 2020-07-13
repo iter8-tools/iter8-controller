@@ -75,11 +75,6 @@ func (b *DestinationRuleBuilder) WithProgressingLabel() *DestinationRuleBuilder 
 	return b
 }
 
-func (b *DestinationRuleBuilder) WithInitializingLabel() *DestinationRuleBuilder {
-	b.ObjectMeta.Labels[ExperimentRole] = RoleInitializing
-	return b
-}
-
 func (b *DestinationRuleBuilder) WithInitLabel() *DestinationRuleBuilder {
 	b.ObjectMeta.Labels[ExperimentInit] = "True"
 	if _, ok := b.ObjectMeta.Labels[ExperimentRole]; !ok {

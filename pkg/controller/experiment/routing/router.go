@@ -106,7 +106,7 @@ func (r *Router) UpdateBaseline(instance *iter8v1alpha2.Experiment, targets *tar
 		drb = NewDestinationRuleBuilder(r.rules.destinationRule)
 	} else {
 		drb = NewDestinationRule(instance.Spec.Service.Name, instance.GetName(), instance.ServiceNamespace()).
-			WithInitLabel().WithInitializingLabel()
+			WithInitLabel()
 	}
 	drb = drb.
 		InitSubsets(1).
@@ -172,7 +172,7 @@ func candiateSubsetName(idx int) string {
 	return SubsetCandidate + "-" + strconv.Itoa(idx)
 }
 
-func (r *Router) UpdateCandidates(targets *targets.Targets) (err error) {
+func (r *Router) UpdateCandidates(instance *iter8v1alpha2.Experiment, targets *targets.Targets) (err error) {
 	if r.rules.isProgressing() {
 		return nil
 	}
