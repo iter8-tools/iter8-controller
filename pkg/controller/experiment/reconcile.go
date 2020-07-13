@@ -111,7 +111,7 @@ func (r *ReconcileExperiment) detectTargets(context context.Context, instance *i
 	} else {
 		// Update DestinationRule for candidates
 		// If baseline is also configured (see above), we move set rule to progressing
-		if err = r.router.UpdateCandidates(r.targets); err != nil {
+		if err = r.router.UpdateCandidates(instance, r.targets); err != nil {
 			r.markRoutingRulesError(context, instance, "Fail in updating routing rule: %v", err)
 			return false, err
 		}

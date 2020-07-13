@@ -106,7 +106,7 @@ func (r *Router) UpdateBaseline(instance *iter8v1alpha2.Experiment, targets *tar
 		drb = NewDestinationRuleBuilder(r.rules.destinationRule)
 	} else {
 		drb = NewDestinationRule(instance.Spec.Service.Name, instance.GetName(), instance.ServiceNamespace()).
-			WithInitLabel().WithInitializingLabel()
+			WithInitLabel()
 	}
 	drb = drb.
 		InitSubsets(1).
@@ -135,7 +135,6 @@ func (r *Router) UpdateBaseline(instance *iter8v1alpha2.Experiment, targets *tar
 			WithInitLabel()
 	}
 	vsb = vsb.
-		WithProgressingLabel().
 		WithExperimentRegistered(instance.Name)
 
 	if r.rules.isExternalReference() {
@@ -173,7 +172,7 @@ func candiateSubsetName(idx int) string {
 	return SubsetCandidate + "-" + strconv.Itoa(idx)
 }
 
-func (r *Router) UpdateCandidates(targets *targets.Targets) (err error) {
+func (r *Router) UpdateCandidates(instance *iter8v1alpha2.Experiment, targets *targets.Targets) (err error) {
 	if r.rules.isProgressing() {
 		return nil
 	}
@@ -190,6 +189,16 @@ func (r *Router) UpdateCandidates(targets *targets.Targets) (err error) {
 		return err
 	} else {
 		r.rules.destinationRule = dr.DeepCopy()
+	}
+
+	vsb := NewVirtualServiceBuilder(r.rules.virtualService).WithProgressingLabel()
+
+	if vs, err := r.client.NetworkingV1alpha3().
+		VirtualServices(r.rules.virtualService.GetNamespace()).
+		Update(vsb.Build()); err != nil {
+		return err
+	} else {
+		r.rules.virtualService = vs.DeepCopy()
 	}
 
 	return

@@ -75,13 +75,11 @@ func (b *DestinationRuleBuilder) WithProgressingLabel() *DestinationRuleBuilder 
 	return b
 }
 
-func (b *DestinationRuleBuilder) WithInitializingLabel() *DestinationRuleBuilder {
-	b.ObjectMeta.Labels[ExperimentRole] = RoleInitializing
-	return b
-}
-
 func (b *DestinationRuleBuilder) WithInitLabel() *DestinationRuleBuilder {
 	b.ObjectMeta.Labels[ExperimentInit] = "True"
+	if _, ok := b.ObjectMeta.Labels[ExperimentRole]; !ok {
+		b.ObjectMeta.Labels[ExperimentRole] = RoleInitializing
+	}
 	return b
 }
 
@@ -172,6 +170,9 @@ func NewVirtualService(serviceName, name, namespace string) *VirtualServiceBuild
 
 func (b *VirtualServiceBuilder) WithInitLabel() *VirtualServiceBuilder {
 	b.ObjectMeta.Labels[ExperimentInit] = "True"
+	if _, ok := b.ObjectMeta.Labels[ExperimentRole]; !ok {
+		b.ObjectMeta.Labels[ExperimentRole] = RoleInitializing
+	}
 	return b
 }
 
