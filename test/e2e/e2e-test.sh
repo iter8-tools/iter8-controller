@@ -10,11 +10,11 @@ DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 # install yq
 which yq
 if (( $? )); then
-  apt-get update
-  apt-get install software-properties-common
-  add-apt-repository -y ppa:rmescandon/yq
-  apt update
-  apt install yq -y
+  sudo apt-get update
+  sudo apt-get install software-properties-common
+  sudo add-apt-repository -y ppa:rmescandon/yq
+  sudo apt update
+  sudo apt install yq -y
 fi
 
 # Exit on error
