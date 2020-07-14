@@ -20,13 +20,15 @@ function test_experiment_status() {
   local expected="$2"
   local actual=`kubectl -n $NAMESPACE get experiments.iter8.tools $experiment -o=jsonpath='{.status.message}'`
 
-  echo "expected = $expected"
-  echo "  actual = $actual"
+  echo "Testing experiment .status.message"
+  echo "   expecting status message: $expected"
+  echo "         got status message: $actual"
 
   if [[ "$actual" != *"$expected"* ]]; then
-    echo "Experiment $experiment failed unexpectedly"
-    echo " expected status message: $expected"
-    echo "      got status message: $actual"
+    echo "FAIL: Got unexpected .status.message"
+    echo "Teminating test case"
     exit 1
+  else
+    echo "PASS: Got expected .status.message"
   fi
 }

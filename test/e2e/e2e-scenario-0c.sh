@@ -40,12 +40,6 @@ kubectl apply -n $NAMESPACE -f $DIR/../../doc/tutorials/istio/bookinfo/bookinfo-
 kubectl get gateway -n $NAMESPACE
 kubectl get vs -n $NAMESPACE
 
-#header "Test productpage via service IP"
-#IP=`kubectl -n $NAMESPACE get services | grep productpage | awk '{print $3}'`
-#PORT=`kubectl -n $NAMESPACE get services | grep productpage | awk '{print $5}' | awk -F/ '{print $1}'`
-#echo "Bookinfo is accessed at $IP:$PORT"
-#curl -H "Host: bookinfo.example.com" -Is "http://$IP:$PORT/productpage"
-
 if [[ -n $ISOLATED_TEST ]]; then
   header "Generate workload"
   # We are using nodeport of the Istio ingress gateway to access bookinfo app

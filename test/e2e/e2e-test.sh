@@ -8,6 +8,14 @@ set -e
 
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 
+# install yq
+which yq
+if (( $? )); then
+  add-apt-repository ppa:rmescandon/yq
+  apt update
+  apt install yq -y
+fi
+
 $DIR/e2e-scenario-0a.sh
 $DIR/e2e-scenario-0b.sh
 $DIR/e2e-scenario-0c.sh
