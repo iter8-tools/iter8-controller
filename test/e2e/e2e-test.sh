@@ -5,13 +5,16 @@
 
 # Exit on error
 set -e
+set -x
 
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 
 # install yq
 which yq
 if (( $? )); then
-  add-apt-repository ppa:rmescandon/yq
+  apt-get update
+  apt-get install software-properties-common
+  add-apt-repository -y ppa:rmescandon/yq
   apt update
   apt install yq -y
 fi
