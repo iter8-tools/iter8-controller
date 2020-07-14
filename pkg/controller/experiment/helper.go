@@ -74,10 +74,11 @@ func validUpdateErr(err error) bool {
 
 // overrideAssessment sets the assessment as what had has specified in manual override traffic split
 func overrideAssessment(instance *iter8v1alpha2.Experiment) {
+	onTermination := iter8v1alpha2.OnTerminationToBaseline
 	if len(instance.Spec.ManualOverride.TrafficSplit) == 0 {
 		// set all to baseline
 		instance.Spec.TrafficControl = &iter8v1alpha2.TrafficControl{}
-		*instance.Spec.TrafficControl.OnTermination = iter8v1alpha2.OnTerminationToBaseline
+		instance.Spec.TrafficControl.OnTermination = &onTermination
 	} else {
 		trafficSplit := instance.Spec.ManualOverride.TrafficSplit
 		if ts, ok := trafficSplit[instance.Status.Assessment.Baseline.Name]; ok {
@@ -95,7 +96,7 @@ func overrideAssessment(instance *iter8v1alpha2.Experiment) {
 		}
 
 		instance.Spec.TrafficControl = &iter8v1alpha2.TrafficControl{}
-		*instance.Spec.TrafficControl.OnTermination = iter8v1alpha2.OnTerminationKeepLast
-
+		onTermination = iter8v1alpha2.OnTerminationKeepLast
+		instance.Spec.TrafficControl.OnTermination = &onTermination
 	}
 }
