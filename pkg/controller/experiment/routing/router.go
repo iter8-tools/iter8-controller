@@ -172,7 +172,7 @@ func candiateSubsetName(idx int) string {
 	return SubsetCandidate + "-" + strconv.Itoa(idx)
 }
 
-func (r *Router) UpdateCandidates(instance *iter8v1alpha2.Experiment, targets *targets.Targets) (err error) {
+func (r *Router) UpdateCandidates(targets *targets.Targets) (err error) {
 	if r.rules.isProgressing() {
 		return nil
 	}
