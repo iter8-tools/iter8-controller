@@ -16,6 +16,6 @@ spec:
     interval: 30s
     maxIterations: 8
   trafficControl:
-    strategy: progressive
-    percentage: 80
-    maxIncrement: 30
+    strategy: uniform
+    percentage: 100
+    maxIncrement: 100

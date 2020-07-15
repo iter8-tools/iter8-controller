@@ -66,6 +66,7 @@ kubectl apply -n $NAMESPACE -f $DIR/../../doc/tutorials/istio/bookinfo/reviews-v
 kubectl -n $NAMESPACE wait --for=condition=Ready pods  --selector='app=reviews,version=v3' --timeout=540s
 sleep 2
 test_experiment_status $EXPERIMENT "IterationUpdate: Iteration"
+kubectl -n $NAMESPACE get experiments.iter8.tools $EXPERIMENT -o yaml
 
 # wait for experiment to complete
 kubectl wait --for=condition=ExperimentCompleted -n $NAMESPACE experiments.iter8.tools reviews-v3-rollout --timeout=540s
