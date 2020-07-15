@@ -3,8 +3,6 @@
 # This script calls each end-to-end scenario sequentially and verifies the
 # result
 
-set -x
-
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 
 # install yq

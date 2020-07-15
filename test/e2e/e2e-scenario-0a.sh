@@ -3,6 +3,7 @@
 # Exit on error
 #set -e
 
+THIS=`basename $0`
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 source "$DIR/library.sh"
 
@@ -46,9 +47,9 @@ curl -H "Host: bookinfo.example.com" -Is "http://$IP:$PORT/productpage"
 watch -n 0.1 "curl -H \"Host: bookinfo.example.com\" -Is \"http://$IP:$PORT/productpage\"" >/dev/null 2>&1 &
 
 header "Deploy canary version"
-kubectl apply -n $NAMESPACE -f $DIR/../../doc/tutorials/istio/bookinfo/reviews-v3.yaml
-sleep 1
-kubectl --namespace $NAMESPACE wait --for condition=Ready pods --selector='app=reviews,version=v3' --timeout=540s
+yq w $DIR/../../doc/tutorials/istio/bookinfo/reviews-v3.yaml spec.template.metadata.labels[iter8/e2e-test] $THIS \
+  | kubectl apply -n $NAMESPACE -f -
+kubectl -n $NAMESPACE wait --for=condition=Ready pods  --selector="iter8/e2e-test=$THIS" --timeout=540s
 kubectl get pods,services -n $NAMESPACE
 
 # create experiment

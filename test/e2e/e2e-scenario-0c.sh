@@ -3,6 +3,7 @@
 # Exit on error
 #set -e
 
+THIS=`basename $0`
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 source "$DIR/library.sh"
 
@@ -33,7 +34,10 @@ kubectl apply -f $DIR/../../doc/tutorials/istio/bookinfo/namespace.yaml
 header "Create $NAMESPACE app"
 kubectl apply -n $NAMESPACE -f $DIR/../../doc/tutorials/istio/bookinfo/bookinfo-tutorial.yaml
 sleep 1
-kubectl wait --for=condition=Ready pods --all -n $NAMESPACE --timeout=540s
+if [[ -n $ISOLATED_TEST ]]; then
+  # Travis seems slow to terminate pods so this is dangerous
+  kubectl wait --for=condition=Ready pods --all -n $NAMESPACE --timeout=540s
+fi
 kubectl get pods,services -n $NAMESPACE
 
 header "Create $NAMESPACE gateway and vs"
@@ -66,8 +70,10 @@ test_experiment_status $EXPERIMENT "TargetsError: Err in getting candidates:"
 # start canary
 # verify experiment progressing
 header "Deploy canary version"
-kubectl apply -n $NAMESPACE -f $DIR/../../doc/tutorials/istio/bookinfo/reviews-v3.yaml
-kubectl -n $NAMESPACE wait --for=condition=Ready pods  --selector='app=reviews,version=v3' --timeout=540s
+yq w $DIR/../../doc/tutorials/istio/bookinfo/reviews-v3.yaml spec.template.metadata.labels[iter8/e2e-test] $THIS \
+  | kubectl apply -n $NAMESPACE -f -
+kubectl -n $NAMESPACE wait --for=condition=Ready pods  --selector="iter8/e2e-test=$THIS" --timeout=540s
+kubectl get pods,services -n $NAMESPACE
 sleep 2
 test_experiment_status $EXPERIMENT "IterationUpdate: Iteration"
 kubectl -n $NAMESPACE get experiments.iter8.tools $EXPERIMENT -o yaml
