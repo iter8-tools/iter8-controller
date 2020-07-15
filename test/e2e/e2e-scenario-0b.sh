@@ -9,6 +9,7 @@ source "$DIR/library.sh"
 NAMESPACE="${NAMESPACE:-bookinfo-iter8}"
 IP="${IP:-127.0.0.1}"
 EXPERIMENT="${EXPERIMENT:-reviews-v3-rollout}"
+ANALYTICS_ENDPOINT="${ANALYTICS_ENDPOINT:-http://iter8-analytics:8080}"
 
 header "Start iter8 end-to-end testing"
 
@@ -51,7 +52,7 @@ fi
 header "Create Iter8 Experiment"
 yq w $DIR/../../doc/tutorials/istio/bookinfo/canary_reviews-v2_to_reviews-v3.yaml spec.duration.interval 15s \
   | yq w - spec.duration.maxIterations 4 \
-  | yq w - spec.analyticsEndpoint http://127.0.0.1:8080/assessment \
+  | yq w - spec.analyticsEndpoint $ANALYTICS_ENDPOINT \
   | yq w - metadata.name $EXPERIMENT \
   | kubectl -n $NAMESPACE apply -f -
 sleep 2
