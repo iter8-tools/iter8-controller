@@ -35,8 +35,9 @@ const (
 	SubsetCandidate = "iter8-candidate"
 	SubsetStable    = "iter8-stable"
 
-	RoleStable      = "stable"
-	RoleProgressing = "progressing"
+	RoleInitializing = "initializing"
+	RoleStable       = "stable"
+	RoleProgressing  = "progressing"
 
 	ExperimentInit  = "iter8-tools/init"
 	ExperimentRole  = "iter8-tools/role"
@@ -134,7 +135,6 @@ func (r *Router) UpdateBaseline(instance *iter8v1alpha2.Experiment, targets *tar
 			WithInitLabel()
 	}
 	vsb = vsb.
-		WithProgressingLabel().
 		WithExperimentRegistered(instance.Name)
 
 	if r.rules.isExternalReference() {
@@ -189,6 +189,16 @@ func (r *Router) UpdateCandidates(targets *targets.Targets) (err error) {
 		return err
 	} else {
 		r.rules.destinationRule = dr.DeepCopy()
+	}
+
+	vsb := NewVirtualServiceBuilder(r.rules.virtualService).WithProgressingLabel()
+
+	if vs, err := r.client.NetworkingV1alpha3().
+		VirtualServices(r.rules.virtualService.GetNamespace()).
+		Update(vsb.Build()); err != nil {
+		return err
+	} else {
+		r.rules.virtualService = vs.DeepCopy()
 	}
 
 	return
@@ -344,7 +354,11 @@ func (r *Router) validateDetectedRules(drl *v1alpha3.DestinationRuleList, vsl *v
 		drrole, drok := drl.Items[0].GetLabels()[ExperimentRole]
 		vsrole, vsok := vsl.Items[0].GetLabels()[ExperimentRole]
 		if drok && vsok {
-			if drrole == RoleStable && vsrole == RoleStable {
+			if drrole == RoleInitializing || vsrole == RoleInitializing {
+				// Valid initializing rules detected
+				r.rules.destinationRule = drl.Items[0].DeepCopy()
+				r.rules.virtualService = vsl.Items[0].DeepCopy()
+			} else if drrole == RoleStable && vsrole == RoleStable {
 				// Valid stable rules detected
 				r.rules.destinationRule = drl.Items[0].DeepCopy()
 				r.rules.virtualService = vsl.Items[0].DeepCopy()

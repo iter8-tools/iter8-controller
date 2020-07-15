@@ -38,8 +38,8 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 
 	// detect targets of this experiment if necessary
 	if r.toDetectTargets(context, instance) {
-		err := r.detectTargets(context, instance)
-		if err != nil {
+		found, err := r.detectTargets(context, instance)
+		if err != nil || !found {
 			return r.endRequest(context, instance)
 		}
 	}
