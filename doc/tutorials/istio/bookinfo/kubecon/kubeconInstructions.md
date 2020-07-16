@@ -11,15 +11,18 @@
 ### Start experiment:
 1. Apply the experiment CRD to run an iter8 experiment between productpage v1 and productpage v2
 2. Apply deployment and service spec for productoage-v2 using: `kubectl apply -n bookinfo-iter8 -f kc-productpage-v2.yaml`
-3. Apply gateway and VS for productpage-v2 using `kubectl apply -n bookinfo-iter8 -f kc-productpage-gateway.yaml`
-4. Curl the second version of productpage with the new host
-5. Add target endpoint to Prometheus for `productpage-v1` and `productpage-v2` and restart prometheus pod. To do so, type `kubectl edit configmap -n istio-system prometheus`. In the editable yaml that appears, add the following target endpoints:
+3. Apply gateway and VS for productpage-v2 using `kubectl apply -n bookinfo-iter8 -f kc-productpage-v2-gateway.yaml`
+4. Apply deployment and service spec for productoage-v3 using: `kubectl apply -n bookinfo-iter8 -f kc-productpage-v3.yaml`
+3. Apply gateway and VS for productpage-v3 using `kubectl apply -n bookinfo-iter8 -f kc-productpage-v3-gateway.yaml`
+4. Add the dummy services created to direct traffic to the right port `kubectl apply -n bookinfo-iter8 -f kc-productpageservices.yaml`
+4. Curl v2 and v3 of productpage with the new host and check for a 200 response
+5. Add target endpoint to Prometheus for `productpage-v1`, `productpage-v2` and `productpage-v3` and restart prometheus pod. To do so, type `kubectl edit configmap -n istio-system prometheus`. In the editable yaml that appears, add the following target endpoints:
 
 ```
 #Scrape custom metrics
 - job_name: 'custom_metrics'
    static_configs:
-   - targets: ['productpage.bookinfo-iter8.svc.cluster.local:9080', 'productpage.bookinfo-iter8.svc.cluster.local:9081']
+   - targets: ['productpage-v1.bookinfo-iter8.svc.cluster.local:9080', 'productpage-v2.bookinfo-iter8.svc.cluster.local:9081', 'productpage-v3.bookinfo-iter8.svc.cluster.local:9082']
 ```
 
 6. Restart the prometheus pod so that the changes are reflected in Prometheus

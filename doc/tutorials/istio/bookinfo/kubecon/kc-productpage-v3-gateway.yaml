@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: bookinfo-gateway2
+  name: bookinfo-gateway3
 spec:
   selector:
     istio: ingressgateway # use istio default controller
@@ -11,17 +11,17 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    - "bookinfo2.sample.dev"
+    - "bookinfo3.example.com"
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: bookinfo2
+  name: bookinfo3
 spec:
   hosts:
-  - "bookinfo2.sample.dev"
+  - "bookinfo3.example.com"
   gateways:
-  - bookinfo-gateway2
+  - bookinfo-gateway3
   http:
   - match:
     - uri:
@@ -38,5 +38,5 @@ spec:
     - destination:
         host: productpage
         port:
-          number: 9081
+          number: 9082
 ---

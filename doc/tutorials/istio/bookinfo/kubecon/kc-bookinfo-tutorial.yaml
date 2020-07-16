@@ -187,6 +187,8 @@ spec:
     name: http-1
   - port: 9081
     name: http-2
+  - port: 9082
+    name: http-3
   selector:
     app: productpage
 ---
@@ -221,13 +223,21 @@ spec:
       serviceAccountName: bookinfo-productpage
       containers:
       - name: productpage
-        image: iter8/productpage:reward-v1
+        image: iter8/productpage:demo
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9080
         env:
-          - name: DEPLOYMENT
+          - name: deployment
             value: "productpage-v1"
           - name: namespace
             value: "bookinfo-iter8"
+          - name: color
+            value: "red"
+          - name: reward_min
+            value: "0"
+          - name: reward_max
+            value: "5"
+          - name: port
+            value: "9080"
 ---

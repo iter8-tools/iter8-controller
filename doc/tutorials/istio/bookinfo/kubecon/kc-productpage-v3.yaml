@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: productpage-v2
+  name: productpage-v3
   labels:
     app: productpage
-    version: v2
+    version: v3
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: productpage
-      version: v2
+      version: v3
   template:
     metadata:
       annotations:
         sidecar.istio.io/inject: "true"
       labels:
         app: productpage
-        version: v2
+        version: v3
     spec:
       serviceAccountName: bookinfo-productpage
       containers:
@@ -28,19 +28,15 @@ spec:
         - containerPort: 9080
         env:
           - name: deployment
-            value: "productpage-v2"
+            value: "productpage-v3"
           - name: namespace
             value: "bookinfo-iter8"
           - name: color
-            value: "yellow"
+            value: "green"
           - name: reward_min
-            value: "30"
+            value: "10"
           - name: reward_max
-            value: "50"
-          - name: delay_seconds
-            value: "1"
-          - name: delay_probability
-            value: "0.2"
+            value: "20"
           - name: port
-            value: "9081"
+            value: "9082"
 ---

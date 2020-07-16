@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: productpage-v1
+  labels:
+    app: productpage-v1
+    service: productpage-v1
+spec:
+  ports:
+  - port: 9080
+    name: http-1
+  selector:
+    app: productpage
+    version: v1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: productpage-v2
+  labels:
+    app: productpage-v2
+    service: productpage-v2
+spec:
+  ports:
+  - port: 9081
+    name: http-2
+  selector:
+    app: productpage
+    version: v2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: productpage-v3
+  labels:
+    app: productpage-v3
+    service: productpage-v3
+spec:
+  ports:
+  - port: 9082
+    name: http-3
+  selector:
+    app: productpage
+    version: v3
