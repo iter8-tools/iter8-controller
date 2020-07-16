@@ -66,6 +66,9 @@ func NewDestinationRule(serviceName, name, namespace string) *DestinationRuleBui
 }
 
 func (b *DestinationRuleBuilder) WithStableLabel() *DestinationRuleBuilder {
+	if 0 == len(b.ObjectMeta.Labels) {
+		b.ObjectMeta.Labels = make(map[string]string)
+	}
 	b.ObjectMeta.Labels[ExperimentRole] = RoleStable
 	return b
 }

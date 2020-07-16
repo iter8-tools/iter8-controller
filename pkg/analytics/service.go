@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -116,10 +117,9 @@ func MakeRequest(instance *iter8v1alpha2.Experiment) (*v1alpha2.Request, error) 
 		request.IterationNumber = instance.Status.CurrentIteration
 	}
 
-	// TODO sent lastState; currently this is broken
-	// if nil != instance.Status.AnalysisState {
-	// 	request.LastState = instance.Status.AnalysisState
-	// }
+	if nil != instance.Status.AnalysisState {
+		request.LastState = instance.Status.AnalysisState
+	}
 
 	return request, nil
 }
@@ -131,6 +131,11 @@ func Invoke(log logr.Logger, endpoint string, payload interface{}) (*v1alpha2.Re
 		return nil, err
 	}
 
+	if strings.HasSuffix(endpoint, "/") {
+		endpoint += "assessment"
+	} else {
+		endpoint += "/assessment"
+	}
 	log.Info("post", "URL", endpoint, "request", string(data))
 
 	raw, err := http.Post(endpoint, "application/json", bytes.NewBuffer(data))
