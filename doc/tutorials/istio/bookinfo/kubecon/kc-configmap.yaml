@@ -22,8 +22,9 @@ data: # by convention, metrics with names beginning with iter8_ are defined by i
     - name: 500_ms_latency_percentile
       query_template: (sum(increase(istio_request_duration_milliseconds_bucket{le='500', job='envoy-stats', reporter="source"}[$interval])) by ($version_labels))
       preferred_direction: higher
-    - name: latency_percentile_total
-      query_template: (sum(increase(istio_request_duration_milliseconds_bucket{le="10000", job='envoy-stats', reporter="source"}[$interval])) by ($version_labels))
+    - name: books_purchased_total
+      query_template: sum(increase(number_of_books_purchased_total{}[$interval])) by ($version_labels)
+      preferred_direction: higher
   # the value of a ratio metric equals value of numerator divided by denominator
   ratio_metrics.yaml: |-
     - name: iter8_mean_latency
@@ -41,5 +42,5 @@ data: # by convention, metrics with names beginning with iter8_ are defined by i
       preferred_direction: higher
     - name: mean_500_ms_latency_percentile
       numerator: 500_ms_latency_percentile
-      denominator: latency_percentile_total
+      denominator: books_purchased_total
       preferred_direction: higher

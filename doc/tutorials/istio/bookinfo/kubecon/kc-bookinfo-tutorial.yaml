@@ -185,10 +185,6 @@ spec:
   ports:
   - port: 9080
     name: http-1
-  - port: 9081
-    name: http-2
-  - port: 9082
-    name: http-3
   selector:
     app: productpage
 ---
@@ -216,6 +212,9 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/inject: "true"
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9080"
       labels:
         app: productpage
         version: v1
