@@ -11,7 +11,7 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    - "bookinfo.example.com"
+    - "bookinfo-kubecon.example.com"
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -19,7 +19,7 @@ metadata:
   name: bookinfo
 spec:
   hosts:
-  - "bookinfo.example.com"
+  - "bookinfo-kubecon.example.com"
   gateways:
   - bookinfo-gateway
   http:

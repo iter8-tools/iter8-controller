@@ -30,7 +30,7 @@ import (
 
 const (
 	destinationKey = "destination_workload"
-	namespaceKey   = "destination_service_namespace"
+	namespaceKey   = "destination_workload_namespace"
 )
 
 // MakeRequest generates request payload to analytics

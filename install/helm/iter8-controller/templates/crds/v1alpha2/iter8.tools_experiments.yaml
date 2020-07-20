@@ -39,10 +39,15 @@ spec:
     format: byte
     name: candidates
     type: string
-  - JSONPath: .status.assessment.candidates[*].weight
-    description: Traffic percentage for the candidates
-    format: int32
-    name: percentage
+  - JSONPath: .status.assessment.winner.current_winner
+    description: Current winner
+    format: byte
+    name: winner
+    type: string
+  - JSONPath: .status.assessment.winner.winning_probability
+    description: Confidence current winner will be winner
+    format: float
+    name: confidence
     type: string
   group: iter8.tools
   names:
