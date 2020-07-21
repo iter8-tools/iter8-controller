@@ -9,10 +9,10 @@ spec:
     candidates:
       - productpage-v2
       - productpage-v3
-    routingReference:
-      apiVersion: networking.istio.io/v1alpha3
-      kind: VirtualService
-      name: bookinfo
+    port: 9080
+    hosts:
+      - name: bookinfo-kubecon.example.com
+        gateway: bookinfo-gateway
   criteria:
     - metric: iter8_mean_latency
       threshold:
@@ -29,12 +29,12 @@ spec:
     - metric: 500_ms_latency_percentile
       threshold:
         type: absolute
-        value: 0.99
+        value: 0.95
     - metric: mean_books_purchased
       isReward: true
   duration:
     interval: 20s
-    maxIterations: 20
+    maxIterations: 15
   trafficControl:
     strategy: progressive
     percentage: 80

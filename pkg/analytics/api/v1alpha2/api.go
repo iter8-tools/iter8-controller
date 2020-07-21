@@ -219,9 +219,9 @@ type WinnerAssessment struct {
 
 	// ID of the current winner with the maximum probability of winning.
 	// This is currently computed based on Bayesian estimation
-	Winner *string `json:"current_winner,omitempty"`
+	Winner *string `json:"current_best_version,omitempty"`
 
 	//Posterior probability of the version declared as the current winner.
 	// This is None if winner is None. This is currently computed based on Bayesian estimation
-	Probability *float32 `json:"winning_probability,omitempty"`
+	Probability *float32 `json:"probability_of_winning_for_best_version,omitempty"`
 }

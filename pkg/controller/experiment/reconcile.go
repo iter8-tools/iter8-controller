@@ -189,6 +189,7 @@ func (r *ReconcileExperiment) updateIteration(context context.Context, instance 
 		}
 
 		instance.Status.Assessment.Winner = &response.WinnerAssessment
+		log.Info("updateIteration winner:", "winner assessment", instance.Status.Assessment.Winner)
 
 		strategy := instance.Spec.GetStrategy()
 		trafficSplit, ok := response.TrafficSplitRecommendation[strategy]
@@ -197,6 +198,7 @@ func (r *ReconcileExperiment) updateIteration(context context.Context, instance 
 			r.markAnalyticsServiceError(context, instance, "%v", err)
 			return err
 		}
+		log.Info("updateIteration recommended traffic split:", "strategy", strategy, "recommendation", trafficSplit)
 
 		if baselineWeight, ok := trafficSplit[instance.Spec.Baseline]; ok {
 			if instance.Status.Assessment.Baseline.Weight != baselineWeight {

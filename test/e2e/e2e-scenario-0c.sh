@@ -90,9 +90,10 @@ kubectl -n $NAMESPACE get experiments.iter8.tools $EXPERIMENT -o yaml
 # resume experiment
 # verify experiment resumed
 header "resume experiment"
+sleep 10
 kubectl -n $NAMESPACE patch experiments.iter8.tools $EXPERIMENT --type='merge' \
   -p='{"spec": {"manualOverride": { "action": "resume" }}}'
-sleep 20
+sleep 10
 test_experiment_status $EXPERIMENT "IterationUpdate: Iteration"
 kubectl -n $NAMESPACE get experiments.iter8.tools $EXPERIMENT -o yaml
 

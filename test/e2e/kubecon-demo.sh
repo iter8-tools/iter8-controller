@@ -33,6 +33,11 @@ header "Scenario - kubecon demo"
 
 header "Set Up"
 
+if [[ -n $ISOLATED_TEST ]]; then
+  header "Kill Existing Load Generation"
+  ps -aef | grep watch | grep -e 'curl.*bookinfo-kubecon.*productpage' | awk '{print $2}' | xargs kill
+fi
+
 header "Clean Up Any Existing"
 # delete any existing experiment with same name
 kubectl -n $NAMESPACE delete experiment $EXPERIMENT --ignore-not-found
@@ -100,8 +105,8 @@ test_experiment_status $EXPERIMENT "IterationUpdate: Iteration"
 kubectl --namespace $NAMESPACE get experiments.iter8.tools $EXPERIMENT -o yaml
 
 # wait for experiment to complete
-kubectl --namespace $NAMESPACE wait --for=condition=ExperimentCompleted experiments.iter8.tools reviews-v3-rollout --timeout=540s
-kubectl --namespace $NAMESPACEget experiments.iter8.tools
+kubectl --namespace $NAMESPACE wait --for=condition=ExperimentCompleted experiments.iter8.tools $EXPERIMENT --timeout=540s
+kubectl --namespace $NAMESPACE get experiments.iter8.tools
 
 header "Test results"
 kubectl --namespace $NAMESPACE get experiments.iter8.tools $EXPERIMENT -o yaml
@@ -109,5 +114,5 @@ test_experiment_status $EXPERIMENT "ExperimentCompleted: Last Iteration Was Comp
 
 echo "Experiment succeeded as expected!"
 
-header "Clean up"
-kubectl --namespace $NAMESPACE delete deployment productpage-v2 productpage-v3
+# header "Clean up"
+# kubectl --namespace $NAMESPACE delete deployment productpage-v2 productpage-v3

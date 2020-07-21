@@ -19,11 +19,6 @@ spec:
     format: byte
     name: status
     type: string
-  - JSONPath: .status.currentIteration
-    description: Current iteration
-    format: int32
-    name: iteration
-    type: integer
   - JSONPath: .spec.service.baseline
     description: Name of baseline
     format: byte
@@ -39,13 +34,13 @@ spec:
     format: byte
     name: candidates
     type: string
-  - JSONPath: .status.assessment.winner.current_winner
-    description: Current winner
+  - JSONPath: .status.assessment.winner.current_best_version
+    description: Current best version
     format: byte
-    name: winner
+    name: current best
     type: string
-  - JSONPath: .status.assessment.winner.winning_probability
-    description: Confidence current winner will be winner
+  - JSONPath: .status.assessment.winner.probability_of_winning_for_best_version
+    description: Confidence current bets version will be the winner
     format: float
     name: confidence
     type: string
@@ -656,11 +651,11 @@ spec:
                 winner:
                   description: Assessment for winner target if exists
                   properties:
-                    current_winner:
+                    current_best_version:
                       description: ID of the current winner with the maximum probability
                         of winning. This is currently computed based on Bayesian estimation
                       type: string
-                    winning_probability:
+                    probability_of_winning_for_best_version:
                       description: Posterior probability of the version declared as
                         the current winner. This is None if winner is None. This is
                         currently computed based on Bayesian estimation

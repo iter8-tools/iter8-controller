@@ -84,7 +84,7 @@ func MakeRequest(instance *iter8v1alpha2.Experiment) (*v1alpha2.Request, error) 
 			Denominator: metric.Denominator,
 		}
 		if nil != metric.PreferredDirection {
-			counterMetrics[i].PreferredDirection = metric.PreferredDirection
+			ratioMetrics[i].PreferredDirection = metric.PreferredDirection
 		}
 		if nil != metric.ZeroToOne {
 			ratioMetrics[i].ZeroToOne = metric.ZeroToOne
