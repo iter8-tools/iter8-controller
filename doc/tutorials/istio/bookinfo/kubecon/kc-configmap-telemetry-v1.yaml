@@ -19,6 +19,8 @@ data:
       query_template: sum(increase(number_of_books_purchased_total{}[$interval])) by ($version_labels)
     - name: le_500_ms_latency_request_count
       query_template: (sum(increase(istio_request_duration_seconds_bucket{le='0.5',reporter='source',job='istio-mesh'}[$interval])) by ($version_labels))
+    - name: le_inf_latency_request_count
+      query_template: (sum(increase(istio_request_duration_seconds_bucket{le='+Inf',reporter='source',job='istio-mesh'}[$interval])) by ($version_labels))
   # the value of a ratio metric equals value of numerator divided by denominator
   ratio_metrics.yaml: |-
     - name: iter8_mean_latency
@@ -36,6 +38,6 @@ data:
       preferred_direction: higher
     - name: 500_ms_latency_percentile
       numerator: le_500_ms_latency_request_count
-      denominator: iter8_request_count
+      denominator: le_inf_latency_request_count
       preferred_direction: higher
       zero_to_one: true
