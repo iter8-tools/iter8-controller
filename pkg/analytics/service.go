@@ -69,25 +69,19 @@ func MakeRequest(instance *iter8v1alpha2.Experiment) (*v1alpha2.Request, error) 
 	counterMetrics := make([]v1alpha2.CounterMetric, len(instance.Spec.Metrics.CounterMetrics))
 	for i, metric := range instance.Spec.Metrics.CounterMetrics {
 		counterMetrics[i] = v1alpha2.CounterMetric{
-			Name:          metric.Name,
-			QueryTemplate: metric.QueryTemplate,
-		}
-		if nil != metric.PreferredDirection {
-			counterMetrics[i].PreferredDirection = metric.PreferredDirection
+			Name:               metric.Name,
+			QueryTemplate:      metric.QueryTemplate,
+			PreferredDirection: metric.PreferredDirection,
 		}
 	}
 	ratioMetrics := make([]v1alpha2.RatioMetric, len(instance.Spec.Metrics.RatioMetrics))
 	for i, metric := range instance.Spec.Metrics.RatioMetrics {
 		ratioMetrics[i] = v1alpha2.RatioMetric{
-			Name:        metric.Name,
-			Numerator:   metric.Numerator,
-			Denominator: metric.Denominator,
-		}
-		if nil != metric.PreferredDirection {
-			ratioMetrics[i].PreferredDirection = metric.PreferredDirection
-		}
-		if nil != metric.ZeroToOne {
-			ratioMetrics[i].ZeroToOne = metric.ZeroToOne
+			Name:               metric.Name,
+			Numerator:          metric.Numerator,
+			Denominator:        metric.Denominator,
+			PreferredDirection: metric.PreferredDirection,
+			ZeroToOne:          metric.ZeroToOne,
 		}
 	}
 

@@ -63,6 +63,7 @@ sleep 1
 if [[ -n $ISOLATED_TEST ]]; then
   # Travis seems slow to terminate pods so this is dangerous
   kubectl  --namespace $NAMESPACE wait --for=condition=Ready pods --all --timeout=540s
+  if (( $? )); then echo "FAIL: application pods not started as expected"; exit 1; fi
 fi
 kubectl --namespace $NAMESPACE get pods,services
 
@@ -91,7 +92,7 @@ sleep 2
 kubectl get experiments.iter8.tools -n $NAMESPACE
 test_experiment_status $EXPERIMENT "TargetsError: Err in getting candidates:"
 
-# start candidat versions
+# start candidate versions
 # verify experiment progressing
 header "Deploy candidate versions"
 yq w $YAML_PATH/kc-productpage-v2.yaml spec.template.metadata.labels[iter8/e2e-test] $THIS \
@@ -99,6 +100,7 @@ yq w $YAML_PATH/kc-productpage-v2.yaml spec.template.metadata.labels[iter8/e2e-t
 yq w $YAML_PATH/kc-productpage-v3.yaml spec.template.metadata.labels[iter8/e2e-test] $THIS \
   | kubectl --namespace $NAMESPACE apply -f -
 kubectl --namespace $NAMESPACE wait --for=condition=Ready pods  --selector="iter8/e2e-test=$THIS" --timeout=540s
+if (( $? )); then echo "FAIL: candidate pods not started as expected"; exit 1; fi
 kubectl --namespace $NAMESPACE get pods,services
 sleep 2
 test_experiment_status $EXPERIMENT "IterationUpdate: Iteration"
