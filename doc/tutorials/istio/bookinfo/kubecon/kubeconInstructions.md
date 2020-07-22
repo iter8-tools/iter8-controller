@@ -39,6 +39,4 @@
 2. Apply deployment and service spec for productoage-v2 using: `kubectl apply -n bookinfo-iter8 -f kc-productpage-v2.yaml`
 3. Apply deployment and service spec for productoage-v3 using: `kubectl apply -n bookinfo-iter8 -f kc-productpage-v3.yaml`
 4. Curl v2 and v3 of productpage with the new host and check for a 200 response
-
-6. Restart the prometheus pod so that the changes are reflected in Prometheus
-6. Check if both target endpoints for custom metrics has the Status `UP` on the Prometheus UI.
+5. Check if both target endpoints for custom metrics has the Status `UP` on the Prometheus UI.

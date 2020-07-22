@@ -16,12 +16,8 @@ spec:
   criteria:
     - metric: iter8_mean_latency
       threshold:
-        type: absolute
-        value: 1500
-    # - metric: iter8_mean_latency
-    #   threshold:
-    #     type: relative
-    #     value: 1.6
+        type: relative
+        value: 1.6
     - metric: iter8_error_rate
       threshold:
         type: absolute
@@ -34,7 +30,7 @@ spec:
       isReward: true
   duration:
     interval: 20s
-    maxIterations: 15
+    maxIterations: 20
   trafficControl:
     strategy: progressive
     percentage: 80
