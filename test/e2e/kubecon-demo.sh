@@ -82,6 +82,9 @@ if [[ -n $ISOLATED_TEST ]]; then
   watch -n 0.1 "curl -H \"Host: bookinfo-kubecon.example.com\" -Is \"http://$IP:$PORT/productpage\"" >/dev/null 2>&1 &
 fi
 
+header "Try it with browser..."
+sleep 30
+
 # start experiment
 # verify waiting for candidate
 header "Create Iter8 Experiment"
