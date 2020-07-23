@@ -1,4 +1,5 @@
 /*
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -12,16 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package algorithm
+package apis
 
 import (
-	"github.com/iter8-tools/iter8-controller/pkg/analytics/api"
-	iter8v1alpha1 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha1"
+	"github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha2"
 )
 
-// Interface defines the interface for analytics algorithm
-type Interface interface {
-	GetPath() string
-	SupplementSuccessCriteria(specSC iter8v1alpha1.SuccessCriterion, sc api.SuccessCriterion) (api.SuccessCriterion, error)
-	SupplementTrafficControl(instance *iter8v1alpha1.Experiment, tc api.TrafficControl) api.TrafficControl
+func init() {
+	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
+	AddToSchemes = append(AddToSchemes, v1alpha2.SchemeBuilder.AddToScheme)
 }
