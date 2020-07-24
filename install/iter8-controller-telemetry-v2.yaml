@@ -76,10 +76,36 @@ metadata:
   name: experiments.iter8.tools
 spec:
   additionalPrinterColumns:
+  - JSONPath: .status.experimentType
+    description: Type of experiment
+    format: byte
+    name: type
+    type: string
+  - JSONPath: .status.effectiveHosts
+    description: Names of candidates
+    format: byte
+    name: hosts
+    type: string
   - JSONPath: .status.phase
     description: Phase of the experiment
     format: byte
     name: phase
+    type: string
+  - JSONPath: .status.assessment.winner.winning_version_found
+    description: Winner identified
+    format: byte
+    name: winner found
+    type: boolean
+  - JSONPath: .status.assessment.winner.current_best_version
+    description: Current best version
+    format: byte
+    name: current best
+    type: string
+  - JSONPath: .status.assessment.winner.probability_of_winning_for_best_version
+    description: Confidence current bets version will be the winner
+    format: float
+    name: confidence
+    priority: 1
     type: string
   - JSONPath: .status.message
     description: Detailed Status of the experiment
@@ -90,31 +116,13 @@ spec:
     description: Name of baseline
     format: byte
     name: baseline
+    priority: 1
     type: string
-  - JSONPath: .status.assessment.baseline.weight
-    description: Traffic percentage for baseline
-    format: int32
-    name: '%'
-    type: integer
   - JSONPath: .spec.service.candidates
     description: Names of candidates
     format: byte
     name: candidates
-    type: string
-  - JSONPath: .status.assessment.candidates[*].weight
-    description: Traffic percentages for candidates
-    format: int32
-    name: '%'
-    type: string
-  - JSONPath: .status.assessment.winner.current_best_version
-    description: Current best version
-    format: byte
-    name: current best
-    type: string
-  - JSONPath: .status.assessment.winner.probability_of_winning_for_best_version
-    description: Confidence current bets version will be the winner
-    format: float
-    name: confidence
+    priority: 1
     type: string
   group: iter8.tools
   names:
@@ -775,9 +783,18 @@ spec:
               description: CurrentIteration is the current iteration number
               format: int32
               type: integer
+            effectiveHosts:
+              description: EffectiveHosts is computed host for experiment. List of
+                spec.Service.Name and spec.Service.Hosts[0].name
+              items:
+                type: string
+              type: array
             endTimestamp:
               description: EndTimestamp is the timestamp when experiment completes
               format: date-time
+              type: string
+            experimentType:
+              description: ExperimentType is type of experiment
               type: string
             grafanaURL:
               description: GrafanaURL is the url to the Grafana Dashboard

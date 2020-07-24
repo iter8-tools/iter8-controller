@@ -9,7 +9,6 @@ spec:
     candidates:
       - productpage-v2
       - productpage-v3
-    port: 9080
     hosts:
       - name: bookinfo-kubecon.example.com
         gateway: bookinfo-gateway
@@ -22,7 +21,7 @@ spec:
       threshold:
         type: absolute
         value: 0.05
-    - metric: 500_ms_latency_percentile
+    - metric: le_500_ms_latency_percentile
       threshold:
         type: absolute
         value: 0.95
@@ -33,5 +32,4 @@ spec:
     maxIterations: 20
   trafficControl:
     strategy: progressive
-    percentage: 80
-    maxIncrement: 25
+    maxIncrement: 10

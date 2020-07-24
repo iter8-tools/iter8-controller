@@ -29,14 +29,15 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 // +kubebuilder:categories=all,iter8
+// +kubebuilder:printcolumn:name="type",type="string",JSONPath=".status.experimentType",description="Type of experiment",format="byte"
+// +kubebuilder:printcolumn:name="hosts",type="string",JSONPath=".status.effectiveHosts",description="Names of candidates",format="byte"
 // +kubebuilder:printcolumn:name="phase",type="string",JSONPath=".status.phase",description="Phase of the experiment",format="byte"
-// +kubebuilder:printcolumn:name="status",type="string",JSONPath=".status.message",description="Detailed Status of the experiment",format="byte"
-// +kubebuilder:printcolumn:name="baseline",type="string",JSONPath=".spec.service.baseline",description="Name of baseline",format="byte"
-// +kubebuilder:printcolumn:name="%",type="integer",JSONPath=".status.assessment.baseline.weight",description="Traffic percentage for baseline",format="int32"
-// +kubebuilder:printcolumn:name="candidates",type="string",JSONPath=".spec.service.candidates",description="Names of candidates",format="byte"
-// +kubebuilder:printcolumn:name="%",type="string",JSONPath=".status.assessment.candidates[*].weight",description="Traffic percentages for candidates",format="int32"
+// +kubebuilder:printcolumn:name="winner found",type="boolean",JSONPath=".status.assessment.winner.winning_version_found",description="Winner identified",format="byte"
 // +kubebuilder:printcolumn:name="current best",type="string",JSONPath=".status.assessment.winner.current_best_version",description="Current best version",format="byte"
-// +kubebuilder:printcolumn:name="confidence",type="string",JSONPath=".status.assessment.winner.probability_of_winning_for_best_version",description="Confidence current bets version will be the winner",format="float"
+// +kubebuilder:printcolumn:name="confidence",priority=1,type="string",JSONPath=".status.assessment.winner.probability_of_winning_for_best_version",description="Confidence current bets version will be the winner",format="float"
+// +kubebuilder:printcolumn:name="status",type="string",JSONPath=".status.message",description="Detailed Status of the experiment",format="byte"
+// +kubebuilder:printcolumn:name="baseline",priority=1,type="string",JSONPath=".spec.service.baseline",description="Name of baseline",format="byte"
+// +kubebuilder:printcolumn:name="candidates",priority=1,type="string",JSONPath=".spec.service.candidates",description="Names of candidates",format="byte"
 type Experiment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -304,6 +305,13 @@ type ExperimentStatus struct {
 	// AnalysisState is the last recorded analysis state
 	// +optional
 	AnalysisState *runtime.RawExtension `json:"analysisState,omitempty"`
+
+	// ExperimentType is type of experiment
+	ExperimentType string `json:"experimentType,omitempty"`
+
+	// EffectiveHosts is computed host for experiment.
+	// List of spec.Service.Name and spec.Service.Hosts[0].name
+	EffectiveHosts []string `json:"effectiveHosts,omitempty"`
 }
 
 // Conditions is a list of ExperimentConditions

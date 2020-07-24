@@ -104,6 +104,49 @@ func (e *Experiment) InitStatus() {
 	e.Status.Phase = PhaseProgressing
 	currentIteration := int32(0)
 	e.Status.CurrentIteration = &currentIteration
+	e.Status.ExperimentType = e.Spec.experimentType()
+	e.Status.EffectiveHosts = e.Spec.effectiveHosts()
+}
+
+const (
+	ExperimentTypePerformance string = "Perfromance"
+	ExperimentTypeCanary      string = "Canary"
+	ExperimentTypeAB          string = "A/B"
+	ExperimentTypeABN         string = "A/B/N"
+)
+
+func (spec *ExperimentSpec) experimentType() string {
+	numCandidates := len(spec.Service.Candidates)
+	if 0 == numCandidates {
+		return ExperimentTypePerformance
+	} else if 1 == numCandidates && spec.hasReward() {
+		return ExperimentTypeAB
+	} else if 1 == numCandidates {
+		return ExperimentTypeCanary
+	} else {
+		return ExperimentTypeABN
+	}
+}
+
+func (spec *ExperimentSpec) hasReward() bool {
+	for _, criteria := range spec.Criteria {
+		if criteria.HasRewardMetric() {
+			return true
+		}
+	}
+	return false
+}
+
+func (spec *ExperimentSpec) effectiveHosts() []string {
+	hosts := make([]string, 0)
+	host := spec.Service.Name
+	if host != "" {
+		hosts = append(hosts, host)
+	}
+	for _, host := range spec.Service.Hosts {
+		hosts = append(hosts, host.Name)
+	}
+	return hosts
 }
 
 func (c *ExperimentCondition) markCondition(status corev1.ConditionStatus, reason, messageFormat string, messageA ...interface{}) bool {

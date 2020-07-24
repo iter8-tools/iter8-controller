@@ -357,6 +357,11 @@ func (in *ExperimentStatus) DeepCopyInto(out *ExperimentStatus) {
 		*out = new(runtime.RawExtension)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.EffectiveHosts != nil {
+		in, out := &in.EffectiveHosts, &out.EffectiveHosts
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

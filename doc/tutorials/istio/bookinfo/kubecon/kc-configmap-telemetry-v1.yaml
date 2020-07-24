@@ -36,7 +36,7 @@ data:
       numerator: books_purchased_total
       denominator: iter8_request_count
       preferred_direction: higher
-    - name: 500_ms_latency_percentile
+    - name: le_500_ms_latency_percentile
       numerator: le_500_ms_latency_request_count
       denominator: le_inf_latency_request_count
       preferred_direction: higher
