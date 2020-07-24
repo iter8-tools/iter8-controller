@@ -139,9 +139,11 @@ func (spec *ExperimentSpec) hasReward() bool {
 
 func (spec *ExperimentSpec) effectiveHosts() []string {
 	hosts := make([]string, 0)
-	host := spec.Service.Name
-	if host != "" {
-		hosts = append(hosts, host)
+	if nil != spec.Service.ObjectReference {
+		host := spec.Service.Name
+		if host != "" {
+			hosts = append(hosts, host)
+		}
 	}
 	for _, host := range spec.Service.Hosts {
 		hosts = append(hosts, host.Name)
