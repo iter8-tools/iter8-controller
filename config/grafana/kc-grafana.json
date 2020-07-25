@@ -16,6 +16,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
+  "id": 11,
   "iteration": 1561057163257,
   "links": [],
   "panels": [
@@ -41,12 +42,14 @@
       "datasource": "Prometheus",
       "description": "Request rate",
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 0,
         "y": 1
       },
+      "hiddenSeries": false,
       "id": 2,
       "legend": {
         "avg": false,
@@ -61,12 +64,16 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
@@ -78,10 +85,11 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter='source'}[$window_size]))",
+          "expr": "sum(rate(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter='source'}[$window_size])) by (destination_workload)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "$candidate",
+          "legendFormat": "{{destination_workload}}",
           "refId": "B"
         }
       ],
@@ -132,12 +140,14 @@
       "dashLength": 10,
       "dashes": false,
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 12,
         "y": 1
       },
+      "hiddenSeries": false,
       "id": 4,
       "legend": {
         "avg": false,
@@ -152,12 +162,16 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
@@ -169,10 +183,11 @@
           "refId": "A"
         },
         {
-          "expr": "sum(increase(istio_request_duration_milliseconds_sum{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter='source'}[$window_size])) / sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter = 'source'}[$window_size]))",
+          "expr": "(sum(increase(istio_request_duration_milliseconds_sum{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter='source'}[$window_size]))by (destination_workload)) / (sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter = 'source'}[$window_size]))by (destination_workload)) ",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "$candidate",
+          "legendFormat": "{{destination_workload}}",
           "refId": "B"
         }
       ],
@@ -223,12 +238,14 @@
       "dashLength": 10,
       "dashes": false,
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 24,
         "x": 0,
         "y": 9
       },
+      "hiddenSeries": false,
       "id": 10,
       "legend": {
         "avg": false,
@@ -243,28 +260,33 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
-        {
-          "expr": "(sum(increase(istio_request_duration_milliseconds_bucket{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', le='500',job='envoy-stats',reporter='source',job='envoy-stats'}[$window_size])) by (destination_workload, destination_workload_namespace))/(sum(increase(istio_request_duration_milliseconds_bucket{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', le='+Inf',job='envoy-stats',reporter='source',job='envoy-stats'}[$window_size])) by (destination_workload, destination_workload_namespace))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "$candidate",
-          "refId": "A"
-        },
         {
           "expr": "(sum(increase(istio_request_duration_milliseconds_bucket{destination_workload=~'[[baseline]]', destination_workload_namespace='$namespace', le='500',job='envoy-stats',reporter='source',job='envoy-stats'}[$window_size])) by (destination_workload, destination_workload_namespace))/(sum(increase(istio_request_duration_milliseconds_bucket{destination_workload=~'[[baseline]]', destination_workload_namespace='$namespace', le='+Inf',job='envoy-stats',reporter='source',job='envoy-stats'}[$window_size])) by (destination_workload, destination_workload_namespace))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline",
           "refId": "B"
+        },
+        {
+          "expr": "(sum(increase(istio_request_duration_milliseconds_bucket{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', le='500',job='envoy-stats',reporter='source',job='envoy-stats'}[$window_size])) by (destination_workload, destination_workload_namespace))/(sum(increase(istio_request_duration_milliseconds_bucket{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', le='+Inf',job='envoy-stats',reporter='source',job='envoy-stats'}[$window_size])) by (destination_workload, destination_workload_namespace))",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{destination_workload}}",
+          "refId": "A"
         }
       ],
       "thresholds": [],
@@ -313,7 +335,6 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -322,6 +343,7 @@
         "x": 0,
         "y": 17
       },
+      "hiddenSeries": false,
       "id": 30,
       "legend": {
         "avg": false,
@@ -336,28 +358,33 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
-        {
-          "expr": "(sum(increase(number_of_books_purchased_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace'}[$window_size])) by (destination_workload,destination_workload_namespace))/(sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', reporter='source',job='envoy-stats'}[$window_size])) by (destination_workload,destination_workload_namespace))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "$candidate",
-          "refId": "A"
-        },
         {
           "expr": "sum(increase(number_of_books_purchased_total{destination_workload=~'[[baseline]]', destination_workload_namespace='$namespace'}[$window_size])) by (destination_workload,destination_workload_namespace)/(sum(increase(istio_requests_total{destination_workload=~'[[baseline]]', destination_workload_namespace='$namespace', reporter='source',job='envoy-stats'}[$window_size])) by (destination_workload,destination_workload_namespace))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline",
           "refId": "H"
+        },
+        {
+          "expr": "(sum(increase(number_of_books_purchased_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace'}[$window_size])) by (destination_workload,destination_workload_namespace))/(sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', reporter='source',job='envoy-stats'}[$window_size])) by (destination_workload,destination_workload_namespace))",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{destination_workload}}",
+          "refId": "A"
         }
       ],
       "thresholds": [],
@@ -407,12 +434,14 @@
       "dashLength": 10,
       "dashes": false,
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 0,
         "y": 25
       },
+      "hiddenSeries": false,
       "id": 7,
       "legend": {
         "avg": false,
@@ -427,27 +456,33 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
         {
           "expr": "sum(increase(istio_requests_total{destination_workload=~'[[baseline]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter = 'source', response_code =~ \"5..\"}[$window_size])) / sum(increase(istio_requests_total{destination_workload=~'[[baseline]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter = 'source'}[$window_size]))",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "$baseline",
           "refId": "A"
         },
         {
-          "expr": "sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter = 'source', response_code =~ \"5..\"}[$window_size])) / sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter = 'source'}[$window_size]))",
+          "expr": "(sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter = 'source', response_code =~ \"5..\"}[$window_size]))by(destination_workload)) / (sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', job='envoy-stats', reporter = 'source'}[$window_size]))by(destination_workload))",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "$candidate",
+          "legendFormat": "{{destination_workload}}",
           "refId": "B"
         }
       ],
@@ -498,12 +533,14 @@
       "dashLength": 10,
       "dashes": false,
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 12,
         "y": 25
       },
+      "hiddenSeries": false,
       "id": 8,
       "legend": {
         "avg": false,
@@ -518,12 +555,16 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
@@ -535,10 +576,11 @@
           "refId": "A"
         },
         {
-          "expr": "sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace',job='envoy-stats', reporter = 'source', response_code =~ \"5..\"}[$window_size]))",
+          "expr": "sum(increase(istio_requests_total{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace',job='envoy-stats', reporter = 'source', response_code =~ \"5..\"}[$window_size])) by (destination_workload)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "$candidate",
+          "legendFormat": "{{destination_workload}}",
           "refId": "B"
         }
       ],
@@ -604,12 +646,14 @@
       "dashes": false,
       "description": "",
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 24,
         "x": 0,
         "y": 34
       },
+      "hiddenSeries": false,
       "hideTimeOverride": false,
       "id": 18,
       "legend": {
@@ -628,6 +672,9 @@
       "links": [],
       "maxPerRow": 2,
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": true,
       "pointradius": 2,
@@ -636,23 +683,25 @@
       "repeat": null,
       "repeatDirection": "h",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"$baseline.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"$baseline.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))by (pod)",
           "format": "time_series",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$baseline}}",
+          "legendFormat": "{{pod}}",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"$candidate.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"($candidate)-.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size])) by (pod)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$candidate}}",
+          "legendFormat": "{{pod}}",
           "refId": "B"
         }
       ],
@@ -704,12 +753,14 @@
       "dashes": false,
       "description": "",
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 24,
         "x": 0,
         "y": 42
       },
+      "hiddenSeries": false,
       "id": 20,
       "legend": {
         "avg": false,
@@ -724,28 +775,33 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(avg_over_time(container_memory_working_set_bytes{pod=~\"$baseline.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(avg_over_time(container_memory_working_set_bytes{pod=~\"$baseline.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size])) by (pod)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$baseline}}",
+          "legendFormat": "{{pod}}",
           "refId": "A"
         },
         {
-          "expr": "sum(avg_over_time(container_memory_working_set_bytes{pod=~\"$candidate.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(avg_over_time(container_memory_working_set_bytes{pod=~\"($candidate).*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size])) by (pod)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$candidate}}",
+          "legendFormat": "{{pod}}",
           "refId": "B"
         }
       ],
@@ -797,12 +853,14 @@
       "dashes": false,
       "description": "Container selector does not apply here",
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 0,
         "y": 50
       },
+      "hiddenSeries": false,
       "id": 22,
       "legend": {
         "avg": false,
@@ -819,6 +877,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
@@ -827,21 +888,24 @@
       "repeat": null,
       "repeatDirection": "h",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_network_receive_bytes_total{pod=~\"$baseline.*\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(rate(container_network_receive_bytes_total{pod=~\"$baseline.*\", namespace=\"$namespace\", image=~\".+\"}[$window_size])) by (pod)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$baseline}}",
+          "legendFormat": "{{pod}}",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(container_network_receive_bytes_total{pod=~\"$candidate.*\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(rate(container_network_receive_bytes_total{pod=~\"($candidate).*\", namespace=\"$namespace\", image=~\".+\"}[$window_size])) by (pod)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$candidate}}",
+          "legendFormat": "{{pod}}",
           "refId": "B"
         }
       ],
@@ -892,12 +956,14 @@
       "dashLength": 10,
       "dashes": false,
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 12,
         "y": 50
       },
+      "hiddenSeries": false,
       "id": 24,
       "legend": {
         "avg": false,
@@ -912,27 +978,33 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_network_transmit_bytes_total{pod=~\"$baseline.*\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(rate(container_network_transmit_bytes_total{pod=~\"$baseline.*\", namespace=\"$namespace\", image=~\".+\"}[$window_size])) by (pod)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$baseline}}",
+          "legendFormat": "{{pod}}",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(container_network_transmit_bytes_total{pod=~\"$candidate.*\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(rate(container_network_transmit_bytes_total{pod=~\"($candidate).*\", namespace=\"$namespace\", image=~\".+\"}[$window_size])) by (pod)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$candidate}}",
+          "legendFormat": "{{pod}}",
           "refId": "B"
         }
       ],
@@ -983,12 +1055,14 @@
       "dashLength": 10,
       "dashes": false,
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 0,
         "y": 57
       },
+      "hiddenSeries": false,
       "id": 26,
       "legend": {
         "avg": false,
@@ -1003,27 +1077,33 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_fs_reads_bytes_total{pod=~\"$baseline.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(rate(container_fs_reads_bytes_total{pod=~\"$baseline.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size])) by (pod)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$baseline}}",
+          "legendFormat": "{{pod}}",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(container_fs_reads_bytes_total{pod=~\"$candidate.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(rate(container_fs_reads_bytes_total{pod=~\"($candidate).*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size])) by (pod)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$candidate}}",
+          "legendFormat": "{{pod}}",
           "refId": "B"
         }
       ],
@@ -1074,12 +1154,14 @@
       "dashLength": 10,
       "dashes": false,
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 12,
         "y": 57
       },
+      "hiddenSeries": false,
       "id": 28,
       "legend": {
         "avg": false,
@@ -1094,27 +1176,33 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_fs_writes_bytes_total{pod=~\"$baseline.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(rate(container_fs_writes_bytes_total{pod=~\"$baseline.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size])) by (pod)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$baseline}}",
+          "legendFormat": "{{pod}}",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(container_fs_writes_bytes_total{pod=~\"$candidate.*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size]))",
+          "expr": "sum(rate(container_fs_writes_bytes_total{pod=~\"($candidate).*\", container!~\"istio-proxy\", namespace=\"$namespace\", image=~\".+\"}[$window_size])) by (pod)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{$candidate}}",
+          "legendFormat": "{{pod}}",
           "refId": "B"
         }
       ],
@@ -1223,15 +1311,19 @@
       {
         "allValue": null,
         "current": {
-          "text": "productpage-v2",
-          "value": "productpage-v2"
+          "text": "productpage-v2 + productpage-v3",
+          "value": [
+            "productpage-v2",
+            "productpage-v3"
+          ]
         },
         "datasource": "Prometheus",
         "definition": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace = '$namespace', destination_workload != 'unknown'}, destination_workload)",
         "hide": 0,
         "includeAll": false,
+        "index": -1,
         "label": "Candidate",
-        "multi": false,
+        "multi": true,
         "name": "candidate",
         "options": [],
         "query": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace = '$namespace', destination_workload != 'unknown'}, destination_workload)",
@@ -1248,13 +1340,14 @@
       {
         "allValue": null,
         "current": {
-          "text": "bookinfo-iter8",
-          "value": "bookinfo-iter8"
+          "text": "kubecon-demo",
+          "value": "kubecon-demo"
         },
         "datasource": "Prometheus",
         "definition": "label_values(istio_requests_total{destination_service_namespace!='unknown'}, destination_service_namespace)",
         "hide": 0,
         "includeAll": false,
+        "index": -1,
         "label": "Namespace",
         "multi": false,
         "name": "namespace",
