@@ -105,7 +105,7 @@ func (r *ReconcileExperiment) detectTargets(context context.Context, instance *i
 			onDeletedTarget(instance, targets.RoleCandidate)
 			return false, err
 		} else {
-			r.markTargetsError(context, instance, "Err in getting candidates: %v", err)
+			r.markTargetsError(context, instance, "Missing Candidate")
 			return false, nil
 		}
 	} else {
