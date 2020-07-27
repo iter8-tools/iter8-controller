@@ -44,8 +44,8 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 		}
 	}
 
-	if r.toUpdate(context, instance) {
-		err := r.updateIteration(context, instance)
+	if r.toProcessIteration(context, instance) {
+		err := r.processIteration(context, instance)
 		if err != nil {
 			return r.endRequest(context, instance)
 		}
@@ -63,9 +63,9 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 
 	// requeue for next iteration
 	if r.hasProgress() {
-		interval, _ := instance.Spec.GetInterval()
+		r.updateIteration(instance)
 		r.endRequest(context, instance)
-		*instance.Status.CurrentIteration++
+		interval, _ := instance.Spec.GetInterval()
 		log.Info("Requeue for next iteration", "interval", interval, "iteration", *instance.Status.CurrentIteration)
 		return reconcile.Result{RequeueAfter: interval}, nil
 	}
@@ -105,7 +105,7 @@ func (r *ReconcileExperiment) toDetectTargets(context context.Context, instance 
 	return true
 }
 
-func (r *ReconcileExperiment) toUpdate(context context.Context, instance *iter8v1alpha2.Experiment) bool {
+func (r *ReconcileExperiment) toProcessIteration(context context.Context, instance *iter8v1alpha2.Experiment) bool {
 	if instance.Spec.Terminate() {
 		return false
 	}

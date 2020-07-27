@@ -131,7 +131,7 @@ func (r *ReconcileExperiment) detectTargets(context context.Context, instance *i
 }
 
 // returns non-nil error if reconcile process should be terminated right after this function
-func (r *ReconcileExperiment) updateIteration(context context.Context, instance *iter8v1alpha2.Experiment) error {
+func (r *ReconcileExperiment) processIteration(context context.Context, instance *iter8v1alpha2.Experiment) error {
 	log := util.Logger(context)
 	trafficUpdated := false
 	// mark experiment begin
@@ -250,6 +250,11 @@ func (r *ReconcileExperiment) updateIteration(context context.Context, instance 
 	now := metav1.Now()
 	instance.Status.LastUpdateTime = &now
 	return nil
+}
+
+func (r *ReconcileExperiment) updateIteration(instance *iter8v1alpha2.Experiment) {
+	*instance.Status.CurrentIteration++
+	r.markStatusUpdate()
 }
 
 func onDeletedTarget(instance *iter8v1alpha2.Experiment, role targets.Role) {
