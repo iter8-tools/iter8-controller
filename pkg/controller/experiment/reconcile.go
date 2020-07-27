@@ -37,23 +37,31 @@ func (r *ReconcileExperiment) completeExperiment(context context.Context, instan
 		return err
 	}
 
-	msg := completeStatusMessage(context, instance)
-	r.markExperimentCompleted(context, instance, "%s", msg)
+	r.markExperimentCompleted(context, instance, "%s", completeStatusMessage(instance))
 	return nil
 }
 
 // returns hard-coded termination message
-func completeStatusMessage(context context.Context, instance *iter8v1alpha2.Experiment) string {
-	// TODO: might need more detailed situations
-	if experimentAbstract(context) != nil && experimentAbstract(context).Terminate() {
-		return experimentAbstract(context).GetTerminateStatus()
-	} else if instance.Spec.Terminate() {
-		return "Abort"
-	} else if instance.Spec.GetMaxIterations() < *instance.Status.CurrentIteration {
-		return "Last Iteration Was Completed"
+func completeStatusMessage(instance *iter8v1alpha2.Experiment) string {
+	out := ""
+	switch instance.Spec.GetOnTermination() {
+	case iter8v1alpha2.OnTerminationToWinner:
+		if instance.Status.IsWinnerFound() {
+			out += "Traffic To Winner"
+			break
+		}
+		fallthrough
+	case iter8v1alpha2.OnTerminationToBaseline:
+		out += "Traffic To Baseline"
+	case iter8v1alpha2.OnTerminationKeepLast:
+		out += "Keep Last Traffic"
 	}
 
-	return "Error"
+	if instance.Spec.Terminate() {
+		out += "(Abort)"
+	}
+
+	return out
 }
 
 func (r *ReconcileExperiment) checkOrInitRules(context context.Context, instance *iter8v1alpha2.Experiment) error {
@@ -238,7 +246,7 @@ func (r *ReconcileExperiment) updateIteration(context context.Context, instance 
 		r.markAssessmentUpdate(context, instance, "Traffic updated: %s", instance.Status.TrafficToString())
 	}
 
-	r.markIterationUpdate(context, instance, "Iteration %d completed", *instance.Status.CurrentIteration)
+	r.markIterationUpdate(context, instance, "Iteration %d/%d completed", *instance.Status.CurrentIteration, instance.Spec.GetMaxIterations())
 	now := metav1.Now()
 	instance.Status.LastUpdateTime = &now
 	return nil

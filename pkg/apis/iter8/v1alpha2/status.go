@@ -317,7 +317,7 @@ func (s *ExperimentStatus) WinnerToString() string {
 	if !s.IsWinnerFound() {
 		return "Winner Has Not Yet Been Found"
 	}
-	return fmt.Sprintf("Current winner %s has winning probability of %f", s.Assessment.Winner.Winner,
+	return fmt.Sprintf("Current winner (%s) has winning probability of %f", s.Assessment.Winner.Winner,
 		s.Assessment.Winner.Probability)
 }
 
