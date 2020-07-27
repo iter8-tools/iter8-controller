@@ -61,7 +61,7 @@ yq w $DIR/../../doc/tutorials/istio/bookinfo/canary_reviews-v2_to_reviews-v3.yam
   | kubectl -n $NAMESPACE apply -f -
 sleep 2
 kubectl get experiments.iter8.tools -n $NAMESPACE
-test_experiment_status $EXPERIMENT "TargetsError: Err in getting candidates:"
+test_experiment_status $EXPERIMENT "TargetsError: Missing Candidate"
 
 # start canary
 # verify experiment progressing
