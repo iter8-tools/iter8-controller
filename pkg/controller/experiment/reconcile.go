@@ -126,7 +126,6 @@ func (r *ReconcileExperiment) detectTargets(context context.Context, instance *i
 func (r *ReconcileExperiment) updateIteration(context context.Context, instance *iter8v1alpha2.Experiment) error {
 	log := util.Logger(context)
 	trafficUpdated := false
-	trafficSplit := make(map[string]int32)
 	// mark experiment begin
 	if instance.Status.StartTimestamp == nil {
 		startTime := metav1.Now()
@@ -142,10 +141,8 @@ func (r *ReconcileExperiment) updateIteration(context context.Context, instance 
 		diff := instance.Spec.GetMaxIncrements() * int32(len(instance.Spec.Candidates))
 		if basetraffic-diff >= 0 {
 			instance.Status.Assessment.Baseline.Weight = basetraffic - diff
-			trafficSplit[instance.Spec.Service.Baseline] = instance.Status.Assessment.Baseline.Weight
 			for i := range instance.Status.Assessment.Candidates {
 				instance.Status.Assessment.Candidates[i].Weight += instance.Spec.GetMaxIncrements()
-				trafficSplit[instance.Spec.Service.Candidates[i]] = instance.Status.Assessment.Candidates[i].Weight
 			}
 			trafficUpdated = true
 		}
@@ -192,7 +189,7 @@ func (r *ReconcileExperiment) updateIteration(context context.Context, instance 
 		}
 
 		instance.Status.Assessment.Winner = &response.WinnerAssessment
-		r.markAssessmentUpdate(context, instance, "Winner assessment: %+v", response.WinnerAssessment)
+		r.markAssessmentUpdate(context, instance, "Winner assessment: %s", instance.Status.WinnerToString())
 
 		strategy := instance.Spec.GetStrategy()
 		_, ok := response.TrafficSplitRecommendation[strategy]
@@ -201,7 +198,7 @@ func (r *ReconcileExperiment) updateIteration(context context.Context, instance 
 			r.markAnalyticsServiceError(context, instance, "%v", err)
 			return err
 		}
-		trafficSplit = response.TrafficSplitRecommendation[strategy]
+		trafficSplit := response.TrafficSplitRecommendation[strategy]
 
 		if baselineWeight, ok := trafficSplit[instance.Spec.Baseline]; ok {
 			if instance.Status.Assessment.Baseline.Weight != baselineWeight {
@@ -238,13 +235,12 @@ func (r *ReconcileExperiment) updateIteration(context context.Context, instance 
 			r.markRoutingRulesError(context, instance, "%v", err)
 			return err
 		}
-		r.markAssessmentUpdate(context, instance, "New Traffic: %v", trafficSplit)
+		r.markAssessmentUpdate(context, instance, "Traffic updated: %s", instance.Status.TrafficToString())
 	}
 
 	r.markIterationUpdate(context, instance, "Iteration %d completed", *instance.Status.CurrentIteration)
 	now := metav1.Now()
 	instance.Status.LastUpdateTime = &now
-	*instance.Status.CurrentIteration++
 	return nil
 }
 

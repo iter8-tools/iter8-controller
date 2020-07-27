@@ -65,7 +65,8 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 	if r.hasProgress() {
 		interval, _ := instance.Spec.GetInterval()
 		r.endRequest(context, instance)
-		log.Info("Requeue for next iteration", "interval", interval)
+		*instance.Status.CurrentIteration++
+		log.Info("Requeue for next iteration", "interval", interval, "iteration", *instance.Status.CurrentIteration)
 		return reconcile.Result{RequeueAfter: interval}, nil
 	}
 

@@ -307,6 +307,36 @@ func (s *ExperimentStatus) MarkExperimentResume(messageFormat string, messageA .
 	return true, reason
 }
 
+// IsWinnerFound tells whether winner has been found by analytics
+func (s *ExperimentStatus) IsWinnerFound() bool {
+	return s.Assessment != nil && s.Assessment.Winner != nil && s.Assessment.Winner.WinnerFound
+}
+
+// WinnerToString outputs winner assessment in human-readable format
+func (s *ExperimentStatus) WinnerToString() string {
+	if !s.IsWinnerFound() {
+		return "Winner Has Not Yet Been Found"
+	}
+	return fmt.Sprintf("Current winner %s has winning probability of %f", s.Assessment.Winner.Winner,
+		s.Assessment.Winner.Probability)
+}
+
+// TrafficToString outputs current traffic in human-readable format
+func (s *ExperimentStatus) TrafficToString() string {
+	out := ""
+
+	assessment := s.Assessment
+	// Baseline
+	out += fmt.Sprintf("%s: %d", assessment.Baseline.Name, assessment.Baseline.Weight)
+
+	// Candidates
+	for _, candidate := range assessment.Candidates {
+		out += fmt.Sprintf(", %s: %d", candidate.Name, candidate.Weight)
+	}
+
+	return "[" + out + "]"
+}
+
 func composeMessage(reason, messageFormat string, messageA ...interface{}) string {
 	out := reason
 	msg := fmt.Sprintf(messageFormat, messageA...)
