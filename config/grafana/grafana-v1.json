@@ -274,14 +274,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "(sum(increase(istio_request_duration_seconds_bucket{destination_workload=~'[[baseline]]', destination_workload_namespace='$namespace', le='0.05',job='istio-mesh',reporter='source',job='istio-mesh'}[$window_size])) by (destination_workload, destination_workload_namespace))/(sum(increase(istio_request_duration_seconds_bucket{destination_workload=~'[[baseline]]', destination_workload_namespace='$namespace', le='+Inf',job='istio-mesh',reporter='source',job='istio-mesh'}[$window_size])) by (destination_workload, destination_workload_namespace))",
+          "expr": "(sum(increase(istio_request_duration_seconds_bucket{destination_workload=~'[[baseline]]', destination_workload_namespace='$namespace', le='0.5',job='istio-mesh',reporter='source',job='istio-mesh'}[$window_size])) by (destination_workload, destination_workload_namespace))/(sum(increase(istio_request_duration_seconds_bucket{destination_workload=~'[[baseline]]', destination_workload_namespace='$namespace', le='+Inf',job='istio-mesh',reporter='source',job='istio-mesh'}[$window_size])) by (destination_workload, destination_workload_namespace))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "$baseline",
           "refId": "B"
         },
         {
-          "expr": "(sum(increase(istio_request_duration_seconds_bucket{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', le='0.05',job='istio-mesh',reporter='source',job='istio-mesh'}[$window_size])) by (destination_workload, destination_workload_namespace))/(sum(increase(istio_request_duration_seconds_bucket{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', le='+Inf',job='istio-mesh',reporter='source',job='istio-mesh'}[$window_size])) by (destination_workload, destination_workload_namespace))",
+          "expr": "(sum(increase(istio_request_duration_seconds_bucket{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', le='0.5',job='istio-mesh',reporter='source',job='istio-mesh'}[$window_size])) by (destination_workload, destination_workload_namespace))/(sum(increase(istio_request_duration_seconds_bucket{destination_workload=~'[[candidate]]', destination_workload_namespace='$namespace', le='+Inf',job='istio-mesh',reporter='source',job='istio-mesh'}[$window_size])) by (destination_workload, destination_workload_namespace))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
