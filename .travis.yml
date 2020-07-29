@@ -36,13 +36,13 @@ jobs:
       <<: *end_to_end_script
     - stage: "build image"
       # only build images for master and release branches + tagged releases
-      if: (type = push) AND (branch = master OR branch =~ /^v[0-9]+\.[0-9]+(\.[0-9]+)*$/)
+      if: (type = push) AND (branch = master OR branch =~ /^v[0-9]+\.[0-9]+(\.[0-9]+)*.*$/)
       script:
         - test/e2e/build-image.sh
     - stage: "release"
       script: skip
       # only do release for tagged releases
-      if: (type = push) AND (branch =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/)
+      if: (type = push) AND (branch =~ /^v[0-9]+\.[0-9]+\.[0-9]+.*$/)
       before_deploy:
         - make ver=${TRAVIS_BRANCH} changelog > release.note
         - tar cvzf iter8-controller.tgz install/helm/iter8-controller/
