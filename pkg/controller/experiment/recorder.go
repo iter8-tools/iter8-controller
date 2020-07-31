@@ -87,6 +87,16 @@ func (r *ReconcileExperiment) markAssessmentUpdate(context context.Context, inst
 	}
 }
 
+func (r *ReconcileExperiment) markTrafficUpdate(context context.Context, instance *iter8v1alpha2.Experiment,
+	messageFormat string, messageA ...interface{}) {
+	if updated, reason := instance.Status.MarkTrafficUpdate(messageFormat, messageA...); updated {
+		util.Logger(context).Info(reason + ", " + fmt.Sprintf(messageFormat, messageA...))
+		r.eventRecorder.Eventf(instance, corev1.EventTypeNormal, reason, messageFormat, messageA...)
+		r.notificationCenter.Notify(instance, reason, messageFormat, messageA...)
+		r.markStatusUpdate()
+	}
+}
+
 func (r *ReconcileExperiment) markExperimentCompleted(context context.Context, instance *iter8v1alpha2.Experiment,
 	messageFormat string, messageA ...interface{}) {
 	if updated, reason := instance.Status.MarkExperimentCompleted(messageFormat, messageA...); updated {

@@ -96,6 +96,7 @@ const (
 	ReasonAnalyticsServiceRunning = "AnalyticsServiceRunning"
 	ReasonIterationUpdate         = "IterationUpdate"
 	ReasonAssessmentUpdate        = "AssessmentUpdate"
+	ReasonTrafficUpdate           = "TrafficUpdate"
 	ReasonExperimentCompleted     = "ExperimentCompleted"
 	ReasonSyncMetricsError        = "SyncMetricsError"
 	ReasonSyncMetricsSucceeded    = "SyncMetricsSucceeded"
