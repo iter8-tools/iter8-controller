@@ -44,10 +44,10 @@ autodetect() {
 
     if verlt "$KUBERNETES_VERSION" "1.16"; then
       echo "Using Prometheus queries for older Kubernetes (<v1.16) "
-      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0/config/grafana/istio-telemetry-v1.json"
+      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0-preview/config/grafana/istio-telemetry-v1.json"
     else
       echo "Using Prometheus queries for newer Kubernetes (>=v1.16)"
-      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0/config/grafana/istio-telemetry-v1-k8s-16.json"
+      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0-preview/config/grafana/istio-telemetry-v1-k8s-16.json"
     fi
 
   else
@@ -55,10 +55,10 @@ autodetect() {
 
     if verlt "$KUBERNETES_VERSION" "1.16"; then
       echo "Using Prometheus queries for older Kubernetes (<v1.16) "
-      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0/config/grafana/istio-telemetry-v2.json"
+      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0-preview/config/grafana/istio-telemetry-v2.json"
     else
       echo "Using Prometheus queries for newer Kubernetes (>=v1.16)"
-      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0/config/grafana/istio-telemetry-v2-k8s-16.json"
+      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0-preview/config/grafana/istio-telemetry-v2-k8s-16.json"
     fi
   fi
   echo "Installing Grafana dashboard from $DASHBOARD_DEFN"

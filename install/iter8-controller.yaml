@@ -1047,7 +1047,7 @@ spec:
       serviceAccountName: iter8-controller
       containers:
       - name: iter8-controller
-        image: "iter8/iter8-controller:v1.0.0"
+        image: "iter8/iter8-controller:v1.0.0-preview"
         imagePullPolicy: Always
         env:
           - name: POD_NAMESPACE
