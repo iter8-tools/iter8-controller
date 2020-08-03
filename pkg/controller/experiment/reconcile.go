@@ -243,7 +243,7 @@ func (r *ReconcileExperiment) processIteration(context context.Context, instance
 			r.markRoutingRulesError(context, instance, "%v", err)
 			return err
 		}
-		r.markAssessmentUpdate(context, instance, "Traffic updated: %s", instance.Status.TrafficToString())
+		r.markTrafficUpdate(context, instance, "Traffic: %s", instance.Status.TrafficToString())
 	}
 
 	r.markIterationUpdate(context, instance, "Iteration %d/%d completed", *instance.Status.CurrentIteration, instance.Spec.GetMaxIterations())

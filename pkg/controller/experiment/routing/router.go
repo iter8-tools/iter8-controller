@@ -235,8 +235,11 @@ func (r *Router) Cleanup(context context.Context, instance *iter8v1alpha2.Experi
 						break
 					}
 				}
+			} else {
+				// change baseline to stable
+				toStableSubset[SubsetBaseline] = SubsetStable
+				subsetWeight[SubsetStable] = 100
 			}
-			fallthrough
 		case iter8v1alpha2.OnTerminationToBaseline:
 			// change baseline to stable
 			toStableSubset[SubsetBaseline] = SubsetStable

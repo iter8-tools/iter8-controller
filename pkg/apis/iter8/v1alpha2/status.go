@@ -283,6 +283,16 @@ func (s *ExperimentStatus) MarkAssessmentUpdate(messageFormat string, messageA .
 		markCondition(corev1.ConditionFalse, reason, messageFormat, messageA...), reason
 }
 
+// MarkTrafficUpdate sets the condition that traffic to targets has beeen changed
+func (s *ExperimentStatus) MarkTrafficUpdate(messageFormat string, messageA ...interface{}) (bool, string) {
+	reason := ReasonTrafficUpdate
+	message := composeMessage(reason, messageFormat, messageA...)
+	s.Phase = PhaseProgressing
+	s.Message = &message
+	return s.GetCondition(ExperimentConditionExperimentCompleted).
+		markCondition(corev1.ConditionFalse, reason, messageFormat, messageA...), reason
+}
+
 // MarkExperimentPause sets the phase and status that experiment is paused by manualOverrides
 // returns true if this is a newly-set operation
 func (s *ExperimentStatus) MarkExperimentPause(messageFormat string, messageA ...interface{}) (bool, string) {
@@ -314,12 +324,18 @@ func (s *ExperimentStatus) IsWinnerFound() bool {
 
 // WinnerToString outputs winner assessment in human-readable format
 func (s *ExperimentStatus) WinnerToString() string {
-	if !s.IsWinnerFound() {
-		return fmt.Sprintf("Winner has not been found yet. Current best version (%s) has winning probability of %f", s.Assessment.Winner.Winner,
-			s.Assessment.Winner.Probability)
+	progress := fmt.Sprintf("[Iteration %d]: ", *s.CurrentIteration)
+	if s.Assessment != nil && s.Assessment.Winner != nil {
+		if s.Assessment.Winner.WinnerFound {
+			return progress + fmt.Sprintf("Current winner (%s) has winning probability of %f.", s.Assessment.Winner.Winner,
+				s.Assessment.Winner.Probability)
+		} else {
+			return progress + fmt.Sprintf("Winner has not been found yet. Current best version (%s) has winning probability of %f.", s.Assessment.Winner.Winner,
+				s.Assessment.Winner.Probability)
+		}
+	} else {
+		return progress + "Not available."
 	}
-	return fmt.Sprintf("Current winner (%s) has winning probability of %f", s.Assessment.Winner.Winner,
-		s.Assessment.Winner.Probability)
 }
 
 // TrafficToString outputs current traffic in human-readable format
