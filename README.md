@@ -34,4 +34,4 @@ The components of iter8 are divided across a few github repositories.
 
 In addition,
 - iter8's extensions to Kiali is contained in [kiali](https://github.com/kiali/kiali), [kiali-ui](https://github.com/kiali/kiali-ui), and [k-charted](https://github.com/kiali/k-charted). 
-- iter8's extensions to KUI is contained in [kui](https://github.com/IBM/kui).. 
+- iter8's extensions to KUI is contained in [kui](https://github.com/IBM/kui).
