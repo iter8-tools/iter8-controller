@@ -17,6 +17,7 @@ package istio
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
 	"strconv"
 
@@ -34,11 +35,17 @@ import (
 )
 
 const (
+	// the key of label used to reference to the router id
+	routerID = "iter8-tools/router"
+	// keyword used to replace wildcard host * in label value
+	wildcard = "iter8-wildcard-host"
+	// prefix of name of routing rules created by iter8
+	ruleNamePrefix = "iter8"
+
 	// labels used in routing rules
 	experimentInit  = "iter8-tools/init"
 	experimentRole  = "iter8-tools/role"
 	experimentLabel = "iter8-tools/experiment"
-	experimentHost  = "iter8-tools/host"
 
 	// values for experimentRole
 	roleInitializing = "initializing"
@@ -59,23 +66,24 @@ type istioRoutingRules struct {
 }
 
 func (r *istioRoutingRules) isProgressing() bool {
-	return r.withLabels(map[string]string{
+	return r.haveLabels(map[string]string{
 		experimentRole: roleProgressing,
 	})
 }
 func (r *istioRoutingRules) isInit() bool {
-	return r.withLabels(map[string]string{
+	return r.haveLabels(map[string]string{
 		experimentInit: "True",
 	})
 }
 
 func (r *istioRoutingRules) isInitializing() bool {
-	return r.withLabels(map[string]string{
+	return r.haveLabels(map[string]string{
 		experimentRole: roleInitializing,
 	})
 }
 
-func (r *istioRoutingRules) withLabels(labels map[string]string) bool {
+// check if labels are in routing rules or not
+func (r *istioRoutingRules) haveLabels(labels map[string]string) bool {
 	for key, val := range labels {
 		if r.destinationRule != nil {
 			m := r.destinationRule.GetLabels()
@@ -149,7 +157,7 @@ func (r *Router) Print() string {
 // Fetch routing rules from cluster
 func (r *Router) Fetch(instance *iter8v1alpha2.Experiment) error {
 	selector := map[string]string{
-		experimentHost: util.GetHost(instance)}
+		routerID: getRouterID(instance)}
 
 	drl, err := r.client.NetworkingV1alpha3().DestinationRules(instance.ServiceNamespace()).
 		List(metav1.ListOptions{LabelSelector: labels.Set(selector).String()})
@@ -176,11 +184,11 @@ func (r *Router) UpdateRouteWithBaseline(instance *iter8v1alpha2.Experiment, bas
 	if r.rules.isProgressing() || r.rules.isInitializing() {
 		return nil
 	}
-	r.logger.Info("UpdateRouteWithBaseline")
 	service := instance.Spec.Service
 
 	vsb := NewVirtualServiceBuilder(r.rules.virtualService).
 		WithExperimentRegistered(util.FullExperimentName(instance)).
+		WithRouterRegistered(getRouterID(instance)).
 		WithInitializingLabel().
 		InitGateways().
 		InitHosts().
@@ -213,7 +221,6 @@ func (r *Router) UpdateRouteWithBaseline(instance *iter8v1alpha2.Experiment, bas
 	// inject match clauses
 	trafficControl := instance.Spec.TrafficControl
 	if trafficControl != nil && trafficControl.Match != nil && len(trafficControl.Match.HTTP) > 0 {
-		r.logger.Info("MatchClauseExist", "match", trafficControl.Match.HTTP)
 		rb = rb.WithHTTPMatch(trafficControl.Match.HTTP)
 	}
 
@@ -249,6 +256,7 @@ func (r *Router) UpdateRouteWithBaseline(instance *iter8v1alpha2.Experiment, bas
 			InitSubsets().
 			WithSubset(baseline.(*appsv1.Deployment), SubsetBaseline).
 			WithInitializingLabel().
+			WithRouterRegistered(getRouterID(instance)).
 			WithExperimentRegistered(util.FullExperimentName(instance))
 
 		if _, ok := drb.GetLabels()[experimentInit]; ok {
@@ -276,7 +284,6 @@ func (r *Router) UpdateRouteWithCandidates(instance *iter8v1alpha2.Experiment, c
 		return
 	}
 
-	r.logger.Info("UpdateCandidates")
 	vs := r.rules.virtualService
 	// The first route is used by iter8
 	httproute := vs.Spec.GetHttp()
@@ -438,4 +445,26 @@ func (r *Router) updateVSFromExperiment(vs *v1alpha3.VirtualService, instance *i
 // CandidateSubsetName returns subset name of a candidate with respect to its index in service spec
 func CandidateSubsetName(idx int) string {
 	return SubsetCandidate + "-" + strconv.Itoa(idx)
+}
+
+// returns the id of router used by this experiment
+func getRouterID(instance *iter8v1alpha2.Experiment) string {
+	tc := instance.Spec.TrafficControl
+	if tc != nil && tc.RouterID != nil {
+		return *tc.RouterID
+	}
+
+	host := util.GetHost(instance)
+	if host == "*" {
+		return wildcard
+	}
+	return host
+}
+
+// generate a uuid
+func genereateRuleUUID() string {
+	b := make([]byte, 8)
+	rand.Read(b)
+
+	return fmt.Sprintf("%s-%x-%x-%x", ruleNamePrefix, b[0:4], b[4:6], b[6:])
 }

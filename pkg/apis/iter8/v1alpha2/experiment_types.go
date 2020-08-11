@@ -57,7 +57,7 @@ type ExperimentList struct {
 
 // ExperimentSpec defines the desired state of Experiment
 type ExperimentSpec struct {
-	// Service is a reference to the service that this experiment is targeting at
+	// Service is a reference to the service componenets that this experiment is targeting at
 	Service `json:"service"`
 
 	// Criteria contains a list of Criterion for assessing the target service
@@ -189,6 +189,11 @@ type TrafficControl struct {
 	// default is 2
 	// +optional
 	MaxIncrement *int32 `json:"maxIncrement,omitempty"`
+
+	// RouterID refers to the id of router used to handle traffic for the experiment
+	// If it's not specified, the first entry of effictive host will be used as the id
+	// +optional
+	RouterID *string `json:"routerID,omitempty"`
 }
 
 // Match contains matching criteria for requests

@@ -25,10 +25,6 @@ import (
 	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
 )
 
-const (
-	IstioRuleSuffix = ".iter8-experiment"
-)
-
 type DestinationRuleBuilder v1alpha3.DestinationRule
 type VirtualServiceBuilder v1alpha3.VirtualService
 
@@ -40,18 +36,17 @@ func NewDestinationRuleBuilder(dr *v1alpha3.DestinationRule) *DestinationRuleBui
 	return (*DestinationRuleBuilder)(dr)
 }
 
-func NewDestinationRule(host, experimentName, namespace string) *DestinationRuleBuilder {
+func NewDestinationRule(name, host, experimentName, namespace string) *DestinationRuleBuilder {
 	dr := &v1alpha3.DestinationRule{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1alpha3.SchemeGroupVersion.String(),
 			Kind:       "DestinationRule",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      host + IstioRuleSuffix,
+			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
 				experimentLabel: experimentName,
-				experimentHost:  host,
 			},
 		},
 		Spec: networkingv1alpha3.DestinationRule{
@@ -96,6 +91,14 @@ func (b *DestinationRuleBuilder) WithInitLabel() *DestinationRuleBuilder {
 	return b
 }
 
+func (b *DestinationRuleBuilder) WithRouterRegistered(id string) *DestinationRuleBuilder {
+	if b.ObjectMeta.GetLabels() == nil {
+		b.ObjectMeta.SetLabels(map[string]string{})
+	}
+	b.ObjectMeta.Labels[routerID] = id
+	return b
+}
+
 func (b *DestinationRuleBuilder) RemoveExperimentLabel() *DestinationRuleBuilder {
 	if b.ObjectMeta.Labels == nil {
 		return b
@@ -119,14 +122,6 @@ func (b *DestinationRuleBuilder) WithExperimentRegistered(exp string) *Destinati
 	return b
 }
 
-func (b *DestinationRuleBuilder) WithHostRegistered(host string) *DestinationRuleBuilder {
-	if b.ObjectMeta.GetLabels() == nil {
-		b.ObjectMeta.SetLabels(map[string]string{})
-	}
-	b.ObjectMeta.Labels[experimentHost] = host
-	return b
-}
-
 func (b *DestinationRuleBuilder) InitSubsets() *DestinationRuleBuilder {
 	b.Spec.Subsets = make([]*networkingv1alpha3.Subset, 0)
 	return b
@@ -142,27 +137,21 @@ func (b *DestinationRuleBuilder) WithSubset(d *appsv1.Deployment, subsetName str
 	return b
 }
 
-func (b *DestinationRuleBuilder) WithName(name string) *DestinationRuleBuilder {
-	b.ObjectMeta.Name = name + IstioRuleSuffix
-	return b
-}
-
 func (b *DestinationRuleBuilder) Build() *v1alpha3.DestinationRule {
 	return (*v1alpha3.DestinationRule)(b)
 }
 
-func NewVirtualService(host, experimentName, namespace string) *VirtualServiceBuilder {
+func NewVirtualService(name, experimentName, namespace string) *VirtualServiceBuilder {
 	vs := &v1alpha3.VirtualService{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1alpha3.SchemeGroupVersion.String(),
 			Kind:       "VirtualService",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      host + IstioRuleSuffix,
+			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
 				experimentLabel: experimentName + "." + namespace,
-				experimentHost:  host,
 			},
 		},
 	}
@@ -269,11 +258,11 @@ func (b *VirtualServiceBuilder) WithHosts(hosts []string) *VirtualServiceBuilder
 	return b
 }
 
-func (b *VirtualServiceBuilder) WithHostRegistered(host string) *VirtualServiceBuilder {
+func (b *VirtualServiceBuilder) WithRouterRegistered(id string) *VirtualServiceBuilder {
 	if b.ObjectMeta.GetLabels() == nil {
 		b.ObjectMeta.SetLabels(map[string]string{})
 	}
-	b.ObjectMeta.Labels[experimentHost] = host
+	b.ObjectMeta.Labels[routerID] = id
 	return b
 }
 

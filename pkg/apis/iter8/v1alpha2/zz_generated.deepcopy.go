@@ -675,6 +675,11 @@ func (in *TrafficControl) DeepCopyInto(out *TrafficControl) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.RouterID != nil {
+		in, out := &in.RouterID, &out.RouterID
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

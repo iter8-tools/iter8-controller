@@ -34,7 +34,7 @@ func (h serviceHandler) validateAndInit(drl *v1alpha3.DestinationRuleList, vsl *
 	out := &istioRoutingRules{}
 	if len(vsl.Items) == 0 {
 		// init rules
-		out.virtualService = NewVirtualService(util.GetHost(instance), util.FullExperimentName(instance), instance.ServiceNamespace()).
+		out.virtualService = NewVirtualService(genereateRuleUUID(), util.FullExperimentName(instance), instance.ServiceNamespace()).
 			WithInitLabel().
 			Build()
 
