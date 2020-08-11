@@ -38,28 +38,17 @@ autodetect() {
   echo "Istio mixer disabled: $MIXER_DISABLED"
   echo "Kubernetes version: $KUBERNETES_VERSION"
 
+  if verlt "$KUBERNETES_VERSION" "1.16"; then
+    echo "Works only for Kubernetes version 1.16 and greater, aborting..."
+    exit 1
+  fi
+
   if [ "$MIXER_DISABLED" = "false" ]; then
-
     echo "Using Istio telemetry v1"
-
-    if verlt "$KUBERNETES_VERSION" "1.16"; then
-      echo "Using Prometheus queries for older Kubernetes (<v1.16) "
-      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/config/grafana/istio-telemetry-v1.json"
-    else
-      echo "Using Prometheus queries for newer Kubernetes (>=v1.16)"
-      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/config/grafana/istio-telemetry-v1-k8s-16.json"
-    fi
-
+    DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/master/integrations/grafana/grafana-v1.json"
   else
     echo "Using Istio telemetry v2"
-
-    if verlt "$KUBERNETES_VERSION" "1.16"; then
-      echo "Using Prometheus queries for older Kubernetes (<v1.16) "
-      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/config/grafana/istio-telemetry-v2.json"
-    else
-      echo "Using Prometheus queries for newer Kubernetes (>=v1.16)"
-      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/config/grafana/istio-telemetry-v2-k8s-16.json"
-    fi
+    DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/master/integrations/grafana/grafana-v2.json"
   fi
   echo "Installing Grafana dashboard from $DASHBOARD_DEFN"
 }
