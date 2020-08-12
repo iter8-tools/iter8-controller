@@ -278,13 +278,21 @@ func convertMatchToIstio(m *iter8v1alpha2.HTTPMatchRequest) *networkingv1alpha3.
 	}
 
 	if m.URI != nil && m.URI.IsValid() {
-		out.Uri = toStringMatchExact(m.URI)
+		out.Uri = toStringMatch(m.URI)
+	}
+
+	if m.Headers != nil {
+		out.Headers = make(map[string]*networkingv1alpha3.StringMatch)
+		for key, header := range m.Headers {
+			out.Headers[key] = toStringMatch(&header)
+		}
 	}
 
 	return out
 }
 
-func toStringMatchExact(s *iter8v1alpha2.StringMatch) *networkingv1alpha3.StringMatch {
+
+func toStringMatch(s *iter8v1alpha2.StringMatch) *networkingv1alpha3.StringMatch {
 	if s.Exact != nil {
 		return &networkingv1alpha3.StringMatch{
 			MatchType: &networkingv1alpha3.StringMatch_Exact{

@@ -29,7 +29,7 @@ spec:
     format: byte
     name: winner found
     type: boolean
-  - JSONPath: .status.assessment.winner.current_best_version
+  - JSONPath: .status.assessment.winner.name
     description: Current best version
     format: byte
     name: current best
@@ -672,6 +672,9 @@ spec:
                     current_best_version:
                       description: ID of the current winner with the maximum probability
                         of winning. This is currently computed based on Bayesian estimation
+                      type: string
+                    name:
+                      description: name of winner version
                       type: string
                     probability_of_winning_for_best_version:
                       description: Posterior probability of the version declared as

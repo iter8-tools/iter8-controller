@@ -33,7 +33,7 @@ import (
 // +kubebuilder:printcolumn:name="hosts",type="string",JSONPath=".status.effectiveHosts",description="Names of candidates",format="byte"
 // +kubebuilder:printcolumn:name="phase",type="string",JSONPath=".status.phase",description="Phase of the experiment",format="byte"
 // +kubebuilder:printcolumn:name="winner found",type="boolean",JSONPath=".status.assessment.winner.winning_version_found",description="Winner identified",format="byte"
-// +kubebuilder:printcolumn:name="current best",type="string",JSONPath=".status.assessment.winner.current_best_version",description="Current best version",format="byte"
+// +kubebuilder:printcolumn:name="current best",type="string",JSONPath=".status.assessment.winner.name",description="Current best version",format="byte"
 // +kubebuilder:printcolumn:name="confidence",priority=1,type="string",JSONPath=".status.assessment.winner.probability_of_winning_for_best_version",description="Confidence current bets version will be the winner",format="float"
 // +kubebuilder:printcolumn:name="status",type="string",JSONPath=".status.message",description="Detailed Status of the experiment",format="byte"
 // +kubebuilder:printcolumn:name="baseline",priority=1,type="string",JSONPath=".spec.service.baseline",description="Name of baseline",format="byte"
@@ -352,8 +352,17 @@ type Assessment struct {
 	Candidates []VersionAssessment `json:"candidates"`
 
 	// Assessment for winner target if exists
+	Winner *WinnerAssessment `json:"winner,omitempty"`
+}
+
+// WinnerAssessment shows assessment details for winner of an experiment
+type WinnerAssessment struct {
+	// name of winner version
 	// +optional
-	Winner *analyticsv1alpha2.WinnerAssessment `json:"winner,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// Assessment details from analytics
+	*analyticsv1alpha2.WinnerAssessment `json:",inline,omitempty"`
 }
 
 // VersionAssessment contains assessment details for each version

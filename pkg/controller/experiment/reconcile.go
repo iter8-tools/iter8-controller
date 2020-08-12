@@ -198,7 +198,18 @@ func (r *ReconcileExperiment) processIteration(context context.Context, instance
 			return nil
 		}
 
-		instance.Status.Assessment.Winner = &response.WinnerAssessment
+		// set winner assessment
+		instance.Status.Assessment.Winner = &iter8v1alpha2.WinnerAssessment{
+			WinnerAssessment: &response.WinnerAssessment,
+		}
+		if response.WinnerAssessment.WinnerFound {
+			for _, candidate := range instance.Status.Assessment.Candidates {
+				if candidate.VersionAssessment.ID == response.WinnerAssessment.Winner {
+					instance.Status.Assessment.Winner.Name = &candidate.Name
+					break
+				}
+			}
+		}
 		r.markAssessmentUpdate(context, instance, "Winner assessment: %s", instance.Status.WinnerToString())
 
 		strategy := instance.Spec.GetStrategy()

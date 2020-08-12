@@ -326,18 +326,29 @@ func (s *ExperimentStatus) MarkExperimentResume(messageFormat string, messageA .
 
 // IsWinnerFound tells whether winner has been found by analytics
 func (s *ExperimentStatus) IsWinnerFound() bool {
-	return s.Assessment != nil && s.Assessment.Winner != nil && s.Assessment.Winner.WinnerFound
+	return s.Assessment != nil && s.Assessment.Winner != nil &&
+		s.Assessment.Winner.WinnerAssessment != nil && s.Assessment.Winner.WinnerAssessment.WinnerFound
+}
+
+// IsWinnerAssessmentAvailable tells whether winner assessment is presented in status or not
+func (s *ExperimentStatus) IsWinnerAssessmentAvailable() bool {
+	return s.Assessment != nil && s.Assessment.Winner != nil &&
+		s.Assessment.Winner.WinnerAssessment != nil
 }
 
 // WinnerToString outputs winner assessment in human-readable format
 func (s *ExperimentStatus) WinnerToString() string {
 	progress := fmt.Sprintf("[Iteration %d]: ", *s.CurrentIteration)
-	if s.Assessment != nil && s.Assessment.Winner != nil {
-		if s.Assessment.Winner.WinnerFound {
-			return progress + fmt.Sprintf("Current winner (%s) has winning probability of %f.", s.Assessment.Winner.Winner,
+	if s.IsWinnerAssessmentAvailable() {
+		name := s.Assessment.Winner.Winner
+		if s.Assessment.Winner.Name != nil {
+			name = *s.Assessment.Winner.Name
+		}
+		if s.IsWinnerFound() {
+			return progress + fmt.Sprintf("Current winner (%s) has winning probability of %f.", name,
 				s.Assessment.Winner.Probability)
 		} else {
-			return progress + fmt.Sprintf("Winner has not been found yet. Current best version (%s) has winning probability of %f.", s.Assessment.Winner.Winner,
+			return progress + fmt.Sprintf("Winner has not been found yet. Current best version (%s) has winning probability of %f.", name,
 				s.Assessment.Winner.Probability)
 		}
 	} else {
