@@ -17,7 +17,6 @@ package istio
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
 	"strconv"
 
@@ -461,10 +460,7 @@ func getRouterID(instance *iter8v1alpha2.Experiment) string {
 	return host
 }
 
-// generate a uuid
-func genereateRuleUUID() string {
-	b := make([]byte, 8)
-	rand.Read(b)
-
-	return fmt.Sprintf("%s-%x-%x-%x", ruleNamePrefix, b[0:4], b[4:6], b[6:])
+// GetRoutingRuleName returns name of routing rule with router id as input
+func GetRoutingRuleName(routerID string) string {
+	return fmt.Sprintf("%s-%s", ruleNamePrefix, routerID)
 }

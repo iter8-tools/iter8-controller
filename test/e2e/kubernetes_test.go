@@ -35,6 +35,9 @@ const (
 	ReviewsV3Image = "istio/examples-bookinfo-reviews-v3:1.11.0"
 
 	ReviewsPort = 9080
+
+	// routerID used through experiment
+	routerID = "reviews-router"
 )
 
 // TestKubernetesExperiment tests various experiment scenarios on Kubernetes platform
@@ -431,6 +434,7 @@ func getCleanUpDeleteExperiment(name, serviceName, baseline string, candidates [
 func getDefaultKubernetesExperiment(name, serviceName, baseline string, candidates []string) *iter8v1alpha2.Experiment {
 	exp := test.NewExperiment(name, Flags.Namespace).
 		WithKubernetesTargetService(serviceName, baseline, candidates).
+		WithRouterID(routerID).
 		Build()
 
 	onesec := "1s"
@@ -446,6 +450,7 @@ func getDefaultKubernetesExperiment(name, serviceName, baseline string, candidat
 func getFastKubernetesExperiment(name, serviceName, baseline, analyticsHost string, candidates []string) *iter8v1alpha2.Experiment {
 	experiment := test.NewExperiment(name, Flags.Namespace).
 		WithKubernetesTargetService(serviceName, baseline, candidates).
+		WithRouterID(routerID).
 		WithAnalyticsEndpoint(analyticsHost).
 		WithDummyCriterion().
 		Build()
@@ -470,6 +475,7 @@ func getFastKubernetesExperimentForService(name, serviceName, baseline, analytic
 func getExperimentWithGateway(name, serviceName, baseline, analyticsHost string, candidates []string, host, gw string) *iter8v1alpha2.Experiment {
 	experiment := test.NewExperiment(name, Flags.Namespace).
 		WithKubernetesTargetService(serviceName, baseline, candidates).
+		WithRouterID(routerID).
 		WithHostInTargetService(host, gw).
 		WithAnalyticsEndpoint(analyticsHost).
 		WithDummyCriterion().
@@ -488,6 +494,7 @@ func getExperimentWithGateway(name, serviceName, baseline, analyticsHost string,
 func getSlowKubernetesExperiment(name, serviceName, baseline, analyticsHost string, candidates []string) *iter8v1alpha2.Experiment {
 	experiment := test.NewExperiment(name, Flags.Namespace).
 		WithKubernetesTargetService(serviceName, baseline, candidates).
+		WithRouterID(routerID).
 		WithAnalyticsEndpoint(analyticsHost).
 		WithDummyCriterion().
 		Build()
@@ -503,7 +510,8 @@ func getSlowKubernetesExperiment(name, serviceName, baseline, analyticsHost stri
 }
 
 func getDestinationRule(serviceName, name string, subsets []string, objs []runtime.Object) runtime.Object {
-	drb := istio.NewDestinationRule(util.ServiceToFullHostName(serviceName, Flags.Namespace), name, Flags.Namespace)
+	ruleName := istio.GetRoutingRuleName(routerID)
+	drb := istio.NewDestinationRule(ruleName, util.ServiceToFullHostName(serviceName, Flags.Namespace), name, Flags.Namespace)
 	for i, subset := range subsets {
 		drb.WithSubset(objs[i].(*appsv1.Deployment), subset)
 	}
@@ -512,7 +520,8 @@ func getDestinationRule(serviceName, name string, subsets []string, objs []runti
 
 func getVirtualServiceForDeployments(serviceName, name string, subsets []string, weights []int32) runtime.Object {
 	host := util.ServiceToFullHostName(serviceName, Flags.Namespace)
-	vsb := istio.NewVirtualService(host, name, Flags.Namespace)
+	ruleName := istio.GetRoutingRuleName(routerID)
+	vsb := istio.NewVirtualService(ruleName, name, Flags.Namespace)
 	rb := istio.NewEmptyHTTPRoute()
 	for i, subset := range subsets {
 		destination := istio.NewHTTPRouteDestination().
@@ -527,7 +536,8 @@ func getVirtualServiceForDeployments(serviceName, name string, subsets []string,
 
 func getVirtualServiceForServices(serviceName, name string, destinations []string, weights []int32) runtime.Object {
 	host := util.ServiceToFullHostName(serviceName, Flags.Namespace)
-	vsb := istio.NewVirtualService(host, name, Flags.Namespace)
+	ruleName := istio.GetRoutingRuleName(routerID)
+	vsb := istio.NewVirtualService(ruleName, name, Flags.Namespace)
 	rb := istio.NewEmptyHTTPRoute()
 	for i, name := range destinations {
 		destination := istio.NewHTTPRouteDestination().

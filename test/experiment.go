@@ -82,6 +82,14 @@ func (b *ExperimentBuilder) WithCriterion(c v1alpha2.Criterion) *ExperimentBuild
 	return b
 }
 
+func (b *ExperimentBuilder) WithRouterID(id string) *ExperimentBuilder {
+	if b.Spec.TrafficControl == nil {
+		b.Spec.TrafficControl = &v1alpha2.TrafficControl{}
+	}
+	b.Spec.TrafficControl.RouterID = &id
+	return b
+}
+
 func (b *ExperimentBuilder) WithResumeAction() *ExperimentBuilder {
 	b.Spec.ManualOverride = &v1alpha2.ManualOverride{
 		Action: v1alpha2.ActionResume,
