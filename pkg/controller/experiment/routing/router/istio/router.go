@@ -39,7 +39,7 @@ const (
 	// keyword used to replace wildcard host * in label value
 	wildcard = "iter8-wildcard-host"
 	// prefix of name of routing rules created by iter8
-	ruleNamePrefix = "iter8"
+	ruleNameSuffix = "iter8router"
 
 	// labels used in routing rules
 	experimentInit  = "iter8-tools/init"
@@ -462,5 +462,5 @@ func getRouterID(instance *iter8v1alpha2.Experiment) string {
 
 // GetRoutingRuleName returns name of routing rule with router id as input
 func GetRoutingRuleName(routerID string) string {
-	return fmt.Sprintf("%s-%s", ruleNamePrefix, routerID)
+	return fmt.Sprintf("%s.%s", routerID, ruleNameSuffix)
 }
