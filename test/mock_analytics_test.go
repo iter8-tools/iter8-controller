@@ -18,8 +18,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/iter8-tools/iter8-controller/pkg/analytics"
-	analyticsapi "github.com/iter8-tools/iter8-controller/pkg/analytics/api/v1alpha2"
+	"github.com/iter8-tools/iter8/pkg/analytics"
+	analyticsapi "github.com/iter8-tools/iter8/pkg/analytics/api/v1alpha2"
 )
 
 func TestMockAnalytics(t *testing.T) {

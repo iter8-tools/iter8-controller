@@ -24,24 +24,49 @@ import (
 
 	"github.com/go-logr/logr"
 
-	"github.com/iter8-tools/iter8-controller/pkg/analytics/api/v1alpha2"
-	iter8v1alpha2 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8/pkg/analytics/api/v1alpha2"
+	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
 )
 
 const (
-	destinationKey = "destination_workload"
-	namespaceKey   = "destination_workload_namespace"
+	destinationWorkloadKey          = "destination_workload"
+	destinationWorkloadNamespaceKey = "destination_workload_namespace"
+
+	destinationServiceNameKey      = "destination_service_name"
+	destinationServiceNamespaceKey = "destination_service_namespace"
+
+	baselineID        = "baseline"
+	candidateIDPrefix = "candidate-"
 )
+
+// GetCandidateID returns id of candidate used by analytics, with index of candidate as input
+func GetCandidateID(idx int) string {
+	return fmt.Sprintf("%s%d", candidateIDPrefix, idx)
+}
+
+// GetBaselineID returns id of baseline used by analytics
+func GetBaselineID() string {
+	return baselineID
+}
 
 // MakeRequest generates request payload to analytics
 func MakeRequest(instance *iter8v1alpha2.Experiment) (*v1alpha2.Request, error) {
+	destinationKey := destinationWorkloadKey
+	destinationNamespaceKey := destinationWorkloadNamespaceKey
+
+	if instance.Spec.Service.Kind == "Service" {
+		destinationKey = destinationServiceNameKey
+		destinationNamespaceKey = destinationServiceNamespaceKey
+	}
+
+	serviceNamespace := instance.ServiceNamespace()
 	// identify and define list of candidates
 	candidates := make([]v1alpha2.Version, len(instance.Spec.Service.Candidates))
 	for i, candidate := range instance.Spec.Candidates {
-		candidates[i].ID = candidate
+		candidates[i].ID = GetCandidateID(i)
 		candidates[i].VersionLabels = map[string]string{
-			namespaceKey:   instance.ServiceNamespace(),
-			destinationKey: candidate,
+			destinationNamespaceKey: serviceNamespace,
+			destinationKey:          candidate,
 		}
 	}
 
@@ -90,10 +115,10 @@ func MakeRequest(instance *iter8v1alpha2.Experiment) (*v1alpha2.Request, error) 
 		StartTime:   instance.Status.StartTimestamp.Format(time.RFC3339),
 		ServiceName: instance.Spec.Service.Name,
 		Baseline: v1alpha2.Version{
-			ID: instance.Spec.Service.Baseline,
+			ID: GetBaselineID(),
 			VersionLabels: map[string]string{
-				namespaceKey:   instance.ServiceNamespace(),
-				destinationKey: instance.Spec.Service.Baseline,
+				destinationNamespaceKey: serviceNamespace,
+				destinationKey:          instance.Spec.Service.Baseline,
 			},
 		},
 		MetricSpecs: v1alpha2.Metrics{
@@ -106,14 +131,8 @@ func MakeRequest(instance *iter8v1alpha2.Experiment) (*v1alpha2.Request, error) 
 			MaxIncrement: float32(instance.Spec.GetMaxIncrements()),
 			Strategy:     instance.Spec.GetStrategy(),
 		},
-	}
-
-	if nil != instance.Status.CurrentIteration {
-		request.IterationNumber = instance.Status.CurrentIteration
-	}
-
-	if nil != instance.Status.AnalysisState {
-		request.LastState = instance.Status.AnalysisState
+		IterationNumber: instance.Status.CurrentIteration,
+		LastState:       instance.Status.AnalysisState,
 	}
 
 	return request, nil

@@ -18,8 +18,9 @@ import (
 	"context"
 	"strings"
 
-	iter8v1alpha2 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha2"
-	"github.com/iter8-tools/iter8-controller/pkg/controller/experiment/cache/abstract"
+	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8/pkg/controller/experiment/adapter"
+	"github.com/iter8-tools/iter8/pkg/controller/experiment/util"
 )
 
 // interState controlls the execution of inter functions in the reconcile logic
@@ -57,11 +58,16 @@ func (r *ReconcileExperiment) hasProgress() bool {
 	return r.interState.progress
 }
 
-func experimentAbstract(ctx context.Context) abstract.Snapshot {
-	if ctx.Value(abstract.SnapshotKey) == nil {
+func (r *ReconcileExperiment) injectClients(ctx context.Context) context.Context {
+	ctx = context.WithValue(ctx, util.IstioClientKey, r.istioClient)
+	return ctx
+}
+
+func experimentAction(ctx context.Context) adapter.Action {
+	if ctx.Value(adapter.ActionKey) == nil {
 		return nil
 	}
-	return ctx.Value(abstract.SnapshotKey).(abstract.Snapshot)
+	return ctx.Value(adapter.ActionKey).(adapter.Action)
 }
 
 func validUpdateErr(err error) bool {
@@ -72,9 +78,10 @@ func validUpdateErr(err error) bool {
 	return strings.Contains(err.Error(), benignMsg)
 }
 
-// overrideAssessment sets the assessment as what had has specified in manual override traffic split
+// overrideAssessment sets the assessment when experiment is being terminated
 func overrideAssessment(instance *iter8v1alpha2.Experiment) {
-	if instance.Spec.ManualOverride != nil {
+	// set onTermination strategy from manualOverrides if configured
+	if instance.Spec.Terminate() && instance.Spec.ManualOverride != nil {
 		onTermination := iter8v1alpha2.OnTerminationToBaseline
 		if len(instance.Spec.ManualOverride.TrafficSplit) > 0 {
 			trafficSplit := instance.Spec.ManualOverride.TrafficSplit
@@ -99,4 +106,46 @@ func overrideAssessment(instance *iter8v1alpha2.Experiment) {
 			OnTermination: &onTermination,
 		}
 	}
+
+	// set final traffic status in assessment
+	assessment := instance.Status.Assessment
+	switch instance.Spec.GetOnTermination() {
+	case iter8v1alpha2.OnTerminationToWinner:
+		if instance.Status.IsWinnerFound() {
+			// all traffic to winner
+			if assessment.Winner.Winner == assessment.Baseline.ID {
+				assessment.Baseline.Weight = 100
+				for i := range assessment.Candidates {
+					assessment.Candidates[i].Weight = 0
+				}
+			} else {
+				assessment.Baseline.Weight = 0
+				matchfound := false
+				for i := range assessment.Candidates {
+					if assessment.Candidates[i].ID == assessment.Winner.Winner {
+						matchfound = true
+						assessment.Candidates[i].Weight = 100
+					} else {
+						assessment.Candidates[i].Weight = 0
+					}
+				}
+				// safe guard to make sure final traffic should be at leaset 100 percent sent to baseline
+				if !matchfound {
+					assessment.Baseline.Weight = 100
+				}
+			}
+			break
+		}
+		fallthrough
+	case iter8v1alpha2.OnTerminationToBaseline:
+		// all traffic to baseline
+		assessment.Baseline.Weight = 100
+		for i := range assessment.Candidates {
+			assessment.Candidates[i].Weight = 0
+		}
+	case iter8v1alpha2.OnTerminationKeepLast:
+		// do nothing
+	}
+
+	instance.Status.Assessment = assessment
 }

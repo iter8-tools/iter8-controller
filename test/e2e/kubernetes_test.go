@@ -17,13 +17,15 @@ package e2e
 import (
 	"testing"
 
+	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	analtyicsapi "github.com/iter8-tools/iter8-controller/pkg/analytics/api/v1alpha2"
-	iter8v1alpha2 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha2"
-	"github.com/iter8-tools/iter8-controller/pkg/controller/experiment/routing"
-	"github.com/iter8-tools/iter8-controller/test"
+	analtyicsapi "github.com/iter8-tools/iter8/pkg/analytics/api/v1alpha2"
+	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8/pkg/controller/experiment/routing/router/istio"
+	"github.com/iter8-tools/iter8/pkg/controller/experiment/util"
+	"github.com/iter8-tools/iter8/test"
 )
 
 const (
@@ -31,10 +33,11 @@ const (
 	ReviewsV1Image = "istio/examples-bookinfo-reviews-v1:1.11.0"
 	ReviewsV2Image = "istio/examples-bookinfo-reviews-v2:1.11.0"
 	ReviewsV3Image = "istio/examples-bookinfo-reviews-v3:1.11.0"
-	RatingsImage   = "istio/examples-bookinfo-ratings-v1:1.11.0"
 
 	ReviewsPort = 9080
-	RatingsPort = 9080
+
+	// routerID used through experiment
+	routerID = "reviews-router"
 )
 
 // TestKubernetesExperiment tests various experiment scenarios on Kubernetes platform
@@ -58,8 +61,14 @@ func TestExperiment(t *testing.T) {
 					test.CheckExperimentCompleted,
 				),
 				wantResults: []runtime.Object{
-					getStableDestinationRule("reviews", name, getReviewsDeployment("v2")),
-					getStableVirtualService("reviews", name),
+					getDestinationRule("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]runtime.Object{getReviewsDeployment("v1"), getReviewsDeployment("v2"), getReviewsDeployment("v3")},
+					),
+					getVirtualServiceForDeployments("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]int32{0, 100, 0},
+					),
 				},
 			}
 		}("rolltowinner", getFastKubernetesExperiment("rolltowinner", "reviews", "reviews-v1", service.GetURL(), []string{"reviews-v2", "reviews-v3"})),
@@ -79,8 +88,14 @@ func TestExperiment(t *testing.T) {
 					test.CheckExperimentCompleted,
 				),
 				wantResults: []runtime.Object{
-					getStableDestinationRule("reviews", name, getReviewsDeployment("v1")),
-					getStableVirtualService("reviews", name),
+					getDestinationRule("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]runtime.Object{getReviewsDeployment("v1"), getReviewsDeployment("v2"), getReviewsDeployment("v3")},
+					),
+					getVirtualServiceForDeployments("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]int32{100, 0, 0},
+					),
 				},
 			}
 		}("rollbackward", getFastKubernetesExperiment("rollbackward", "reviews", "reviews-v1", service.GetURL(), []string{"reviews-v2", "reviews-v3"})),
@@ -98,9 +113,14 @@ func TestExperiment(t *testing.T) {
 				object:    exp,
 				wantState: test.CheckServiceFound,
 				wantResults: []runtime.Object{
-					// rollback to baseline
-					getStableDestinationRule("reviews", name, getReviewsDeployment("v1")),
-					getStableVirtualService("reviews", name),
+					getDestinationRule("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]runtime.Object{getReviewsDeployment("v1"), getReviewsDeployment("v2"), getReviewsDeployment("v3")},
+					),
+					getVirtualServiceForDeployments("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]int32{100, 0, 0},
+					),
 				},
 				postHook: test.DeleteExperiment("ongoingdelete", Flags.Namespace),
 			}
@@ -119,9 +139,14 @@ func TestExperiment(t *testing.T) {
 				object:    exp,
 				wantState: test.CheckExperimentCompleted,
 				frozenObjects: []runtime.Object{
-					// desired end-of-experiment status
-					getStableDestinationRule("reviews", name, getReviewsDeployment("v2")),
-					getStableVirtualService("reviews", name),
+					getDestinationRule("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]runtime.Object{getReviewsDeployment("v1"), getReviewsDeployment("v2"), getReviewsDeployment("v3")},
+					),
+					getVirtualServiceForDeployments("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]int32{100, 0, 0},
+					),
 				},
 				postHook: test.DeleteExperiment(name, Flags.Namespace),
 			}
@@ -142,9 +167,14 @@ func TestExperiment(t *testing.T) {
 					test.CheckExperimentCompleted,
 				),
 				wantResults: []runtime.Object{
-					// rollback to baseline
-					getStableDestinationRule("reviews", name, getReviewsDeployment("v1")),
-					getStableVirtualService("reviews", name),
+					getDestinationRule("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]runtime.Object{getReviewsDeployment("v1"), getReviewsDeployment("v2"), getReviewsDeployment("v3")},
+					),
+					getVirtualServiceForDeployments("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]int32{100, 0, 0},
+					),
 				},
 			}
 		}("abortexperiment", getSlowKubernetesExperiment("abortexperiment", "reviews", "reviews-v1", service.GetURL(), []string{"reviews-v2", "reviews-v3"})),
@@ -161,9 +191,14 @@ func TestExperiment(t *testing.T) {
 					test.CheckExperimentCompleted,
 				),
 				wantResults: []runtime.Object{
-					// rollforward
-					getStableDestinationRule("reviews", name, getReviewsDeployment("v1")),
-					getStableVirtualService("reviews", name),
+					getDestinationRule("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]runtime.Object{getReviewsDeployment("v1"), getReviewsDeployment("v2"), getReviewsDeployment("v3")},
+					),
+					getVirtualServiceForDeployments("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]int32{100, 0, 0},
+					),
 				},
 			}
 		}("emptycriterion", getDefaultKubernetesExperiment("emptycriterion", "reviews", "reviews-v1", []string{"reviews-v2", "reviews-v3"})),
@@ -198,75 +233,145 @@ func TestExperiment(t *testing.T) {
 					test.CheckExperimentCompleted,
 				),
 				wantResults: []runtime.Object{
-					getStableDestinationRule("reviews", name, getReviewsDeployment("v2")),
-					getStableVirtualServiceWithGateway("reviews", name, "reviews.com", "gateway-testing"),
+					getDestinationRule("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]runtime.Object{getReviewsDeployment("v1"), getReviewsDeployment("v2"), getReviewsDeployment("v3")},
+					),
+					getVirtualServiceWithGateway("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]int32{0, 100, 0}, "reviews.com", "gateway-testing",
+					),
 				},
 			}
 		}("attach-gateway", getExperimentWithGateway("attach-gateway", "reviews", "reviews-v1", service.GetURL(),
 			[]string{"reviews-v2", "reviews-v3"}, "reviews.com", "gateway-testing")),
-		// "pauseresume": func(name string, exp *iter8v1alpha2.Experiment) testCase {
-		// 	return testCase{
-		// 		mocks: map[string]analtyicsapi.Response{
-		// 			name: test.GetRollToWinnerMockResponse(exp, 0),
-		// 		},
-		// 		initObjects: []runtime.Object{
-		// 			getReviewsService(),
-		// 			getReviewsDeployment("v1"),
-		// 			getReviewsDeployment("v2"),
-		// 			getReviewsDeployment("v3"),
-		// 		},
-		// 		object: exp,
-		// 		wantState: test.WantAllStates(
-		// 			test.CheckExperimentPause,
-		// 		),
-		// 		postHook: test.ResumeExperiment(exp),
-		// 		wantResults: []runtime.Object{
-		// 			getStableDestinationRule("reviews", name, getReviewsDeployment("v2")),
-		// 			getStableVirtualService("reviews", name),
-		// 		},
-		// 	}
-		// }("pauseresume", getPauseExperiment("pauseresume", "reviews", "reviews-v1", service.GetURL(), []string{"reviews-v2", "reviews-v3"})),
-		// "deletebaseline": func(name string) testCase {
-		// 	return testCase{
-		// 		mocks: map[string]analtyicsapi.Response{
-		// 			name: test.GetSuccessMockResponse(),
-		// 		},
-		// 		initObjects: []runtime.Object{
-		// 			getReviewsService(),
-		// 			getReviewsDeployment("v1"),
-		// 			getReviewsDeployment("v2"),
-		// 		},
-		// 		object:    getSlowKubernetesExperiment(name, "reviews", "reviews-v1", "reviews-v2", service.GetURL()),
-		// 		wantState: test.CheckServiceFound,
-		// 		postHook:  test.DeleteObject(getReviewsDeployment("v1")),
-		// 		wantResults: []runtime.Object{
-		// 			getStableDestinationRule("reviews", name, getReviewsDeployment("v2")),
-		// 			getStableVirtualService("reviews", name),
-		// 		},
-		// 	}
-		// }("deletebaseline"),
-		// "duplicate-service": func(name string) testCase {
-		// 	return testCase{
-		// 		mocks: map[string]analtyicsapi.Response{
-		// 			name: test.GetSuccessMockResponse(),
-		// 		},
-		// 		initObjects: []runtime.Object{
-		// 			getReviewsService(),
-		// 			getReviewsDeployment("v1"),
-		// 			getReviewsDeployment("v2"),
-		// 		},
-		// 		preHook:   []test.Hook{test.CreateObject(getDefaultKubernetesExperiment(name, "reviews", "reviews-v1", "reviews-v2"))},
-		// 		object:    getDefaultKubernetesExperiment(name+"duplicate", "reviews", "reviews-v1", "reviews-v2"),
-		// 		wantState: test.CheckServiceNotFound("TargetsNotFound"),
-		// 		wantResults: []runtime.Object{
-		// 			getStableDestinationRule("reviews", name, getReviewsDeployment("v2")),
-		// 			getStableVirtualService("reviews", name),
-		// 		},
-		// 		finalizers: []test.Hook{
-		// 			test.DeleteObject(getDefaultKubernetesExperiment(name+"duplicate", "reviews", "reviews-v1", "reviews-v2")),
-		// 		},
-		// 	}
-		// }("duplicate-service"),
+		"pauseresume": func(name string, exp *iter8v1alpha2.Experiment) testCase {
+			return testCase{
+				mocks: map[string]analtyicsapi.Response{
+					name: test.GetRollToWinnerMockResponse(exp, 1),
+				},
+				initObjects: []runtime.Object{
+					getReviewsService(),
+					getReviewsDeployment("v1"),
+					getReviewsDeployment("v2"),
+					getReviewsDeployment("v3"),
+				},
+				object: exp,
+				wantState: test.WantAllStates(
+					test.CheckExperimentPause,
+				),
+				postHook: test.ResumeExperiment(exp),
+				wantResults: []runtime.Object{
+					getDestinationRule("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]runtime.Object{getReviewsDeployment("v1"), getReviewsDeployment("v2"), getReviewsDeployment("v3")},
+					),
+					getVirtualServiceForDeployments("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]int32{0, 0, 100},
+					),
+				},
+			}
+		}("pauseresume", getPauseExperiment("pauseresume", "reviews", "reviews-v1", service.GetURL(), []string{"reviews-v2", "reviews-v3"})),
+		"duplicate-service": func(name string, exp, expDup *iter8v1alpha2.Experiment) testCase {
+			return testCase{
+				mocks: map[string]analtyicsapi.Response{
+					name: test.GetRollToWinnerMockResponse(exp, 1),
+				},
+				initObjects: []runtime.Object{
+					getReviewsService(),
+					getReviewsDeployment("v1"),
+					getReviewsDeployment("v2"),
+					getReviewsDeployment("v3"),
+				},
+				preHook:   []test.Hook{test.CreateObject(exp)},
+				object:    expDup,
+				wantState: test.CheckServiceNotFound("TargetsError"),
+				wantResults: []runtime.Object{
+					getDestinationRule("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]runtime.Object{getReviewsDeployment("v1"), getReviewsDeployment("v2"), getReviewsDeployment("v3")},
+					),
+					getVirtualServiceForDeployments("reviews", name,
+						[]string{istio.SubsetBaseline, istio.CandidateSubsetName(0), istio.CandidateSubsetName(1)},
+						[]int32{0, 0, 100},
+					),
+				},
+				finalizers: []test.Hook{
+					test.DeleteObject(expDup),
+				},
+			}
+		}("duplicate-service", getFastKubernetesExperiment("duplicate-service", "reviews", "reviews-v1", service.GetURL(), []string{"reviews-v2", "reviews-v3"}),
+			getFastKubernetesExperiment("duplicate-service-duplicate", "reviews", "reviews-v1", service.GetURL(), []string{"reviews-v2", "reviews-v3"})),
+		"rolltowinner-service": func(name string, exp *iter8v1alpha2.Experiment) testCase {
+			return testCase{
+				mocks: map[string]analtyicsapi.Response{
+					name: test.GetRollToWinnerMockResponse(exp, 1),
+				},
+				initObjects: []runtime.Object{
+					getReviewsService(),
+					getReviewsServiceWithVersion("v1"),
+					getReviewsServiceWithVersion("v2"),
+					getReviewsServiceWithVersion("v3"),
+				},
+				object: exp,
+				wantState: test.WantAllStates(
+					test.CheckExperimentCompleted,
+				),
+				wantResults: []runtime.Object{
+					getVirtualServiceForServices("reviews", name,
+						[]string{util.ServiceToFullHostName("reviews-v1", Flags.Namespace),
+							util.ServiceToFullHostName("reviews-v2", Flags.Namespace),
+							util.ServiceToFullHostName("reviews-v3", Flags.Namespace)},
+						[]int32{0, 0, 100}),
+				},
+			}
+		}("rolltowinner-service", getFastKubernetesExperimentForService("rolltowinner-service", "reviews", "reviews-v1", service.GetURL(), []string{"reviews-v2", "reviews-v3"})),
+		"rollbackward-service": func(name string, exp *iter8v1alpha2.Experiment) testCase {
+			return testCase{
+				mocks: map[string]analtyicsapi.Response{
+					name: test.GetRollbackMockResponse(exp),
+				},
+				initObjects: []runtime.Object{
+					getReviewsService(),
+					getReviewsServiceWithVersion("v1"),
+					getReviewsServiceWithVersion("v2"),
+					getReviewsServiceWithVersion("v3"),
+				},
+				object: exp,
+				wantState: test.WantAllStates(
+					test.CheckExperimentCompleted,
+				),
+				wantResults: []runtime.Object{
+					getVirtualServiceForServices("reviews", name,
+						[]string{util.ServiceToFullHostName("reviews-v1", Flags.Namespace),
+							util.ServiceToFullHostName("reviews-v2", Flags.Namespace),
+							util.ServiceToFullHostName("reviews-v3", Flags.Namespace)},
+						[]int32{100, 0, 0}),
+				},
+			}
+		}("rollbackward-service", getFastKubernetesExperimentForService("rollbackward-service", "reviews", "reviews-v1", service.GetURL(), []string{"reviews-v2", "reviews-v3"})),
+		"same-service": func(name string, exp *iter8v1alpha2.Experiment) testCase {
+			return testCase{
+				mocks: map[string]analtyicsapi.Response{
+					name: test.GetRollToWinnerMockResponse(exp, 0),
+				},
+				initObjects: []runtime.Object{
+					getReviewsService(),
+					getReviewsServiceWithVersion("v1"),
+				},
+				object: exp,
+				wantState: test.WantAllStates(
+					test.CheckExperimentCompleted,
+				),
+				wantResults: []runtime.Object{
+					getVirtualServiceForServices("reviews", name,
+						[]string{util.ServiceToFullHostName("reviews-v1", Flags.Namespace),
+							util.ServiceToFullHostName("reviews-v1", Flags.Namespace)},
+						[]int32{0, 100}),
+				},
+			}
+		}("same-service", getFastKubernetesExperimentForService("same-service", "reviews", "reviews-v1", service.GetURL(), []string{"reviews-v1"})),
 	}
 
 	runTestCases(t, service, testCases)
@@ -279,10 +384,10 @@ func getReviewsService() runtime.Object {
 		Build()
 }
 
-func getRatingsService() runtime.Object {
-	return test.NewKubernetesService("ratings", Flags.Namespace).
-		WithSelector(map[string]string{"app": "ratings"}).
-		WithPorts(map[string]int{"http": RatingsPort}).
+func getReviewsServiceWithVersion(version string) runtime.Object {
+	return test.NewKubernetesService("reviews-"+version, Flags.Namespace).
+		WithSelector(map[string]string{"app": "reviews"}).
+		WithPorts(map[string]int{"http": ReviewsPort}).
 		Build()
 }
 
@@ -329,6 +434,7 @@ func getCleanUpDeleteExperiment(name, serviceName, baseline string, candidates [
 func getDefaultKubernetesExperiment(name, serviceName, baseline string, candidates []string) *iter8v1alpha2.Experiment {
 	exp := test.NewExperiment(name, Flags.Namespace).
 		WithKubernetesTargetService(serviceName, baseline, candidates).
+		WithRouterID(routerID).
 		Build()
 
 	onesec := "1s"
@@ -344,6 +450,7 @@ func getDefaultKubernetesExperiment(name, serviceName, baseline string, candidat
 func getFastKubernetesExperiment(name, serviceName, baseline, analyticsHost string, candidates []string) *iter8v1alpha2.Experiment {
 	experiment := test.NewExperiment(name, Flags.Namespace).
 		WithKubernetesTargetService(serviceName, baseline, candidates).
+		WithRouterID(routerID).
 		WithAnalyticsEndpoint(analyticsHost).
 		WithDummyCriterion().
 		Build()
@@ -358,9 +465,17 @@ func getFastKubernetesExperiment(name, serviceName, baseline, analyticsHost stri
 	return experiment
 }
 
+func getFastKubernetesExperimentForService(name, serviceName, baseline, analyticsHost string, candidates []string) *iter8v1alpha2.Experiment {
+	experiment := getFastKubernetesExperiment(name, serviceName, baseline, analyticsHost, candidates)
+	experiment.Spec.Service.Kind = "Service"
+
+	return experiment
+}
+
 func getExperimentWithGateway(name, serviceName, baseline, analyticsHost string, candidates []string, host, gw string) *iter8v1alpha2.Experiment {
 	experiment := test.NewExperiment(name, Flags.Namespace).
 		WithKubernetesTargetService(serviceName, baseline, candidates).
+		WithRouterID(routerID).
 		WithHostInTargetService(host, gw).
 		WithAnalyticsEndpoint(analyticsHost).
 		WithDummyCriterion().
@@ -379,6 +494,7 @@ func getExperimentWithGateway(name, serviceName, baseline, analyticsHost string,
 func getSlowKubernetesExperiment(name, serviceName, baseline, analyticsHost string, candidates []string) *iter8v1alpha2.Experiment {
 	experiment := test.NewExperiment(name, Flags.Namespace).
 		WithKubernetesTargetService(serviceName, baseline, candidates).
+		WithRouterID(routerID).
 		WithAnalyticsEndpoint(analyticsHost).
 		WithDummyCriterion().
 		Build()
@@ -393,31 +509,49 @@ func getSlowKubernetesExperiment(name, serviceName, baseline, analyticsHost stri
 	return experiment
 }
 
-func getStableDestinationRule(serviceName, name string, deploy runtime.Object) runtime.Object {
-	d := deploy.(*appsv1.Deployment)
-	subset := "dummy"
-	return routing.NewDestinationRule(serviceName, name, Flags.Namespace).
-		WithSubset(d, subset, 0).
-		ProgressingToStable(map[string]string{subset: routing.SubsetStable}).
-		WithStableLabel().
-		Build()
+func getDestinationRule(serviceName, name string, subsets []string, objs []runtime.Object) runtime.Object {
+	ruleName := istio.GetRoutingRuleName(routerID)
+	drb := istio.NewDestinationRule(ruleName, util.ServiceToFullHostName(serviceName, Flags.Namespace), name, Flags.Namespace)
+	for i, subset := range subsets {
+		drb.WithSubset(objs[i].(*appsv1.Deployment), subset)
+	}
+	return drb.Build()
 }
 
-func getStableVirtualService(serviceName, name string) runtime.Object {
-	return routing.NewVirtualService(serviceName, name, Flags.Namespace).
-		WithMeshGateway().
-		ProgressingToStable(map[string]int32{routing.SubsetStable: 100}, serviceName, Flags.Namespace).
-		WithStableLabel().
-		Build()
+func getVirtualServiceForDeployments(serviceName, name string, subsets []string, weights []int32) runtime.Object {
+	host := util.ServiceToFullHostName(serviceName, Flags.Namespace)
+	ruleName := istio.GetRoutingRuleName(routerID)
+	vsb := istio.NewVirtualService(ruleName, name, Flags.Namespace)
+	rb := istio.NewEmptyHTTPRoute()
+	for i, subset := range subsets {
+		destination := istio.NewHTTPRouteDestination().
+			WithHost(host).
+			WithSubset(subset).
+			WithWeight(weights[i]).Build()
+		rb = rb.WithDestination(destination)
+	}
+
+	return vsb.WithHTTPRoute(rb.Build()).WithMeshGateway().WithHosts([]string{host}).Build()
 }
 
-func getStableVirtualServiceWithGateway(serviceName, name, host, gw string) runtime.Object {
-	return routing.NewVirtualService(serviceName, name, Flags.Namespace).
-		WithHosts([]string{host}).
-		InitGateways().
-		WithMeshGateway().
+func getVirtualServiceForServices(serviceName, name string, destinations []string, weights []int32) runtime.Object {
+	host := util.ServiceToFullHostName(serviceName, Flags.Namespace)
+	ruleName := istio.GetRoutingRuleName(routerID)
+	vsb := istio.NewVirtualService(ruleName, name, Flags.Namespace)
+	rb := istio.NewEmptyHTTPRoute()
+	for i, name := range destinations {
+		destination := istio.NewHTTPRouteDestination().
+			WithHost(name).
+			WithWeight(weights[i]).Build()
+		rb = rb.WithDestination(destination)
+	}
+
+	return vsb.WithHTTPRoute(rb.Build()).WithMeshGateway().WithHosts([]string{host}).Build()
+}
+
+func getVirtualServiceWithGateway(serviceName, name string, subsets []string, weights []int32, host, gw string) runtime.Object {
+	return istio.NewVirtualServiceBuilder(getVirtualServiceForDeployments(serviceName, name, subsets, weights).(*v1alpha3.VirtualService)).
 		WithGateways([]string{gw}).
-		ProgressingToStable(map[string]int32{routing.SubsetStable: 100}, serviceName, Flags.Namespace).
-		WithStableLabel().
+		WithHosts([]string{host}).
 		Build()
 }

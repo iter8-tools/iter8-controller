@@ -15,13 +15,14 @@ _end_to_end_script: &end_to_end_script
     - test/e2e/install-minikube.sh
     - test/e2e/sanity-check.sh
     - test/e2e/install-istio.sh
+    - test/e2e/e2e-local.sh
     - test/e2e/install-iter8.sh
     - test/e2e/e2e-test.sh
 
 jobs:
   include:
     - stage: "unit tests"
-      go_import_path: github.com/iter8-tools/iter8-controller/
+      go_import_path: github.com/iter8-tools/iter8/
       before_install:
         - ./test/scripts/tools.sh
       if: (type = pull_request) AND (head_branch != master) AND (head_branch !~ /^v[0-9]+\.[0-9]+$/)

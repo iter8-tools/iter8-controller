@@ -16,7 +16,7 @@ limitations under the License.
 package controller
 
 import (
-	"github.com/iter8-tools/iter8-controller/pkg/controller/experiment"
+	"github.com/iter8-tools/iter8/pkg/controller/experiment"
 )
 
 func init() {

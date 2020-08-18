@@ -28,9 +28,6 @@ fi
 echo "Istio version: $ISTIO_VERSION"
 echo "Istio mixer disabled: $MIXER_DISABLED"
 
-# Install Helm
-header "install helm"
-curl -fsSL https://get.helm.sh/helm-v2.16.7-linux-amd64.tar.gz | tar xvzf - && sudo mv linux-amd64/helm /usr/local/bin
 
 if [ "$MIXER_DISABLED" = "false" ]; then
   # Create new Helm template based on the new image

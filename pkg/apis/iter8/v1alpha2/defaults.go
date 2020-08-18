@@ -13,6 +13,7 @@ limitations under the License.
 package v1alpha2
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -22,6 +23,9 @@ const (
 
 	// DefaultZeroToOne indicate whether the value range of metric is from 0 to 1  by default, which is false
 	DefaultZeroToOne bool = false
+
+	// DefaultCleanup indicate whether router and targets receiving no traffic should be deleted after expreriment
+	DefaultCleanup bool = false
 
 	// DefaultStrategy is the default value for strategy, which is progressive
 	DefaultStrategy StrategyType = StrategyProgressive
@@ -158,6 +162,14 @@ func (s *ExperimentSpec) GetAnalyticsEndpoint() string {
 	return *s.AnalyticsEndpoint
 }
 
+// GetCleanup returns whether router and targets receiving no traffic should be deleted after expreriment
+func (s *ExperimentSpec) GetCleanup() bool {
+	if s.Cleanup == nil {
+		return DefaultCleanup
+	}
+	return *s.Cleanup
+}
+
 // IsZeroToOne returns specified(or default) zeroToOne value
 func (r *RatioMetric) IsZeroToOne() bool {
 	if r.ZeroToOne == nil {
@@ -171,4 +183,29 @@ func (s *ExperimentSpec) TerminateExperiment() {
 	s.ManualOverride = &ManualOverride{
 		Action: ActionTerminate,
 	}
+}
+
+// Validate checks whether specification in Service can be supported by iter8 or not
+// returns nil if ok; otherwise non-nil err with detailed explanation will be returned
+func (s *Service) Validate() error {
+	// check service/hosts specification
+	if s.Name == "" && len(s.Hosts) == 0 {
+		return fmt.Errorf("Either Name or Hosts should be specified in Service")
+	}
+
+	// check kind/apiVersion specification
+	switch s.Kind {
+	case "Deployment", "":
+		if !(s.APIVersion == "" || s.APIVersion == "apps/v1" || s.APIVersion == "v1") {
+			return fmt.Errorf("Invalid kind/apiVerison pair: %s, %s", s.Kind, s.APIVersion)
+		}
+	case "Service":
+		if !(s.APIVersion == "" || s.APIVersion == "v1") {
+			return fmt.Errorf("Invalid kind/apiVerison pair: %s, %s", s.Kind, s.APIVersion)
+		}
+	default:
+		return fmt.Errorf("Invalid kind/apiVerison pair: %s, %s", s.Kind, s.APIVersion)
+	}
+
+	return nil
 }

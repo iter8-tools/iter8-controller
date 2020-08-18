@@ -21,8 +21,8 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	iter8v1alpha2 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha2"
-	"github.com/iter8-tools/iter8-controller/pkg/controller/experiment/util"
+	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8/pkg/controller/experiment/util"
 )
 
 func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *iter8v1alpha2.Experiment) (reconcile.Result, error) {
@@ -51,11 +51,12 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 		}
 	}
 
-	// complete experiment if required
+	// complete experiment
 	if r.toComplete(context, instance) {
 		err := r.completeExperiment(context, instance)
 		if err != nil {
 			// retry
+			util.Logger(context).Error(err, "fail to complete experiment, retry")
 			return reconcile.Result{Requeue: true}, nil
 		}
 		return r.endRequest(context, instance)
@@ -74,31 +75,23 @@ func (r *ReconcileExperiment) syncKubernetes(context context.Context, instance *
 	return r.endRequest(context, instance)
 }
 
-func (r *ReconcileExperiment) finalizeIstio(context context.Context, instance *iter8v1alpha2.Experiment) (reconcile.Result, error) {
+func (r *ReconcileExperiment) finalize(context context.Context, instance *iter8v1alpha2.Experiment) (reconcile.Result, error) {
+	util.Logger(context).Info("finalizing")
 	if !instance.Status.ExperimentCompleted() {
 		instance.Spec.ManualOverride = &iter8v1alpha2.ManualOverride{
 			Action: iter8v1alpha2.ActionTerminate,
 		}
-		overrideAssessment(instance)
 		r.syncExperiment(context, instance)
 		if _, err := r.syncKubernetes(context, instance); err != nil {
 			util.Logger(context).Error(err, "Fail to execute finalize sync process")
 		}
-		r.iter8Cache.RemoveExperiment(instance)
 	}
 
 	return reconcile.Result{}, removeFinalizer(context, r, instance, Finalizer)
 }
 
 func (r *ReconcileExperiment) toDetectTargets(context context.Context, instance *iter8v1alpha2.Experiment) bool {
-	// Skip targets check if termination request issued from cache or
-	// targets have been marked found during the experiment
-	// refesh command force to do a new check
-	if experimentAbstract(context) != nil && experimentAbstract(context).Terminate() {
-		return false
-	}
-
-	if instance.Status.TargetsFound() && !r.needRefresh() {
+	if instance.Spec.Terminate() || instance.Status.TargetsFound() && !r.needRefresh() {
 		return false
 	}
 
@@ -111,7 +104,6 @@ func (r *ReconcileExperiment) toProcessIteration(context context.Context, instan
 	}
 
 	now := time.Now()
-	// traffic := instance.Spec.TrafficControl
 	interval, _ := instance.Spec.GetInterval()
 
 	return instance.Status.LastUpdateTime == nil || now.After(instance.Status.LastUpdateTime.Add(interval))
@@ -119,7 +111,11 @@ func (r *ReconcileExperiment) toProcessIteration(context context.Context, instan
 
 func (r *ReconcileExperiment) toComplete(context context.Context, instance *iter8v1alpha2.Experiment) bool {
 	return instance.Spec.GetMaxIterations() <= *instance.Status.CurrentIteration ||
+<<<<<<< HEAD
 		instance.Spec.Terminate() || experimentAbstract(context).Terminate()
+=======
+		instance.Spec.Terminate()
+>>>>>>> upstream/master
 }
 
 func (r *ReconcileExperiment) endRequest(context context.Context, instance *iter8v1alpha2.Experiment) (reconcile.Result, error) {

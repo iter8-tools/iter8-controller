@@ -22,8 +22,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	iter8v1alpha2 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha2"
-	"github.com/iter8-tools/iter8-controller/pkg/controller/experiment/util"
+	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8/pkg/controller/experiment/util"
 )
 
 func (r *ReconcileExperiment) markTargetsError(context context.Context, instance *iter8v1alpha2.Experiment,

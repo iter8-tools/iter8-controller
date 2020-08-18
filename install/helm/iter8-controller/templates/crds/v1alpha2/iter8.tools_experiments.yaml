@@ -29,7 +29,7 @@ spec:
     format: byte
     name: winner found
     type: boolean
-  - JSONPath: .status.assessment.winner.current_best_version
+  - JSONPath: .status.assessment.winner.name
     description: Current best version
     format: byte
     name: current best
@@ -224,8 +224,8 @@ spec:
                   type: array
               type: object
             service:
-              description: Service is a reference to the service that this experiment
-                is targeting at
+              description: Service is a reference to the service componenets that
+                this experiment is targeting at
               properties:
                 apiVersion:
                   description: API version of the referent.
@@ -411,6 +411,11 @@ spec:
                     that would be used in experiment default is 100
                   format: int32
                   type: integer
+                routerID:
+                  description: RouterID refers to the id of router used to handle
+                    traffic for the experiment If it's not specified, the first entry
+                    of effictive host will be used as the id
+                  type: string
                 strategy:
                   description: Strategy used to shift traffic default is progressive
                   enum:
@@ -667,6 +672,9 @@ spec:
                     current_best_version:
                       description: ID of the current winner with the maximum probability
                         of winning. This is currently computed based on Bayesian estimation
+                      type: string
+                    name:
+                      description: name of winner version
                       type: string
                     probability_of_winning_for_best_version:
                       description: Posterior probability of the version declared as

@@ -22,7 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
 )
 
 // ExperimentBuilder builds experiment object
@@ -79,6 +79,14 @@ func (b *ExperimentBuilder) WithAnalyticsEndpoint(host string) *ExperimentBuilde
 // WithCriterion adds a criterion
 func (b *ExperimentBuilder) WithCriterion(c v1alpha2.Criterion) *ExperimentBuilder {
 	b.Spec.Criteria = append(b.Spec.Criteria, c)
+	return b
+}
+
+func (b *ExperimentBuilder) WithRouterID(id string) *ExperimentBuilder {
+	if b.Spec.TrafficControl == nil {
+		b.Spec.TrafficControl = &v1alpha2.TrafficControl{}
+	}
+	b.Spec.TrafficControl.RouterID = &id
 	return b
 }
 
@@ -142,8 +150,8 @@ func DeleteExperiment(name string, namespace string) Hook {
 }
 
 func ResumeExperiment(exp *v1alpha2.Experiment) Hook {
-	exp = (*ExperimentBuilder)(exp).
+	newexp := exp.DeepCopy()
+	return UpdateObject((*ExperimentBuilder)(newexp).
 		WithResumeAction().
-		Build()
-	return UpdateObject(exp)
+		Build())
 }

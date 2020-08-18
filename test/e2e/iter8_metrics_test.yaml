@@ -3,19 +3,24 @@ kind: ConfigMap
 metadata:
   name: iter8config-metrics
 data:
-  query_templates: |-
-    iter8_sample_size: "sum(increase(istio_requests_total{source_workload_namespace!='knative-serving',reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
-    iter8_latency: "(sum(increase(istio_request_duration_seconds_sum{source_workload_namespace!='knative-serving',reporter='source'}[$interval]$offset_str)) by ($entity_labels)) / (sum(increase(istio_request_duration_seconds_count{source_workload_namespace!='knative-serving',reporter='source'}[$interval]$offset_str)) by ($entity_labels))"
-    iter8_error_count: "sum(increase(istio_requests_total{source_workload_namespace!='knative-serving',response_code=~'5..',reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
-    iter8_error_rate: "sum(increase(istio_requests_total{source_workload_namespace!='knative-serving',response_code=~'5..',reporter='source'}[$interval]$offset_str)) by ($entity_labels) / sum(increase(istio_requests_total{source_workload_namespace!='knative-serving',reporter='source'}[$interval]$offset_str)) by ($entity_labels)"
-  metrics: |-
-    - name: iter8_latency
-      metric_type: Performance
-      sample_size_query_template: iter8_sample_size
+  counter_metrics.yaml: |-
+    - name: iter8_request_count
+      query_template: sum(increase(istio_requests_total{reporter='source',job='istio-mesh'}[$interval])) by ($version_labels)
+    - name: iter8_total_latency
+      query_template: (sum(increase(istio_request_duration_seconds_sum{reporter='source',job='istio-mesh'}[$interval])) by ($version_labels))*1000
+      units: msec
+      preferred_direction: lower
     - name: iter8_error_count
-      metric_type: Correctness
-      sample_size_query_template: iter8_sample_size
+      query_template: sum(increase(istio_requests_total{response_code=~'5..',reporter='source',job='istio-mesh'}[$interval])) by ($version_labels)
+      preferred_direction: lower
+  ratio_metrics.yaml: |-
+    - name: iter8_mean_latency
+      numerator: iter8_total_latency
+      denominator: iter8_request_count
+      preferred_direction: lower
     - name: iter8_error_rate
-      metric_type: Correctness
-      sample_size_query_template: iter8_sample_size
+      numerator: iter8_error_count
+      denominator: iter8_request_count
+      preferred_direction: lower
+      zero_to_one: true
 

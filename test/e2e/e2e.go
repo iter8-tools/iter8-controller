@@ -35,9 +35,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	analyticsv1alpha2 "github.com/iter8-tools/iter8-controller/pkg/analytics/api/v1alpha2"
-	iter8v1alpha2 "github.com/iter8-tools/iter8-controller/pkg/apis/iter8/v1alpha2"
-	"github.com/iter8-tools/iter8-controller/test"
+	analyticsv1alpha2 "github.com/iter8-tools/iter8/pkg/analytics/api/v1alpha2"
+	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8/test"
 )
 
 // Flags holds the command line flags or defaults for settings in the user's environment.
@@ -166,7 +166,7 @@ func (tc *testCase) runPostHook(ctx context.Context, cl client.Client) error {
 
 func (tc *testCase) checkHasResults(ctx context.Context, cl client.Client) error {
 	for _, result := range tc.wantResults {
-		retries := 10
+		retries := 5
 		for {
 			obj, err := getObject(ctx, cl, result)
 			if err != nil {
@@ -285,8 +285,7 @@ func runTestCases(t *testing.T, service *test.AnalyticsService, testCases map[st
 				t.Fatalf("Failed running finalizers %v", err)
 			}
 
-			// TODO: This shouldn't be hard coded
-			time.Sleep(time.Second * 3)
+			time.Sleep(3 * time.Second)
 		})
 	}
 }
