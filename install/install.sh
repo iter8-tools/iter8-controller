@@ -24,12 +24,12 @@ install() {
 
   if [ "$MIXER_DISABLED" = "false" ]; then
     echo "Using Istio telemetry v1"
-    kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0-preview/install/iter8-controller.yaml
+    kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0-rc1/install/iter8-controller.yaml
   else
     echo "Using Istio telemetry v2"
-	kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0-preview/install/iter8-controller-telemetry-v2.yaml
+	kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/v1.0.0-rc1/install/iter8-controller-telemetry-v2.yaml
   fi
-  kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-analytics/v1.0.0-preview/install/kubernetes/iter8-analytics.yaml
+  kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-analytics/v1.0.0-rc1/install/kubernetes/iter8-analytics.yaml
 }
 
 install

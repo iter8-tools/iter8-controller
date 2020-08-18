@@ -111,11 +111,7 @@ func (r *ReconcileExperiment) toProcessIteration(context context.Context, instan
 
 func (r *ReconcileExperiment) toComplete(context context.Context, instance *iter8v1alpha2.Experiment) bool {
 	return instance.Spec.GetMaxIterations() <= *instance.Status.CurrentIteration ||
-<<<<<<< HEAD
-		instance.Spec.Terminate() || experimentAbstract(context).Terminate()
-=======
 		instance.Spec.Terminate()
->>>>>>> upstream/master
 }
 
 func (r *ReconcileExperiment) endRequest(context context.Context, instance *iter8v1alpha2.Experiment) (reconcile.Result, error) {
