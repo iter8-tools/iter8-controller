@@ -202,15 +202,13 @@ func (r *ReconcileExperiment) processIteration(context context.Context, instance
 		instance.Status.Assessment.Winner = &iter8v1alpha2.WinnerAssessment{
 			WinnerAssessment: &response.WinnerAssessment,
 		}
-		if response.WinnerAssessment.WinnerFound {
-			if instance.Status.Assessment.Baseline.ID == response.WinnerAssessment.Winner {
-				instance.Status.Assessment.Winner.Name = &instance.Status.Assessment.Baseline.Name
-			} else {
-				for _, candidate := range instance.Status.Assessment.Candidates {
-					if candidate.ID == response.WinnerAssessment.Winner {
-						instance.Status.Assessment.Winner.Name = &candidate.Name
-						break
-					}
+		if instance.Status.Assessment.Baseline.ID == response.WinnerAssessment.Winner {
+			instance.Status.Assessment.Winner.Name = &instance.Status.Assessment.Baseline.Name
+		} else {
+			for _, candidate := range instance.Status.Assessment.Candidates {
+				if candidate.ID == response.WinnerAssessment.Winner {
+					instance.Status.Assessment.Winner.Name = &candidate.Name
+					break
 				}
 			}
 		}
