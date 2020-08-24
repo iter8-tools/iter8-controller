@@ -291,7 +291,6 @@ func convertMatchToIstio(m *iter8v1alpha2.HTTPMatchRequest) *networkingv1alpha3.
 	return out
 }
 
-
 func toStringMatch(s *iter8v1alpha2.StringMatch) *networkingv1alpha3.StringMatch {
 	if s.Exact != nil {
 		return &networkingv1alpha3.StringMatch{

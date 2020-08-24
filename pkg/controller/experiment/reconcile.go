@@ -59,12 +59,16 @@ func completeStatusMessage(instance *iter8v1alpha2.Experiment) string {
 		case iter8v1alpha2.OnTerminationToBaseline:
 			out += "Traffic To Baseline"
 		case iter8v1alpha2.OnTerminationKeepLast:
-			out += "Keep Last Traffic"
+			if instance.Spec.Terminate() {
+				out += "Traffic User Specified"
+			} else {
+				out += "Keep Last Traffic"
+			}
 		}
 	}
 
 	if instance.Spec.Terminate() {
-		out += "(Abort)"
+		out += " (Abort)"
 	}
 
 	return out
