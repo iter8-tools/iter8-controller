@@ -91,11 +91,11 @@ func overrideAssessment(instance *iter8v1alpha2.Experiment) {
 				instance.Status.Assessment.Baseline.Weight = 0
 			}
 
-			for _, candidate := range instance.Status.Assessment.Candidates {
-				if ts, ok := trafficSplit[candidate.Name]; ok {
-					candidate.Weight = ts
+			for i := range instance.Status.Assessment.Candidates {
+				if ts, ok := trafficSplit[instance.Status.Assessment.Candidates[i].Name]; ok {
+					instance.Status.Assessment.Candidates[i].Weight = ts
 				} else {
-					candidate.Weight = 0
+					instance.Status.Assessment.Candidates[i].Weight = 0
 				}
 			}
 
