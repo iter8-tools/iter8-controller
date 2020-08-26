@@ -357,50 +357,33 @@ func (r *Router) UpdateRouteToStable(instance *iter8v1alpha2.Experiment) (err er
 		return nil
 	}
 
-	if instance.Spec.GetCleanup() && r.rules.isInit() {
-		// delete routing rules
-		if err = r.client.NetworkingV1alpha3().VirtualServices(r.rules.virtualService.Namespace).
-			Delete(r.rules.virtualService.Name, &metav1.DeleteOptions{}); err != nil {
-			r.logger.Info("Err in deleting vs", "err", err)
-			return
-		}
+	// only applied to progressing(fully configured) routing rules
+	// otherwise, the routing rule will be remained as its last state
+	vs := r.rules.virtualService
+	if r.rules.isProgressing() {
+		vs = r.updateVSFromExperiment(vs, instance)
+	}
 
-		if r.handler.requireDestinationRule() {
-			if err = r.client.NetworkingV1alpha3().DestinationRules(r.rules.destinationRule.Namespace).
-				Delete(r.rules.destinationRule.Name, &metav1.DeleteOptions{}); err != nil {
-				r.logger.Info("Err in deleting dr", "err", err)
-				return
-			}
-		}
-	} else {
-		// only applied to progressing(fully configured) routing rules
-		// otherwise, the routing rule will be remained as its last state
-		vs := r.rules.virtualService
-		if r.rules.isProgressing() {
-			vs = r.updateVSFromExperiment(vs, instance)
-		}
+	// update vs
+	vs = NewVirtualServiceBuilder(vs).
+		WithStableLabel().
+		RemoveExperimentLabel().Build()
+	if _, err = r.client.NetworkingV1alpha3().
+		VirtualServices(vs.Namespace).
+		Update(vs); err != nil {
+		return err
+	}
 
-		// update vs
-		vs = NewVirtualServiceBuilder(vs).
+	// update dr if required
+	if r.handler.requireDestinationRule() {
+		dr := NewDestinationRuleBuilder(r.rules.destinationRule).
 			WithStableLabel().
-			RemoveExperimentLabel().Build()
+			RemoveExperimentLabel().
+			Build()
 		if _, err = r.client.NetworkingV1alpha3().
-			VirtualServices(vs.Namespace).
-			Update(vs); err != nil {
+			DestinationRules(r.rules.destinationRule.Namespace).
+			Update(dr); err != nil {
 			return err
-		}
-
-		// update dr if required
-		if r.handler.requireDestinationRule() {
-			dr := NewDestinationRuleBuilder(r.rules.destinationRule).
-				WithStableLabel().
-				RemoveExperimentLabel().
-				Build()
-			if _, err = r.client.NetworkingV1alpha3().
-				DestinationRules(r.rules.destinationRule.Namespace).
-				Update(dr); err != nil {
-				return err
-			}
 		}
 	}
 	return nil

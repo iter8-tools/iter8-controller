@@ -18,7 +18,6 @@ fi
 # Exit on error
 set -e
 
-$DIR/e2e-scenario-0a.sh
-$DIR/e2e-scenario-0b.sh
-$DIR/e2e-scenario-0c.sh
-
+$DIR/e2e-canary-scenario-1.sh
+$DIR/e2e-canary-scenario-2.sh
+# $DIR/e2e-abn-scenario-1.sh  ## works but how to manage the prometheus requirement ???

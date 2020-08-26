@@ -112,14 +112,14 @@ func (t *Targets) GetCandidates(context context.Context) (err error) {
 
 // Cleanup deletes cluster runtime objects of targets at the end of experiment
 func Cleanup(context context.Context, instance *iter8v1alpha2.Experiment, client client.Client) {
-	if instance.Spec.Cleanup != nil && *instance.Spec.Cleanup {
+	if instance.Spec.GetCleanup() {
 		assessment := instance.Status.Assessment
 		toKeep := make(map[string]bool)
 
 		switch instance.Spec.GetOnTermination() {
 		case iter8v1alpha2.OnTerminationToWinner:
 			if instance.Status.IsWinnerFound() {
-				toKeep[assessment.Winner.Winner] = true
+				toKeep[*assessment.Winner.Name] = true
 				break
 			}
 			fallthrough

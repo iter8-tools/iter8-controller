@@ -6,16 +6,15 @@ spec:
   service:
     name: reviews
     baseline: reviews-v3
-    candidates: [ "reviews-v4" ]
+    candidates:
+      - reviews-v4
   criteria:
-    - metric: iter8_mean_latenecy
+    - metric: iter8_mean_latency
       threshold:
         type: absolute
-        value: 200 # milliseconds
+        value: 200
   duration:
-    interval: 30s
     maxIterations: 8
+    interval: 15s
   trafficControl:
-    percentage: 100
-    maxIncrement: 100
-  cleanup: true
+    maxIncrement: 20
