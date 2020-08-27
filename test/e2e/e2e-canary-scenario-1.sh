@@ -69,10 +69,8 @@ kubectl get pods,services -n $NAMESPACE
 # create experiment
 # verify it is paused, waiting for baseline
 header "Create Iter8 Experiment"
-yq w $YAML_PATH/canary/canary_reviews-v2_to_reviews-v3.yaml spec.duration.interval 15s \
-  | yq w - spec.duration.maxIterations 4 \
+yq w $YAML_PATH/canary/canary_reviews-v2_to_reviews-v3.yaml metadata.name $EXPERIMENT \
   | yq w - spec.analyticsEndpoint $ANALYTICS_ENDPOINT \
-  | yq w - metadata.name $EXPERIMENT \
   | kubectl -n $NAMESPACE apply -f -
 sleep 2
 kubectl get experiments.iter8.tools -n $NAMESPACE
@@ -95,7 +93,7 @@ kubectl -n $NAMESPACE patch experiments.iter8.tools $EXPERIMENT --type='merge' \
   -p='{"spec": {"manualOverride": { "action": "pause" }}}'
 sleep 2
 test_experiment_status $EXPERIMENT "ActionPause"
-kubectl -n $NAMESPACE get experiments.iter8.tools $EXPERIMENT -o yaml
+kubectl -n $NAMESPACE get experiments.iter8.tools $EXPERIMENT
 
 # resume experiment
 # verify experiment resumed
@@ -105,7 +103,7 @@ kubectl -n $NAMESPACE patch experiments.iter8.tools $EXPERIMENT --type='merge' \
   -p='{"spec": {"manualOverride": { "action": "resume" }}}'
 sleep 10
 test_experiment_status $EXPERIMENT "IterationUpdate: Iteration"
-kubectl -n $NAMESPACE get experiments.iter8.tools $EXPERIMENT -o yaml
+kubectl -n $NAMESPACE get experiments.iter8.tools $EXPERIMENT
 
 # force experiment rollback
 # verify experiment rolled back
@@ -122,10 +120,8 @@ test_vs_percentages reviews.$NAMESPACE.svc.cluster.local.iter8router 1 0
 # restart experiment
 # verify experiment started
 header "restart experiment"
-yq w $DIR/../data/bookinfo/canary/canary_reviews-v2_to_reviews-v3.yaml spec.duration.interval 15s \
-  | yq w - spec.duration.maxIterations 10 \
+yq w $DIR/../data/bookinfo/canary/canary_reviews-v2_to_reviews-v3.yaml metadata.name $EXPERIMENT-restart \
   | yq w - spec.analyticsEndpoint $ANALYTICS_ENDPOINT \
-  | yq w - metadata.name $EXPERIMENT-restart \
   | kubectl -n $NAMESPACE apply -f -
 sleep 10
 test_experiment_status "$EXPERIMENT-restart" "IterationUpdate: Iteration"

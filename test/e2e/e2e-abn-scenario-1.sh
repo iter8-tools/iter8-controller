@@ -104,15 +104,15 @@ if (( $? )); then echo "FAIL: candidate pods not started as expected"; exit 1; f
 kubectl --namespace $NAMESPACE get pods,services
 sleep 2
 test_experiment_status $EXPERIMENT "IterationUpdate: Iteration"
-# kubectl --namespace $NAMESPACE get experiments.iter8.tools $EXPERIMENT -o yaml
 
 # wait for experiment to complete
 kubectl --namespace $NAMESPACE wait --for=condition=ExperimentCompleted experiments.iter8.tools $EXPERIMENT --timeout=540s
 kubectl --namespace $NAMESPACE get experiments.iter8.tools
 
 header "Test results"
-# kubectl --namespace $NAMESPACE get experiments.iter8.tools $EXPERIMENT -o yaml
+kubectl --namespace $NAMESPACE get experiments.iter8.tools $EXPERIMENT
 test_experiment_status $EXPERIMENT "ExperimentCompleted: Traffic To Winner"
+kubectl -n $NAMESPACE get virtualservice.networking.istio.io reviews.$NAMESPACE.svc.cluster.local.iter8router -o yaml | yq r - spec.http
 test_vs_percentages bookinfo 0 0
 test_vs_percentages bookinfo 1 0
 test_vs_percentages bookinfo 2 100

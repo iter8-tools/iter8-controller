@@ -60,11 +60,9 @@ watch -n 0.1 "curl -H \"Host: bookinfo.example.com\" -Is \"http://$IP:$PORT/prod
 # start successful experiment
 # verify waiting for candidate
 header "Create Iter8 Experiment"
-yq w $YAML_PATH/canary/canary_reviews-v2_to_reviews-v3.yaml spec.duration.interval 15s \
-  | yq w - spec.duration.maxIterations 4 \
+yq w $YAML_PATH/canary/canary_reviews-v2_to_reviews-v3.yaml metadata.name $EXPERIMENT-v2v3 \
   | yq w - spec.analyticsEndpoint $ANALYTICS_ENDPOINT \
-  | yq w - metadata.name $EXPERIMENT-v2v3 \
-  | yq w - spec.cleanup true \
+  | yq w - spec.trafficControl.strategy progressive \
   | kubectl -n $NAMESPACE apply -f -
 sleep 2
 kubectl get experiments.iter8.tools -n $NAMESPACE
@@ -91,7 +89,10 @@ kubectl -n $NAMESPACE get experiments.iter8.tools $EXPERIMENT-v2v3
 test_experiment_status $EXPERIMENT-v2v3 "ExperimentCompleted: Traffic To Winner"
 test_winner_found $EXPERIMENT-v2v3 true
 test_current_best $EXPERIMENT-v2v3 reviews-v3
-test_deployment_deleted reviews-v2
+kubectl -n $NAMESPACE get deployment
+test_deployment reviews-v2 true
+test_deployment reviews-v3 true
+kubectl -n $NAMESPACE get virtualservice.networking.istio.io reviews.$NAMESPACE.svc.cluster.local.iter8router -o yaml | yq r - spec.http
 test_vs_percentages reviews.$NAMESPACE.svc.cluster.local.iter8router 0 0
 test_vs_percentages reviews.$NAMESPACE.svc.cluster.local.iter8router 1 100
 
@@ -110,10 +111,8 @@ sleep 2
 # start failing experiment
 # verify starts immediately
 header "Create Iter8 Experiment"
-yq w $YAML_PATH/canary/canary_reviews-v3_to_reviews-v4.yaml spec.duration.interval 15s \
-  | yq w - spec.duration.maxIterations 4 \
+yq w $YAML_PATH/canary/canary_reviews-v3_to_reviews-v4.yaml metadata.name $EXPERIMENT-v3v4 \
   | yq w - spec.analyticsEndpoint $ANALYTICS_ENDPOINT \
-  | yq w - metadata.name $EXPERIMENT-v3v4 \
   | yq w - spec.cleanup true \
   | kubectl -n $NAMESPACE apply -f -
 sleep 2
@@ -130,7 +129,10 @@ kubectl -n $NAMESPACE get experiments.iter8.tools $EXPERIMENT-v3v4
 test_experiment_status $EXPERIMENT-v3v4 "ExperimentCompleted: Traffic To Winner"
 test_winner_found $EXPERIMENT-v3v4 true
 test_current_best $EXPERIMENT-v3v4 reviews-v3
-test_deployment_deleted reviews-v4
+kubectl -n $NAMESPACE get deployment
+test_deployment reviews-v4 false
+test_deployment reviews-v3 true
+kubectl -n $NAMESPACE get virtualservice.networking.istio.io reviews.$NAMESPACE.svc.cluster.local.iter8router -o yaml | yq r - spec.http
 test_vs_percentages reviews.$NAMESPACE.svc.cluster.local.iter8router 0 100
 test_vs_percentages reviews.$NAMESPACE.svc.cluster.local.iter8router 1 0
 
@@ -140,10 +142,8 @@ test_vs_percentages reviews.$NAMESPACE.svc.cluster.local.iter8router 1 0
 
 # start another failing experiment
 header "Create Iter8 Experiment"
-yq w $YAML_PATH/canary/canary_reviews-v3_to_reviews-v5.yaml spec.duration.interval 15s \
-  | yq w - spec.duration.maxIterations 4 \
+yq w $YAML_PATH/canary/canary_reviews-v3_to_reviews-v5.yaml metadata.name $EXPERIMENT-v3v5 \
   | yq w - spec.analyticsEndpoint $ANALYTICS_ENDPOINT \
-  | yq w - metadata.name $EXPERIMENT-v3v5 \
   | yq w - spec.cleanup true \
   | kubectl -n $NAMESPACE apply -f -
 sleep 2
@@ -169,7 +169,10 @@ kubectl -n $NAMESPACE get experiments.iter8.tools $EXPERIMENT-v3v5
 test_experiment_status $EXPERIMENT-v3v5 "ExperimentCompleted: Traffic To Winner"
 test_winner_found $EXPERIMENT-v3v5 true
 test_current_best $EXPERIMENT-v3v5 reviews-v3
-test_deployment_deleted reviews-v5
+kubectl -n $NAMESPACE get deployment
+test_deployment reviews-v5 false
+test_deployment reviews-v3 true
+kubectl -n $NAMESPACE get virtualservice.networking.istio.io reviews.$NAMESPACE.svc.cluster.local.iter8router -o yaml | yq r - spec.http
 test_vs_percentages reviews.$NAMESPACE.svc.cluster.local.iter8router 0 100
 test_vs_percentages reviews.$NAMESPACE.svc.cluster.local.iter8router 1 0
 

@@ -13,8 +13,8 @@ spec:
         type: absolute
         value: 200 # milliseconds
   duration:
-    interval: 30s
-    maxIterations: 8
+    interval: 15s
+    maxIterations: 4
   trafficControl:
     strategy: uniform
     percentage: 100

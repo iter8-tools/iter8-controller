@@ -98,16 +98,26 @@ function test_current_best() {
   fi 
 }
 
-function test_deployment_deleted() {
+function test_deployment() {
   local deployment="$1"
+  local present="$2" # valid values are in [true,false]
 
-kubectl -n $NAMESPACE get deployment
-kubectl -n $NAMESPACE get deployment $deployment
+  kubectl -n $NAMESPACE get deployment $deployment
   if (( $? == 0 )); then
-    echo "FAIL: expected cleanup to delete $deployment"
-    exit 1
+    # deployment is present
+    if [[ "$present" == "true" ]]; then
+      echo "PASS: expected deployment $deployment present"
+    else # "$present" == "false"
+      echo "FAIL: expected deployment $deployment not present"
+      exit 1
+    fi
   else
-    echo "PASS: $deployment has been deleted"
+    # deployment is not present
+    if [[ "$present" == "true" ]]; then
+      echo "FAIL: deployment $deployment present"
+      exit 1
+    else # "$present" == "false"
+      echo "PASS: deployment $deployment not present"
+    fi
   fi
-
 }
