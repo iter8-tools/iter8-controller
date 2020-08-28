@@ -71,6 +71,7 @@ kubectl get pods,services -n $NAMESPACE
 header "Create Iter8 Experiment"
 yq w $YAML_PATH/canary/canary_reviews-v2_to_reviews-v3.yaml metadata.name $EXPERIMENT \
   | yq w - spec.analyticsEndpoint $ANALYTICS_ENDPOINT \
+  | yq w - spec.duration.maxIterations 10 \
   | kubectl -n $NAMESPACE apply -f -
 sleep 2
 kubectl get experiments.iter8.tools -n $NAMESPACE
