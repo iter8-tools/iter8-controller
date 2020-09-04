@@ -476,7 +476,7 @@ func getExperimentWithGateway(name, serviceName, baseline, analyticsHost string,
 	experiment := test.NewExperiment(name, Flags.Namespace).
 		WithKubernetesTargetService(serviceName, baseline, candidates).
 		WithRouterID(routerID).
-		WithHostInTargetService(host, gw).
+		WithExternalHost(host, gw).
 		WithAnalyticsEndpoint(analyticsHost).
 		WithDummyCriterion().
 		Build()

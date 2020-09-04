@@ -223,6 +223,31 @@ spec:
                     type: object
                   type: array
               type: object
+            networking:
+              description: Networking describes how traffic network should be configured
+                for the experiment
+              properties:
+                hosts:
+                  description: List of hosts used to receive external traffic
+                  items:
+                    description: Host holds the name of host and gateway associated
+                      with it
+                    properties:
+                      gateway:
+                        description: The gateway associated with the host
+                        type: string
+                      name:
+                        description: Name of the Host
+                        type: string
+                    required:
+                    - gateway
+                    - name
+                    type: object
+                  type: array
+                id:
+                  description: id of router
+                  type: string
+              type: object
             service:
               description: Service is a reference to the service componenets that
                 this experiment is targeting at
@@ -251,23 +276,6 @@ spec:
                     TODO: this design is not final and this field is subject to change
                     in the future.'
                   type: string
-                hosts:
-                  description: List of hosts related to this service
-                  items:
-                    description: Host holds the name of host and gateway associated
-                      with it
-                    properties:
-                      gateway:
-                        description: The gateway associated with the host
-                        type: string
-                      name:
-                        description: Name of the Host
-                        type: string
-                    required:
-                    - gateway
-                    - name
-                    type: object
-                  type: array
                 kind:
                   description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                   type: string

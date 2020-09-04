@@ -145,9 +145,12 @@ func (spec *ExperimentSpec) effectiveHosts() []string {
 			hosts = append(hosts, host)
 		}
 	}
-	for _, host := range spec.Service.Hosts {
-		hosts = append(hosts, host.Name)
+	if spec.Networking != nil {
+		for _, host := range spec.Networking.Hosts {
+			hosts = append(hosts, host.Name)
+		}
 	}
+
 	return hosts
 }
 

@@ -37,7 +37,7 @@ func (h deploymentHandler) validateAndInit(drl *v1alpha3.DestinationRuleList, vs
 	if len(drl.Items) == 0 && len(vsl.Items) == 0 {
 		// init rule
 		name := GetRoutingRuleName(getRouterID(instance))
-		host := util.GetHost(instance)
+		host := util.GetDefaultHost(instance)
 		out.destinationRule = NewDestinationRule(name, host, expFullName, svcNamespace).
 			WithInitLabel().
 			Build()
@@ -76,7 +76,7 @@ func (h deploymentHandler) validateAndInit(drl *v1alpha3.DestinationRuleList, vs
 			// Valid stable rules detected
 			name := GetRoutingRuleName(getRouterID(instance))
 			out.virtualService = vsl.Items[0].DeepCopy()
-			out.destinationRule = NewDestinationRule(name, util.GetHost(instance), expFullName, svcNamespace).
+			out.destinationRule = NewDestinationRule(name, util.GetDefaultHost(instance), expFullName, svcNamespace).
 				WithInitLabel().
 				Build()
 		} else {

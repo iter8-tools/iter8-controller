@@ -90,6 +90,10 @@ type ExperimentSpec struct {
 	// User actions to override the current status of the experiment
 	// +optional
 	ManualOverride *ManualOverride `json:"manualOverride,omitempty"`
+
+	// Networking describes how traffic network should be configured for the experiment
+	// +optional
+	Networking *Networking `json:"networking,omitempty"`
 }
 
 // Service is a reference to the service that this experiment is targeting at
@@ -102,9 +106,6 @@ type Service struct {
 
 	// List of names of candidate deployments
 	Candidates []string `json:"candidates"`
-
-	// List of hosts related to this service
-	Hosts []Host `json:"hosts,omitempty"`
 
 	// Port number exposed by internal services
 	Port *int32 `json:"port,omitempty"`
@@ -215,6 +216,17 @@ type ManualOverride struct {
 	//   reviews-v3:20
 	// +optional
 	TrafficSplit map[string]int32 `json:"trafficSplit,omitempty"`
+}
+
+// Networking describes how traffic network should be configured for the experiment
+type Networking struct {
+	// id of router
+	// +optional
+	ID *string `json:"id,omitempty"`
+
+	// List of hosts used to receive external traffic
+	// +optional
+	Hosts []Host `json:"hosts,omitempty"`
 }
 
 // Metrics contains definitions for metrics used in the experiment

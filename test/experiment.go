@@ -83,10 +83,10 @@ func (b *ExperimentBuilder) WithCriterion(c v1alpha2.Criterion) *ExperimentBuild
 }
 
 func (b *ExperimentBuilder) WithRouterID(id string) *ExperimentBuilder {
-	if b.Spec.TrafficControl == nil {
-		b.Spec.TrafficControl = &v1alpha2.TrafficControl{}
+	if b.Spec.Networking == nil {
+		b.Spec.Networking = &v1alpha2.Networking{}
 	}
-	b.Spec.TrafficControl.RouterID = &id
+	b.Spec.Networking.ID = &id
 	return b
 }
 
@@ -97,8 +97,11 @@ func (b *ExperimentBuilder) WithResumeAction() *ExperimentBuilder {
 	return b
 }
 
-func (b *ExperimentBuilder) WithHostInTargetService(host, gateway string) *ExperimentBuilder {
-	b.Spec.Service.Hosts = []v1alpha2.Host{{
+func (b *ExperimentBuilder) WithExternalHost(host, gateway string) *ExperimentBuilder {
+	if b.Spec.Networking == nil {
+		b.Spec.Networking = &v1alpha2.Networking{}
+	}
+	b.Spec.Networking.Hosts = []v1alpha2.Host{{
 		Name:    host,
 		Gateway: gateway,
 	}}

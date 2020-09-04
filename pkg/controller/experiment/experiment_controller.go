@@ -296,7 +296,7 @@ func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Re
 	// Init metadata of experiment instance
 	if instance.Status.InitTimestamp == nil {
 		instance.InitStatus()
-		if err := instance.Spec.Service.Validate(); err != nil {
+		if err := instance.Spec.Validate(); err != nil {
 			r.markTargetsError(ctx, instance, "Invalid service spec: %v", err)
 			return r.endRequest(ctx, instance)
 		}
