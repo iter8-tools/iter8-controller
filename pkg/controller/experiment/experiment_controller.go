@@ -268,10 +268,6 @@ type ReconcileExperiment struct {
 // +kubebuilder:rbac:groups=iter8.tools,resources=experiments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=networking.istio.io,resources=destinationrules,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.istio.io,resources=virtualservices,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=serving.knative.dev,resources=services,verbs=get;list;watch;update;patch
-// +kubebuilder:rbac:groups=serving.knative.dev,resources=services/status,verbs=get
-// +kubebuilder:rbac:groups=serving.knative.dev,resources=revisions,verbs=get;list;watch
-// +kubebuilder:rbac:groups=serving.knative.dev,resources=revisions/status,verbs=get
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
 func (r *ReconcileExperiment) Reconcile(request reconcile.Request) (reconcile.Result, error) {

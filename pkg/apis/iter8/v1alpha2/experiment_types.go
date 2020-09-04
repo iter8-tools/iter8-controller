@@ -71,7 +71,7 @@ type ExperimentSpec struct {
 	TrafficControl *TrafficControl `json:"trafficControl,omitempty"`
 
 	// Endpoint of reaching analytics service
-	// default is http://iter8-analytics.iter8:8080
+	// default is http://iter8-analytics:8080
 	// +optional
 	AnalyticsEndpoint *string `json:"analyticsEndpoint,omitempty"`
 

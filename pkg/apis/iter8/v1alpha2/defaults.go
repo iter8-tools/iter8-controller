@@ -46,7 +46,7 @@ const (
 	DefaultMaxIterations int32 = 100
 
 	// DefaultAnalyticsEndpoint is the default endpoint of analytics
-	DefaultAnalyticsEndpoint string = "http://iter8-analytics.iter8:8080"
+	DefaultAnalyticsEndpoint string = "http://iter8-analytics:8080"
 )
 
 // ServiceNamespace gets the namespace for targets
