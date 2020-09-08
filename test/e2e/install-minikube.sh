@@ -16,6 +16,11 @@ curl -fsSL https://get.helm.sh/helm-v2.16.7-linux-amd64.tar.gz | tar xvzf - && s
 
 # Download minikube
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/$MINIKUBE_VERSION/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+
+# Install conntrack (which seems necessary for k8s 1.18+)
+# More details here: https://stackoverflow.com/questions/61238136/cant-start-minikube-in-ec2-shows-x-sorry-kubernetes-v1-18-0-requires-conntrac
+sudo apt install conntrack
+
 # Create kube and minikube configuration directories
 mkdir -p $HOME/.kube $HOME/.minikube
 touch $KUBECONFIG
