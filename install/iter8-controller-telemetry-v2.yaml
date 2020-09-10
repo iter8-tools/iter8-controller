@@ -154,7 +154,7 @@ spec:
           description: ExperimentSpec defines the desired state of Experiment
           properties:
             analyticsEndpoint:
-              description: Endpoint of reaching analytics service default is http://iter8-analytics.iter8:8080
+              description: Endpoint of reaching analytics service default is http://iter8-analytics:8080
               type: string
             cleanup:
               description: Cleanup indicates whether routing rules and deployment
@@ -290,6 +290,31 @@ spec:
                     type: object
                   type: array
               type: object
+            networking:
+              description: Networking describes how traffic network should be configured
+                for the experiment
+              properties:
+                hosts:
+                  description: List of hosts used to receive external traffic
+                  items:
+                    description: Host holds the name of host and gateway associated
+                      with it
+                    properties:
+                      gateway:
+                        description: The gateway associated with the host
+                        type: string
+                      name:
+                        description: Name of the Host
+                        type: string
+                    required:
+                    - gateway
+                    - name
+                    type: object
+                  type: array
+                id:
+                  description: id of router
+                  type: string
+              type: object
             service:
               description: Service is a reference to the service componenets that
                 this experiment is targeting at
@@ -318,23 +343,6 @@ spec:
                     TODO: this design is not final and this field is subject to change
                     in the future.'
                   type: string
-                hosts:
-                  description: List of hosts related to this service
-                  items:
-                    description: Host holds the name of host and gateway associated
-                      with it
-                    properties:
-                      gateway:
-                        description: The gateway associated with the host
-                        type: string
-                      name:
-                        description: Name of the Host
-                        type: string
-                    required:
-                    - gateway
-                    - name
-                    type: object
-                  type: array
                 kind:
                   description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                   type: string
@@ -894,36 +902,6 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - serving.knative.dev
-  resources:
-  - services
-  verbs:
-  - get
-  - list
-  - watch
-  - update
-  - patch
-- apiGroups:
-  - serving.knative.dev
-  resources:
-  - services/status
-  verbs:
-  - get
-- apiGroups:
-  - serving.knative.dev
-  resources:
-  - revisions
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - serving.knative.dev
-  resources:
-  - revisions/status
-  verbs:
-  - get
-- apiGroups:
   - apps
   resources:
   - deployments
@@ -1054,7 +1032,7 @@ spec:
       serviceAccountName: iter8-controller
       containers:
       - name: iter8-controller
-        image: "iter8/iter8-controller:v1.0.0-rc1"
+        image: "iter8/iter8-controller:v1.0.0-rc2"
         imagePullPolicy: Always
         env:
           - name: POD_NAMESPACE

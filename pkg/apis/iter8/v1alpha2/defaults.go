@@ -46,7 +46,7 @@ const (
 	DefaultMaxIterations int32 = 100
 
 	// DefaultAnalyticsEndpoint is the default endpoint of analytics
-	DefaultAnalyticsEndpoint string = "http://iter8-analytics.iter8:8080"
+	DefaultAnalyticsEndpoint string = "http://iter8-analytics:8080"
 )
 
 // ServiceNamespace gets the namespace for targets
@@ -187,9 +187,9 @@ func (s *ExperimentSpec) TerminateExperiment() {
 
 // Validate checks whether specification in Service can be supported by iter8 or not
 // returns nil if ok; otherwise non-nil err with detailed explanation will be returned
-func (s *Service) Validate() error {
+func (s *ExperimentSpec) Validate() error {
 	// check service/hosts specification
-	if s.Name == "" && len(s.Hosts) == 0 {
+	if s.Name == "" && len(s.Networking.Hosts) == 0 {
 		return fmt.Errorf("Either Name or Hosts should be specified in Service")
 	}
 

@@ -59,12 +59,16 @@ func completeStatusMessage(instance *iter8v1alpha2.Experiment) string {
 		case iter8v1alpha2.OnTerminationToBaseline:
 			out += "Traffic To Baseline"
 		case iter8v1alpha2.OnTerminationKeepLast:
-			out += "Keep Last Traffic"
+			if instance.Spec.Terminate() {
+				out += "Traffic User Specified"
+			} else {
+				out += "Keep Last Traffic"
+			}
 		}
 	}
 
 	if instance.Spec.Terminate() {
-		out += "(Abort)"
+		out += " (Abort)"
 	}
 
 	return out
@@ -202,15 +206,13 @@ func (r *ReconcileExperiment) processIteration(context context.Context, instance
 		instance.Status.Assessment.Winner = &iter8v1alpha2.WinnerAssessment{
 			WinnerAssessment: &response.WinnerAssessment,
 		}
-		if response.WinnerAssessment.WinnerFound {
-			if instance.Status.Assessment.Baseline.ID == response.WinnerAssessment.Winner {
-				instance.Status.Assessment.Winner.Name = &instance.Status.Assessment.Baseline.Name
-			} else {
-				for _, candidate := range instance.Status.Assessment.Candidates {
-					if candidate.ID == response.WinnerAssessment.Winner {
-						instance.Status.Assessment.Winner.Name = &candidate.Name
-						break
-					}
+		if instance.Status.Assessment.Baseline.ID == response.WinnerAssessment.Winner {
+			instance.Status.Assessment.Winner.Name = &instance.Status.Assessment.Baseline.Name
+		} else {
+			for _, candidate := range instance.Status.Assessment.Candidates {
+				if candidate.ID == response.WinnerAssessment.Winner {
+					instance.Status.Assessment.Winner.Name = &candidate.Name
+					break
 				}
 			}
 		}

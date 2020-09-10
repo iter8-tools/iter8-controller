@@ -14,7 +14,7 @@ replicaCount: 1
 # image to be used
 image:
   repository: iter8/iter8-controller
-  tag: v1.0.0-rc1
+  tag: v1.0.0-rc2
   pullPolicy: Always
 
 # optional limits/requirements on needed resources

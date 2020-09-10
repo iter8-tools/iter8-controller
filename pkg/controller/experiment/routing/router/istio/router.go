@@ -200,21 +200,23 @@ func (r *Router) UpdateRouteWithBaseline(instance *iter8v1alpha2.Experiment, bas
 			WithMeshGateway()
 	}
 
-	// inject external hosts
-	mHosts, mGateways := make(map[string]bool), make(map[string]bool)
-	hosts, gateways := make([]string, 0), make([]string, 0)
-	for _, host := range service.Hosts {
-		if _, ok := mHosts[host.Name]; !ok {
-			hosts = append(hosts, host.Name)
-			mHosts[host.Name] = true
-		}
+	if nwk := instance.Spec.Networking; nwk != nil {
+		// inject external hosts
+		mHosts, mGateways := make(map[string]bool), make(map[string]bool)
+		hosts, gateways := make([]string, 0), make([]string, 0)
+		for _, host := range nwk.Hosts {
+			if _, ok := mHosts[host.Name]; !ok {
+				hosts = append(hosts, host.Name)
+				mHosts[host.Name] = true
+			}
 
-		if _, ok := mHosts[host.Gateway]; !ok {
-			gateways = append(gateways, host.Gateway)
-			mGateways[host.Gateway] = true
+			if _, ok := mHosts[host.Gateway]; !ok {
+				gateways = append(gateways, host.Gateway)
+				mGateways[host.Gateway] = true
+			}
 		}
+		vsb = vsb.WithHosts(hosts).WithGateways(gateways)
 	}
-	vsb = vsb.WithHosts(hosts).WithGateways(gateways)
 
 	rb := NewEmptyHTTPRoute()
 	// inject match clauses
@@ -448,12 +450,12 @@ func CandidateSubsetName(idx int) string {
 
 // returns the id of router used by this experiment
 func getRouterID(instance *iter8v1alpha2.Experiment) string {
-	tc := instance.Spec.TrafficControl
-	if tc != nil && tc.RouterID != nil {
-		return *tc.RouterID
+	nwk := instance.Spec.Networking
+	if nwk != nil && nwk.ID != nil {
+		return *nwk.ID
 	}
 
-	host := util.GetHost(instance)
+	host := util.GetDefaultHost(instance)
 	if host == "*" {
 		return wildcard
 	}

@@ -1,7 +1,7 @@
 apiVersion: iter8.tools/v1alpha2
 kind: Experiment
 metadata:
-  name: reviews-v3-rollout-simple
+  name: reviews-v3-rollout
 spec:
   service:
     name: reviews
@@ -12,3 +12,10 @@ spec:
       threshold:
         type: absolute
         value: 200 # milliseconds
+  duration:
+    interval: 15s
+    maxIterations: 4
+  trafficControl:
+    strategy: uniform
+    percentage: 100
+    maxIncrement: 100
