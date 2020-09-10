@@ -2,7 +2,7 @@
 IMG ?= iter8-controller:latest
 CRD_VERSION ?= v1alpha2
 TELEMENTRY_VERSION ?= v2
-HELM_VERSION ?= v2
+HELM_VERSION = v$(helm version --client --short | sed 's/.*v\([0-9]*\).*/\1/')
 
 all: manager
 
@@ -129,4 +129,3 @@ changelog:
 
 tests:
 	go test ./test/. -v
-	test/e2e/e2e.sh --skip-setup
