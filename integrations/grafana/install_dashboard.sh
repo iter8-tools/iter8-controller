@@ -45,10 +45,10 @@ autodetect() {
 
   if [ "$MIXER_DISABLED" = "false" ]; then
     echo "Using Istio telemetry v1"
-    DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.0-rc1/integrations/grafana/grafana-v1.json"
+    DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.0-rc2/integrations/grafana/grafana-v1.json"
   else
     echo "Using Istio telemetry v2"
-    DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.0-rc1/integrations/grafana/grafana-v2.json"
+    DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.0-rc2/integrations/grafana/grafana-v2.json"
   fi
   echo "Installing Grafana dashboard from $DASHBOARD_DEFN"
 }
