@@ -2,7 +2,7 @@
 IMG ?= iter8-controller:latest
 CRD_VERSION ?= v1alpha2
 TELEMENTRY_VERSION ?= v2
-HELM_VERSION ?= v2
+HELM_VERSION ?= v$(shell helm version --client --short | sed 's/.*v\([0-9]*\).*/\1/')
 
 all: manager
 
