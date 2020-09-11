@@ -31,35 +31,35 @@ echo "Istio mixer disabled: $MIXER_DISABLED"
 
 if [ "$MIXER_DISABLED" = "false" ]; then
   # Create new Helm template based on the new image
-  helm template install/helm/iter8-controller/ --name iter8-controller \
+  helm template iter8-controller install/helm/iter8-controller/ \
   --set image.repository=iter8-controller \
   --set image.tag=test \
   --set image.pullPolicy=IfNotPresent \
-  -x templates/default/namespace.yaml \
-  -x templates/default/manager.yaml \
-  -x templates/default/serviceaccount.yaml \
-  -x templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
-  -x templates/metrics/iter8_metrics.yaml \
-  -x templates/notifier/iter8_notifiers.yaml \
-  -x templates/rbac/role.yaml \
-  -x templates/rbac/role_binding.yaml \
+  -s templates/default/namespace.yaml \
+  -s templates/default/manager.yaml \
+  -s templates/default/serviceaccount.yaml \
+  -s templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
+  -s templates/metrics/iter8_metrics.yaml \
+  -s templates/notifier/iter8_notifiers.yaml \
+  -s templates/rbac/role.yaml \
+  -s templates/rbac/role_binding.yaml \
   > install/iter8-controller.yaml
 else
   echo "Using Istio telemetry v2"
   # Create new Helm template based on the new image
-  helm template install/helm/iter8-controller/ --name iter8-controller \
+  helm template iter8-controller install/helm/iter8-controller/ \
   --set image.repository=iter8-controller \
   --set image.tag=test \
   --set image.pullPolicy=IfNotPresent \
   --set istioTelemetry=v2 \
-  -x templates/default/namespace.yaml \
-  -x templates/default/manager.yaml \
-  -x templates/default/serviceaccount.yaml \
-  -x templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
-  -x templates/metrics/iter8_metrics.yaml \
-  -x templates/notifier/iter8_notifiers.yaml \
-  -x templates/rbac/role.yaml \
-  -x templates/rbac/role_binding.yaml \
+  -s templates/default/namespace.yaml \
+  -s templates/default/manager.yaml \
+  -s templates/default/serviceaccount.yaml \
+  -s templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
+  -s templates/metrics/iter8_metrics.yaml \
+  -s templates/notifier/iter8_notifiers.yaml \
+  -s templates/rbac/role.yaml \
+  -s templates/rbac/role_binding.yaml \
   > install/iter8-controller.yaml
 fi
 
