@@ -12,7 +12,7 @@ curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$KUBE
 
 # Install Helm
 echo "install helm"
-curl curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
 # Download minikube
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/$MINIKUBE_VERSION/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
