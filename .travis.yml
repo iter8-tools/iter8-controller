@@ -33,7 +33,7 @@ jobs:
       <<: *end_to_end_script
     - env: KUBE_VERSION=v1.17.7 ISTIO_VERSION=1.5.6
       <<: *end_to_end_script
-    - env: KUBE_VERSION=v1.17.7 ISTIO_VERSION=1.7
+    - env: KUBE_VERSION=v1.17.7 ISTIO_VERSION=1.6.7
       <<: *end_to_end_script
     - stage: "build image"
       # only build images for master and release branches + tagged releases
