@@ -1,8 +1,40 @@
 # Image URL to use all building/pushing image targets
 IMG ?= iter8-controller:latest
 CRD_VERSION ?= v1alpha2
-TELEMENTRY_VERSION ?= v2
+
+# ISTIO
+ISTIO_NAMESPACE ?= istio-system
+ISTIO_VERSION ?= $(shell kubectl -n ${ISTIO_NAMESPACE} get deploy --selector=istio=pilot -o jsonpath='{.items[0].spec.template.spec.containers[*].image}' | cut -d: -f2)
+MIXER_DISABLED ?= $(shell kubectl -n ${ISTIO_NAMESPACE} get cm istio -o json | jq .data.mesh | grep -o 'disableMixerHttpReports: [A-Za-z]\+' | cut -d ' ' -f2)
+ifndef TELEMETRY_VERSION
+TELEMETRY_VERSION := $(shell if [ "${MIXER_DISABLED}" = "false" ]; then echo "v1"; else echo "v2"; fi)
+endif
+ifndef PROMETHEUS_JOB_LABEL
+PROMETHEUS_JOB_LABEL := $(shell if [ "${MIXER_DISABLED}" = "false" ]; then echo "istio-mesh"; elif [ "-1" = "$(hack/semver.sh ${ISTIO_VERSION} 1.7.0)" ]; then echo "envoy-stats"; else echo "kubernetes-job"; fi)
+endif
+
+# HELM
 HELM_VERSION ?= v$(shell helm version --client --short | sed 's/.*v\([0-9]*\).*/\1/')
+ifeq ($(HELM_VERSION),v2)
+HELM2_NAME := --name iter8-cotroller
+HELM3_NAME := 
+HELM_INCLUDE_OPTION := "-x"
+else
+HELM2_NAME := 
+HELM3_NAME := iter8-controller
+HELM_INCLUDE_OPTION := "-s"
+endif
+
+verify-env:
+	echo "ISTIO_NAMESPACE = ${ISTIO_NAMESPACE}"
+	echo "ISTIO_VERSION = ${ISTIO_VERSION}"
+	echo "MIXER_DISABLED = ${MIXER_DISABLED}"
+	echo "TELEMETRY_VERSION = ${TELEMETRY_VERSION}"
+	echo "PROMETHEUS_JOB_LABEL = ${PROMETHEUS_JOB_LABEL}"
+	echo "HELM_VERSION = ${HELM_VERSION}"
+	echo "HELM2_NAME = ${HELM2_NAME}"
+	echo "HELM3_NAME = ${HELM3_NAME}"
+	echo "HELM_INCLUDE_OPTION = ${HELM_INCLUDE_OPTION}"
 
 all: manager
 
@@ -24,57 +56,31 @@ manifests:
 #   install CRDs
 #   install configmap/iter8-metrics is defined in namespace iter8 (creating namespace if needed)
 load: manifests
-ifeq ($(HELM_VERSION),v2)
-	helm template install/helm/iter8-controller \
-	  --name iter8-controller \
-	  -x templates/default/namespace.yaml \
-	  -x templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
-	  -x templates/metrics/iter8_metrics.yaml \
-	  -x templates/notifier/iter8_notifiers.yaml\
-	  --set istioTelemetry=${TELEMENTRY_VERSION} \
-	| kubectl apply -f -
-else
-	helm template iter8-controller install/helm/iter8-controller \
-	  -s templates/default/namespace.yaml \
-	  -s templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
-	  -s templates/metrics/iter8_metrics.yaml \
-	  -s templates/notifier/iter8_notifiers.yaml\
-	  --set istioTelemetry=${TELEMENTRY_VERSION} \
-	| kubectl apply -f -
-endif
+helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
+	${HELM_INCLUDE_OPTION} templates/default/namespace.yaml \
+ 	${HELM_INCLUDE_OPTION} templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
+	${HELM_INCLUDE_OPTION} templates/metrics/iter8_metrics.yaml \
+	${HELM_INCLUDE_OPTION} templates/notifier/iter8_notifiers.yaml\
+	--set istioTelemetry=${TELEMETRY_VERSION} \
+	--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
+| kubectl apply -f -
 
 # Deploy controller to the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
 deploy: manifests
-ifeq ($(HELM_VERSION),v2)
-	helm template install/helm/iter8-controller \
-	  --name iter8-controller \
-	  --set image.repository=`echo ${IMG} | cut -f1 -d':'` \
-	  --set image.tag=`echo ${IMG} | cut -f2 -d':'` \
-	  -x templates/default/namespace.yaml \
-	  -x templates/default/serviceaccount.yaml \
-	  -x templates/default/manager.yaml \
-	  -x templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
-	  -x templates/metrics/iter8_metrics.yaml \
-	  -x templates/notifier/iter8_notifiers.yaml \
-	  -x templates/rbac/role.yaml \
-	  -x templates/rbac/role_binding.yaml \
-	  --set istioTelemetry=${TELEMENTRY_VERSION} \
-	| kubectl apply -f -
-else
-	helm template iter8-controller install/helm/iter8-controller \
-	  --set image.repository=`echo ${IMG} | cut -f1 -d':'` \
-	  --set image.tag=`echo ${IMG} | cut -f2 -d':'` \
-	  -s templates/default/namespace.yaml \
-	  -s templates/default/serviceaccount.yaml \
-	  -s templates/default/manager.yaml \
-	  -s templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
-	  -s templates/metrics/iter8_metrics.yaml \
-	  -s templates/notifier/iter8_notifiers.yaml \
-	  -s templates/rbac/role.yaml \
-	  -s templates/rbac/role_binding.yaml \
-	  --set istioTelemetry=${TELEMENTRY_VERSION} \
-	| kubectl apply -f -
-endif
+helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
+	--set image.repository=`echo ${IMG} | cut -f1 -d':'` \
+	--set image.tag=`echo ${IMG} | cut -f2 -d':'` \
+	${HELM_INCLUDE_OPTION} templates/default/namespace.yaml \
+	${HELM_INCLUDE_OPTION} templates/default/serviceaccount.yaml \
+	${HELM_INCLUDE_OPTION} templates/default/manager.yaml \
+	${HELM_INCLUDE_OPTION} templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
+	${HELM_INCLUDE_OPTION} templates/metrics/iter8_metrics.yaml \
+	${HELM_INCLUDE_OPTION} templates/notifier/iter8_notifiers.yaml \
+	${HELM_INCLUDE_OPTION} templates/rbac/role.yaml \
+	${HELM_INCLUDE_OPTION} templates/rbac/role_binding.yaml \
+	--set istioTelemetry=${TELEMETRY_VERSION} \
+	--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
+| kubectl apply -f -
 
 # Run go fmt against code
 fmt:
@@ -99,29 +105,24 @@ docker-build:
 docker-push:
 	docker push ${IMG}
 
+# Build default intall files. We generate three. They differ in the defintion of the default
+# metrics. The label used in the job filter depends on the version of Istio.
 build-default: manifests
 	echo '# Generated by make build-default; DO NOT EDIT' > install/iter8-controller.yaml
-ifeq ($(HELM_VERSION),v2)
-	helm template install/helm/iter8-controller \
-   		--name iter8-controller \
+	helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
 		--set istioTelemetry=v1 \
+		--set prometheusJobLabel=istio-mesh \
 	>> install/iter8-controller.yaml
-else
-	helm template iter8-controller install/helm/iter8-controller \
-		--set istioTelemetry=v1 \
-	>> install/iter8-controller.yaml
-endif
 	echo '# Generated by make build-default; DO NOT EDIT' > install/iter8-controller-telemetry-v2.yaml
-ifeq ($(HELM_VERSION),v2)
-	helm template install/helm/iter8-controller \
-   		--name iter8-controller \
-        --set istioTelemetry=v2 \
+	helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
+		--set istioTelemetry=v2 \
+		--set prometheusJobLabel=envoy-stats \
 	>> install/iter8-controller-telemetry-v2.yaml
-else
-	helm template iter8-controller install/helm/iter8-controller \
-        --set istioTelemetry=v2 \
-	>> install/iter8-controller-telemetry-v2.yaml
-endif
+	echo '# Generated by make build-default; DO NOT EDIT' > install/iter8-controller-telemetry-v2-17.yaml
+	helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
+		--set istioTelemetry=v2 \
+		--set prometheusJobLabel=kubernetes-job \
+	>> install/iter8-controller-telemetry-v2-17.yaml
 
 .PHONY: changelog
 changelog:

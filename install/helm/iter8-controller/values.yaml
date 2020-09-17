@@ -27,7 +27,11 @@ resources:
     memory: 50Mi
 
 # Version of Istio telemetry
-istioTelemetry: v1
+istioTelemetry: v2
+# Prometheus job label
+# prometheusJobLabel: istio-mesh  # when istioTelemetry: v1
+# prometheusJobLabel: envoy-stats # when istioTelemtry: v2 and Istio version < 1.7.0
+prometheusJobLabel: kubernetes-job # when Istiom versiom >= 1.7.0
 
 # Optional restrictions on target node(s)
 nodeSelector: {}

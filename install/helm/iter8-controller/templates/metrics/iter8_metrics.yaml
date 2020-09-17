@@ -7,26 +7,17 @@ data:
   # by convention, metrics with names beginning with iter8_ are defined by iter8
   # a counter metric is monotonically increasing or decreasing
   counter_metrics.yaml: |-
-    {{- if eq .Values.istioTelemetry "v2" }}
     - name: iter8_request_count
-      query_template: sum(increase(istio_requests_total{reporter='source',job='envoy-stats'}[$interval])) by ($version_labels)
+      query_template: sum(increase(istio_requests_total{reporter='source',job='{{ .Values.prometheusJobLabel}}'}[$interval])) by ($version_labels)
     - name: iter8_total_latency
-      query_template: sum(increase(istio_request_duration_milliseconds_sum{reporter='source',job='envoy-stats'}[$interval])) by ($version_labels)
-      units: msec # optional
+      {{- if eq .Values.istioTelemetry "v2" }}
+      query_template: sum(increase(istio_request_duration_milliseconds_sum{reporter='source',job='{{ .Values.prometheusJobLabel}}'}[$interval])) by ($version_labels)
+      {{- else }}
+      query_template: (sum(increase(istio_request_duration_seconds_sum{reporter='source',job='{{ .Values.prometheusJobLabel}}'}[$interval])) by ($version_labels))*1000
+      {{- end }}
     - name: iter8_error_count
-      query_template: sum(increase(istio_requests_total{response_code=~'5..',reporter='source',job='envoy-stats'}[$interval])) by ($version_labels)
+      query_template: sum(increase(istio_requests_total{response_code=~'5..',reporter='source',job='{{ .Values.prometheusJobLabel}}'}[$interval])) by ($version_labels)
       preferred_direction: lower
-    {{- else }}
-    - name: iter8_request_count
-      query_template: sum(increase(istio_requests_total{reporter='source',job='istio-mesh'}[$interval])) by ($version_labels)
-    - name: iter8_total_latency
-      query_template: (sum(increase(istio_request_duration_seconds_sum{reporter='source',job='istio-mesh'}[$interval])) by ($version_labels))*1000
-      units: msec # optional
-      preferred_direction: lower
-    - name: iter8_error_count
-      query_template: sum(increase(istio_requests_total{response_code=~'5..',reporter='source',job='istio-mesh'}[$interval])) by ($version_labels)
-      preferred_direction: lower
-    {{- end }}
   # the value of a ratio metric equals value of numerator divided by denominator
   ratio_metrics.yaml: |-
     - name: iter8_mean_latency
