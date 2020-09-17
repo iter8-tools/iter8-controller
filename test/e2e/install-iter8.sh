@@ -33,7 +33,7 @@ ISTIO_TELEMETRY="v2"
 if [ "$MIXER_DISABLED" = "false" ]; then
   ISTIO_TELEMETRY="v1"
   PROMETHEUS_JOB_LABEL="istio-mesh"
-elif (( -1 == ${DIR}/../../hack/semver.sh ${ISTIO_VERSION} "1.7.0" )); then
+elif (( -1 == ${DIR}/../../hack/semver.sh ${ISTIO_VERSION} 1.7.0 )); then
   PROMETHEUS_JOB_LABEL="envoy-stat"
 else
   PROMETHEUS_JOB_LABEL="kubernetes-job"
