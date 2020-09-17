@@ -11,7 +11,7 @@ source "$DIR/library.sh"
 
 # Build a new Iter8-controller image based on the new code
 header "build iter8-controller image"
-IMG=iter8-controller:test make docker-build
+IMG=iter8-controller:test make verify-env docker-build
 
 echo "Istio namespace: $ISTIO_NAMESPACE"
 MIXER_DISABLED=`kubectl -n $ISTIO_NAMESPACE get cm istio -o json | jq .data.mesh | grep -o 'disableMixerHttpReports: [A-Za-z]\+' | cut -d ' ' -f2`
