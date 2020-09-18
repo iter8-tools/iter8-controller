@@ -56,30 +56,30 @@ manifests:
 #   install CRDs
 #   install configmap/iter8-metrics is defined in namespace iter8 (creating namespace if needed)
 load: manifests
-helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
-	${HELM_INCLUDE_OPTION} templates/default/namespace.yaml \
-	${HELM_INCLUDE_OPTION} templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
-	${HELM_INCLUDE_OPTION} templates/metrics/iter8_metrics.yaml \
-	${HELM_INCLUDE_OPTION} templates/notifier/iter8_notifiers.yaml \
-	--set istioTelemetry=${TELEMETRY_VERSION} \
-	--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
+	helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
+		${HELM_INCLUDE_OPTION} templates/default/namespace.yaml \
+		${HELM_INCLUDE_OPTION} templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
+		${HELM_INCLUDE_OPTION} templates/metrics/iter8_metrics.yaml \
+		${HELM_INCLUDE_OPTION} templates/notifier/iter8_notifiers.yaml \
+		--set istioTelemetry=${TELEMETRY_VERSION} \
+		--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
 	| kubectl apply -f -
 
 # Deploy controller to the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
 deploy: manifests
-helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
-	--set image.repository=`echo ${IMG} | cut -f1 -d':'` \
-	--set image.tag=`echo ${IMG} | cut -f2 -d':'` \
-	${HELM_INCLUDE_OPTION} templates/default/namespace.yaml \
-	${HELM_INCLUDE_OPTION} templates/default/serviceaccount.yaml \
-	${HELM_INCLUDE_OPTION} templates/default/manager.yaml \
-	${HELM_INCLUDE_OPTION} templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
-	${HELM_INCLUDE_OPTION} templates/metrics/iter8_metrics.yaml \
-	${HELM_INCLUDE_OPTION} templates/notifier/iter8_notifiers.yaml \
-	${HELM_INCLUDE_OPTION} templates/rbac/role.yaml \
-	${HELM_INCLUDE_OPTION} templates/rbac/role_binding.yaml \
-	--set istioTelemetry=${TELEMETRY_VERSION} \
-	--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
+	helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
+		--set image.repository=`echo ${IMG} | cut -f1 -d':'` \
+		--set image.tag=`echo ${IMG} | cut -f2 -d':'` \
+		${HELM_INCLUDE_OPTION} templates/default/namespace.yaml \
+		${HELM_INCLUDE_OPTION} templates/default/serviceaccount.yaml \
+		${HELM_INCLUDE_OPTION} templates/default/manager.yaml \
+		${HELM_INCLUDE_OPTION} templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
+		${HELM_INCLUDE_OPTION} templates/metrics/iter8_metrics.yaml \
+		${HELM_INCLUDE_OPTION} templates/notifier/iter8_notifiers.yaml \
+		${HELM_INCLUDE_OPTION} templates/rbac/role.yaml \
+		${HELM_INCLUDE_OPTION} templates/rbac/role_binding.yaml \
+		--set istioTelemetry=${TELEMETRY_VERSION} \
+		--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
 	| kubectl apply -f -
 
 # Run go fmt against code
