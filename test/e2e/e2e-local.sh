@@ -49,9 +49,9 @@ header "deploy metrics configmap"
 kubectl apply -f ./test/e2e/iter8_metrics_test.yaml -n $NAMESPACE
 
 header "run iter8 controller locally"
-sudo apt-get install -y yamllint
-ls -l /home/travis/.kube/config
-make run &
+# Break up make run because go vet takes a long time
+make generate fmt vet load
+go run ./cmd/manager/main.go &
 CONTROLLER_PID=$!
 echo "controller started $CONTROLLER_PID"
 

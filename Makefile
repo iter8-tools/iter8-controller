@@ -44,7 +44,7 @@ manager: generate fmt vet
 
 # Run against the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
 # TODO replace vet
-run: generate fmt load
+run: generate fmt vet load
 	go run ./cmd/manager/main.go
 
 # Generate iter8 crds and rbac manifests
