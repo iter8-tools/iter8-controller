@@ -18,11 +18,11 @@ HELM_VERSION ?= v$(shell helm version --client --short | sed 's/.*v\([0-9]*\).*/
 ifeq ($(HELM_VERSION),v2)
 HELM2_NAME := --name iter8-cotroller
 HELM3_NAME := 
-HELM_INCLUDE_OPTION := "-x"
+HELM_INCLUDE_OPTION := -x
 else
 HELM2_NAME := 
 HELM3_NAME := iter8-controller
-HELM_INCLUDE_OPTION := "-s"
+HELM_INCLUDE_OPTION := -s
 endif
 
 verify-env:
