@@ -60,6 +60,7 @@ load: manifests
 	helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
 		${HELM_INCLUDE_OPTION} templates/default/namespace.yaml \
 		${HELM_INCLUDE_OPTION} templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
+		${HELM_INCLUDE_OPTION} templates/metrics/iter8_metrics.yaml \
 		${HELM_INCLUDE_OPTION} templates/notifier/iter8_notifiers.yaml \
 		--set istioTelemetry=${TELEMETRY_VERSION} \
 		--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
@@ -67,7 +68,6 @@ load: manifests
 	cat /tmp/load.yaml
 	yamllint /tmp/load.yaml
 	kubectl apply -f /tmp/load.yaml
-#		${HELM_INCLUDE_OPTION} templates/metrics/iter8_metrics.yaml \
 
 # Deploy controller to the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
 deploy: manifests
