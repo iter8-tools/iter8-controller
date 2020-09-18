@@ -63,7 +63,7 @@ helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
 	${HELM_INCLUDE_OPTION} templates/notifier/iter8_notifiers.yaml \
 	--set istioTelemetry=${TELEMETRY_VERSION} \
 	--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
-| kubectl apply -f -
+	| kubectl apply -f -
 
 # Deploy controller to the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
 deploy: manifests
@@ -80,7 +80,7 @@ helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
 	${HELM_INCLUDE_OPTION} templates/rbac/role_binding.yaml \
 	--set istioTelemetry=${TELEMETRY_VERSION} \
 	--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
-| kubectl apply -f -
+	| kubectl apply -f -
 
 # Run go fmt against code
 fmt:
