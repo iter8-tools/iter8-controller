@@ -66,7 +66,6 @@ load: manifests
 		--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
 	> /tmp/load.yaml
 	cat /tmp/load.yaml
-	yamllint /tmp/load.yaml
 	kubectl apply -f /tmp/load.yaml
 
 # Deploy controller to the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
