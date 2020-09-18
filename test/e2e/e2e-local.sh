@@ -50,6 +50,7 @@ kubectl apply -f ./test/e2e/iter8_metrics_test.yaml -n $NAMESPACE
 
 header "run iter8 controller locally"
 sudo apt-get install -y yamllint
+ls -l /home/travis/.kube/config
 make run &
 CONTROLLER_PID=$!
 echo "controller started $CONTROLLER_PID"
