@@ -43,7 +43,8 @@ manager: generate fmt vet
 	go build -o bin/manager github.com/iter8-tools/iter8/cmd/manager
 
 # Run against the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
-run: generate fmt vet load
+# TODO replace vet
+run: generate fmt load
 	go run ./cmd/manager/main.go
 
 # Generate iter8 crds and rbac manifests
@@ -65,6 +66,7 @@ load: manifests
 		--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
 	> /tmp/load.yaml
 	cat /tmp/load.yaml
+	yamllint /tmp/load.yaml
 	kubectl apply -f /tmp/load.yaml
 
 # Deploy controller to the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
