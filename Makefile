@@ -58,7 +58,7 @@ manifests:
 load: manifests
 helm template ${HELM3_NAME} install/helm/iter8-controller ${HELM2_NAME} \
 	${HELM_INCLUDE_OPTION} templates/default/namespace.yaml \
- 	${HELM_INCLUDE_OPTION} templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
+	${HELM_INCLUDE_OPTION} templates/crds/${CRD_VERSION}/iter8.tools_experiments.yaml \
 	${HELM_INCLUDE_OPTION} templates/metrics/iter8_metrics.yaml \
 	${HELM_INCLUDE_OPTION} templates/notifier/iter8_notifiers.yaml\
 	--set istioTelemetry=${TELEMETRY_VERSION} \
