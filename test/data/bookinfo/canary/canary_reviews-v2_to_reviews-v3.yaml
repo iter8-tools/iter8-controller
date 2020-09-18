@@ -14,7 +14,7 @@ spec:
         value: 200 # milliseconds
   duration:
     interval: 15s
-    maxIterations: 4
+    maxIterations: 6
   trafficControl:
     strategy: uniform
     percentage: 100

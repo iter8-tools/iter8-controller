@@ -64,9 +64,7 @@ load: manifests
 		${HELM_INCLUDE_OPTION} templates/notifier/iter8_notifiers.yaml \
 		--set istioTelemetry=${TELEMETRY_VERSION} \
 		--set prometheusJobLabel=${PROMETHEUS_JOB_LABEL} \
-	> /tmp/load.yaml
-	cat /tmp/load.yaml
-	kubectl apply -f /tmp/load.yaml
+	| kubectl apply -f -
 
 # Deploy controller to the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
 deploy: manifests
