@@ -54,7 +54,7 @@ make run &
 CONTROLLER_PID=$!
 echo "controller started $CONTROLLER_PID"
 
-sleep 120 # wait for controller to start
+sleep 5 # wait for controller to start
 
 go test -run TestExperiment -v -p 1 ./test/e2e/ -args -namespace ${NAMESPACE}
 

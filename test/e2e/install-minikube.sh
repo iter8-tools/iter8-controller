@@ -25,6 +25,7 @@ sudo apt install conntrack
 # Create kube and minikube configuration directories
 mkdir -p $HOME/.kube $HOME/.minikube
 touch $KUBECONFIG
+chmod 600 $KUBECONFIG
 sudo minikube start --profile=minikube --vm-driver=none --kubernetes-version=$KUBE_VERSION
 minikube update-context --profile=minikube
 sudo chown -R travis: /home/travis/.minikube/
