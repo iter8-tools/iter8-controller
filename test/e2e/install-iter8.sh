@@ -30,11 +30,12 @@ echo "Istio mixer disabled: $MIXER_DISABLED"
 
 PROMETHEUS_JOB_LABEL=
 ISTIO_TELEMETRY="v2"
+${DIR}/../../hack/semver.sh ${ISTIO_VERSION} 1.7.0
 if [ "$MIXER_DISABLED" = "false" ]; then
   ISTIO_TELEMETRY="v1"
   PROMETHEUS_JOB_LABEL="istio-mesh"
 elif [ "-1" == "${DIR}/../../hack/semver.sh ${ISTIO_VERSION} 1.7.0" ]; then
-  PROMETHEUS_JOB_LABEL="envoy-stat"
+  PROMETHEUS_JOB_LABEL="envoy-stats"
 else
   PROMETHEUS_JOB_LABEL="kubernetes-job"
 fi
