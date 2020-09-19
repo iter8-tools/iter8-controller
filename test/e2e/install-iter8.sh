@@ -37,7 +37,7 @@ if [ "$MIXER_DISABLED" = "false" ]; then
 elif [ -1 == $(${DIR}/../../hack/semver.sh ${ISTIO_VERSION} 1.7.0) ]; then
   PROMETHEUS_JOB_LABEL="envoy-stats"
 else
-  PROMETHEUS_JOB_LABEL="kubernetes-job"
+  PROMETHEUS_JOB_LABEL="kubernetes-pods"
 fi
 
 echo "Istio telemtry version: $ISTIO_TELEMETRY"
