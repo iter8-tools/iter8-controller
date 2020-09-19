@@ -7,10 +7,10 @@ ISTIO_NAMESPACE ?= istio-system
 ISTIO_VERSION ?= $(shell kubectl -n ${ISTIO_NAMESPACE} get deploy --selector=istio=pilot -o jsonpath='{.items[0].spec.template.spec.containers[*].image}' | cut -d: -f2)
 MIXER_DISABLED ?= $(shell kubectl -n ${ISTIO_NAMESPACE} get cm istio -o json | jq .data.mesh | grep -o 'disableMixerHttpReports: [A-Za-z]\+' | cut -d ' ' -f2)
 ifndef TELEMETRY_VERSION
-TELEMETRY_VERSION := $(shell if [ "${MIXER_DISABLED}" = "false" ]; then echo "v1"; else echo "v2"; fi)
+TELEMETRY_VERSION := $(shell if [[ "${MIXER_DISABLED}" = "false" ]]; then echo "v1"; else echo "v2"; fi)
 endif
 ifndef PROMETHEUS_JOB_LABEL
-PROMETHEUS_JOB_LABEL := $(shell if [ "${MIXER_DISABLED}" == "false" ]; then echo "istio-mesh"; elif [ -1 == $$(hack/semver.sh ${ISTIO_VERSION} 1.7.0) ]; then echo "envoy-stats"; else echo "kubernetes-pods"; fi)
+PROMETHEUS_JOB_LABEL := $(shell if [[ "${MIXER_DISABLED}" == "false" ]]; then echo "istio-mesh"; elif (( -1 == $$(hack/semver.sh ${ISTIO_VERSION} 1.7.0) )); then echo "envoy-stats"; else echo "kubernetes-pods"; fi)
 endif
 
 # HELM
