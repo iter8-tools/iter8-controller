@@ -45,9 +45,6 @@ export NAMESPACE=$(random_namespace)
 header "creating namespace $NAMESPACE"
 kubectl create ns $NAMESPACE
 
-# header "deploy metrics configmap"
-# kubectl apply -f ./test/e2e/iter8_metrics_test.yaml -n $NAMESPACE
-
 header "run iter8 controller locally"
 # Break up make run because go vet takes a long time
 make generate fmt vet load
