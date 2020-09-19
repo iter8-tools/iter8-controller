@@ -10,7 +10,7 @@ ifndef TELEMETRY_VERSION
 TELEMETRY_VERSION := $(shell if [ "${MIXER_DISABLED}" = "false" ]; then echo "v1"; else echo "v2"; fi)
 endif
 ifndef PROMETHEUS_JOB_LABEL
-PROMETHEUS_JOB_LABEL := $(shell if [ "${MIXER_DISABLED}" = "false" ]; then echo "istio-mesh"; elif [ -1 = $(hack/semver.sh ${ISTIO_VERSION} 1.7.0) ]; then echo "envoy-stats"; else echo "kubernetes-job"; fi)
+PROMETHEUS_JOB_LABEL := $(shell if [ "${MIXER_DISABLED}" == "false" ]; then echo "istio-mesh"; elif [ -1 == $$(hack/semver.sh ${ISTIO_VERSION} 1.7.0) ]; then echo "envoy-stats"; else echo "kubernetes-job"; fi)
 endif
 
 # HELM
