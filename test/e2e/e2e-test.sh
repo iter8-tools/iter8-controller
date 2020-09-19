@@ -20,6 +20,7 @@ set -e
 
 $DIR/e2e-canary-scenario-1.sh
 $DIR/e2e-canary-scenario-2.sh
-if [[ "1.7" == "${ISTIO_VERSION}" ]]; then
-  $DIR/e2e-abn-scenario-1.sh  ## works but how to manage the prometheus requirement ???
+# later versions do not require prometheus config changes
+if [ "-1" != $(${DIR}/../../hack/semver.sh ${ISTIO_VERSION} 1.7.0) ]; then
+  $DIR/e2e-abn-scenario-1.sh
 fi

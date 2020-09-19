@@ -27,7 +27,6 @@ function test_experiment_status() {
   if [[ "$actual" != *"$expected"* ]]; then
     echo "FAIL: Got unexpected .status.message"
     echo "Teminating test case"
-    kubectl -n iter8 logs $(kubectl -n iter8 get po --selector=app=iter8-controller -o jsonpath='{.items[0].metadata.name}')
     exit 1
   else
     echo "PASS: Got expected .status.message"
