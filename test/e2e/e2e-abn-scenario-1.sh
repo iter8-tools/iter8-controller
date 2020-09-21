@@ -45,11 +45,14 @@ kubectl -n $NAMESPACE delete deployment productpage-v2 productpage-v3 --ignore-n
 
 header "Create Iter8 Custom Metric"
 if [ "$MIXER_DISABLED" = "false" ]; then
-  echo "Using Istio telemetry v1"
+  echo "Using prometheus job label istio-mesh"
   kubectl apply -n iter8 -f $YAML_PATH/abn/productpage-metrics-v1.yaml
-else
-  echo "Using Istio telemetry v2"
+elif [ "-1" == $(${DIR}/../../hack/semver.sh ${ISTIO_VERSION} 1.7.0) ]; then
+  echo "Using prometheus job label envoy-stats"
   kubectl apply -n iter8 -f $YAML_PATH/abn/productpage-metrics.yaml
+else
+  echo "Using prometheus job label kubernetes-jobs"
+  kubectl apply -n iter8 -f $YAML_PATH/abn/productpage-metrics-17.yaml
 fi
 kubectl get configmap iter8config-metrics -n iter8 -oyaml
 

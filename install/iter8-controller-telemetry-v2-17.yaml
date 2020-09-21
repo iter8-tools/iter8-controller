@@ -24,12 +24,12 @@ data:
   # a counter metric is monotonically increasing or decreasing
   counter_metrics.yaml: |-
     - name: iter8_request_count
-      query_template: sum(increase(istio_requests_total{reporter='source',job='istio-mesh'}[$interval])) by ($version_labels)
+      query_template: sum(increase(istio_requests_total{reporter='source',job='kubernetes-pods'}[$interval])) by ($version_labels)
     - name: iter8_total_latency
-      query_template: (sum(increase(istio_request_duration_seconds_sum{reporter='source',job='istio-mesh'}[$interval])) by ($version_labels))*1000
+      query_template: sum(increase(istio_request_duration_milliseconds_sum{reporter='source',job='kubernetes-pods'}[$interval])) by ($version_labels)
       units: msec
     - name: iter8_error_count
-      query_template: sum(increase(istio_requests_total{response_code=~'5..',reporter='source',job='istio-mesh'}[$interval])) by ($version_labels)
+      query_template: sum(increase(istio_requests_total{response_code=~'5..',reporter='source',job='kubernetes-pods'}[$interval])) by ($version_labels)
       preferred_direction: lower
   # the value of a ratio metric equals value of numerator divided by denominator
   ratio_metrics.yaml: |-
@@ -1024,7 +1024,7 @@ spec:
       serviceAccountName: iter8-controller
       containers:
       - name: iter8-controller
-        image: "iter8/iter8-controller:v1.0.0-rc2"
+        image: "iter8/iter8-controller:master"
         imagePullPolicy: Always
         env:
           - name: POD_NAMESPACE
