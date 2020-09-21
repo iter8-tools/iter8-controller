@@ -15,6 +15,7 @@ data:
       {{- else }}
       query_template: (sum(increase(istio_request_duration_seconds_sum{reporter='source',job='{{ .Values.prometheusJobLabel}}'}[$interval])) by ($version_labels))*1000
       {{- end }}
+      units: msec
     - name: iter8_error_count
       query_template: sum(increase(istio_requests_total{response_code=~'5..',reporter='source',job='{{ .Values.prometheusJobLabel}}'}[$interval])) by ($version_labels)
       preferred_direction: lower
@@ -24,6 +25,7 @@ data:
       numerator: iter8_total_latency
       denominator: iter8_request_count
       preferred_direction: lower
+      units: msec
     - name: iter8_error_rate
       numerator: iter8_error_count
       denominator: iter8_request_count
