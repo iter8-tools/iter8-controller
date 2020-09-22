@@ -105,10 +105,8 @@ func (r *ReconcileExperiment) markExperimentCompleted(context context.Context, i
 		r.notificationCenter.Notify(instance, reason, messageFormat, messageA...)
 		// Clear analysis state
 		instance.Status.AnalysisState.Raw = []byte("{}")
-		// Update grafana url
 		now := metav1.Now()
 		instance.Status.EndTimestamp = &now
-		r.grafanaConfig.UpdateGrafanaURL(instance)
 		r.markStatusUpdate()
 	}
 }

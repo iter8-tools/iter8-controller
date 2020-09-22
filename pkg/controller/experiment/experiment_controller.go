@@ -43,7 +43,6 @@ import (
 	"github.com/iter8-tools/iter8/pkg/controller/experiment/routing"
 	"github.com/iter8-tools/iter8/pkg/controller/experiment/routing/router"
 	"github.com/iter8-tools/iter8/pkg/controller/experiment/util"
-	"github.com/iter8-tools/iter8/pkg/grafana"
 	iter8notifier "github.com/iter8-tools/iter8/pkg/notifier"
 )
 
@@ -88,8 +87,6 @@ func newReconciler(mgr manager.Manager) (*ReconcileExperiment, error) {
 		return nil, err
 	}
 
-	grafanaConfig := grafana.NewConfigStore(log, mgr.GetClient())
-
 	iter8Adapter := adapter.New(log)
 
 	return &ReconcileExperiment{
@@ -99,7 +96,6 @@ func newReconciler(mgr manager.Manager) (*ReconcileExperiment, error) {
 		eventRecorder:      mgr.GetEventRecorderFor(Iter8Controller),
 		notificationCenter: nc,
 		iter8Adapter:       iter8Adapter,
-		grafanaConfig:      grafanaConfig,
 	}, nil
 }
 
@@ -256,7 +252,6 @@ type ReconcileExperiment struct {
 	notificationCenter *iter8notifier.NotificationCenter
 	istioClient        istioclient.Interface
 	iter8Adapter       adapter.Interface
-	grafanaConfig      grafana.Interface
 
 	router router.Interface
 	interState

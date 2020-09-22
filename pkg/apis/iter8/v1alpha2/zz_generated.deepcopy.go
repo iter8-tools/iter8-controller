@@ -342,11 +342,6 @@ func (in *ExperimentStatus) DeepCopyInto(out *ExperimentStatus) {
 		*out = new(int32)
 		**out = **in
 	}
-	if in.GrafanaURL != nil {
-		in, out := &in.GrafanaURL, &out.GrafanaURL
-		*out = new(string)
-		**out = **in
-	}
 	if in.Assessment != nil {
 		in, out := &in.Assessment, &out.Assessment
 		*out = new(Assessment)

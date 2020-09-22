@@ -145,7 +145,6 @@ func (r *ReconcileExperiment) processIteration(context context.Context, instance
 	if instance.Status.StartTimestamp == nil {
 		startTime := metav1.Now()
 		instance.Status.StartTimestamp = &startTime
-		r.grafanaConfig.UpdateGrafanaURL(instance)
 		r.markStatusUpdate()
 	}
 
