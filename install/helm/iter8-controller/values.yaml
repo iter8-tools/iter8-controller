@@ -14,7 +14,7 @@ replicaCount: 1
 # image to be used
 image:
   repository: iter8/iter8-controller
-  tag: v1.0.0-rc2
+  tag: v1.0.0-rc3
   pullPolicy: Always
 
 # optional limits/requirements on needed resources
@@ -27,7 +27,11 @@ resources:
     memory: 50Mi
 
 # Version of Istio telemetry
-istioTelemetry: v1
+istioTelemetry: v2
+# Prometheus job label
+# prometheusJobLabel: istio-mesh  # when istioTelemetry: v1
+# prometheusJobLabel: envoy-stats # when istioTelemtry: v2 and Istio version < 1.7.0
+prometheusJobLabel: kubernetes-pods # when Istio version >= 1.7.0
 
 # Optional restrictions on target node(s)
 nodeSelector: {}

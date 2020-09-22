@@ -745,9 +745,6 @@ spec:
             experimentType:
               description: ExperimentType is type of experiment
               type: string
-            grafanaURL:
-              description: GrafanaURL is the url to the Grafana Dashboard
-              type: string
             initTimestamp:
               description: InitTimestamp is the timestamp when the experiment is initialized
               format: date-time

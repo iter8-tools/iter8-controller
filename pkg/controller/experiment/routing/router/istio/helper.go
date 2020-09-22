@@ -215,16 +215,9 @@ func (b *VirtualServiceBuilder) RemoveExperimentLabel() *VirtualServiceBuilder {
 	return b
 }
 
-// WithHTTPRoute updates the first http route
+// WithHTTPRoute adds route to http route list
 func (b *VirtualServiceBuilder) WithHTTPRoute(route *networkingv1alpha3.HTTPRoute) *VirtualServiceBuilder {
-	if b.Spec.Http == nil || len(b.Spec.Http) == 0 {
-		b.Spec.Http = append(b.Spec.Http, &networkingv1alpha3.HTTPRoute{
-			Name: "iter8-route",
-		})
-	}
-
-	b.Spec.Http[0] = route
-
+	b.Spec.Http = append(b.Spec.Http, route)
 	return b
 }
 
@@ -313,8 +306,10 @@ func toStringMatch(s *iter8v1alpha2.StringMatch) *networkingv1alpha3.StringMatch
 
 type HTTPRouteBuilder networkingv1alpha3.HTTPRoute
 
-func NewEmptyHTTPRoute() *HTTPRouteBuilder {
-	return (*HTTPRouteBuilder)(&networkingv1alpha3.HTTPRoute{})
+func NewEmptyHTTPRoute(name string) *HTTPRouteBuilder {
+	return (*HTTPRouteBuilder)(&networkingv1alpha3.HTTPRoute{
+		Name: name,
+	})
 }
 
 func NewHTTPRoute(route *networkingv1alpha3.HTTPRoute) *HTTPRouteBuilder {

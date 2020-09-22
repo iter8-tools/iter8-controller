@@ -303,10 +303,6 @@ type ExperimentStatus struct {
 	// +optional
 	CurrentIteration *int32 `json:"currentIteration,omitempty"`
 
-	// GrafanaURL is the url to the Grafana Dashboard
-	// +optional
-	GrafanaURL *string `json:"grafanaURL,omitempty"`
-
 	// Assessment returned by the last analyis
 	// +optional
 	Assessment *Assessment `json:"assessment,omitempty"`

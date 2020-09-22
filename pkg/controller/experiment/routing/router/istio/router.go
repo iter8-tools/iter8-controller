@@ -21,6 +21,7 @@ import (
 	"strconv"
 
 	"github.com/go-logr/logr"
+	networkingv1alpha3 "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	appsv1 "k8s.io/api/apps/v1"
@@ -34,6 +35,11 @@ import (
 )
 
 const (
+	// name of route receiving experimental traffic
+	routeNameExperiment = "iter8-experiment"
+	// name of route receving non-experimental traffic
+	routeNameBase = "iter8-base"
+
 	// the key of label used to reference to the router id
 	routerID = "iter8-tools/router"
 	// keyword used to replace wildcard host * in label value
@@ -137,7 +143,6 @@ func GetRouter(ctx context.Context, instance *iter8v1alpha2.Experiment) router.I
 		logger: util.Logger(ctx),
 	}
 
-	out.logger.Info("GetRouter", "serviceKind", instance.Spec.Service.Kind)
 	switch instance.Spec.Service.Kind {
 	case "Service":
 		out.handler = serviceHandler{}
@@ -218,23 +223,31 @@ func (r *Router) UpdateRouteWithBaseline(instance *iter8v1alpha2.Experiment, bas
 		vsb = vsb.WithHosts(hosts).WithGateways(gateways)
 	}
 
-	rb := NewEmptyHTTPRoute()
-	// inject match clauses
-	trafficControl := instance.Spec.TrafficControl
-	if trafficControl != nil && trafficControl.Match != nil && len(trafficControl.Match.HTTP) > 0 {
-		rb = rb.WithHTTPMatch(trafficControl.Match.HTTP)
-	}
+	experimentRoute := NewEmptyHTTPRoute(routeNameExperiment)
 
-	// inject baseline destination
+	// inject baseline destination to route
 	baselineDestination := r.handler.buildDestination(instance, destinationOptions{
 		name:   service.Baseline,
 		weight: 100,
 		subset: SubsetBaseline,
 		port:   service.Port,
 	})
+	experimentRoute = experimentRoute.WithDestination(baselineDestination)
 
-	// update virtualservice
-	vsb = vsb.WithHTTPRoute(rb.WithDestination(baselineDestination).Build())
+	// inject match clauses to route
+	trafficControl := instance.Spec.TrafficControl
+	if trafficControl != nil && trafficControl.Match != nil && len(trafficControl.Match.HTTP) > 0 {
+		experimentRoute = experimentRoute.WithHTTPMatch(trafficControl.Match.HTTP)
+	}
+
+	// update virtualservice with experiment route
+	vsb = vsb.WithHTTPRoute(experimentRoute.Build())
+
+	// inject base-route if matching clauses exist
+	if trafficControl != nil && trafficControl.Match != nil && len(trafficControl.Match.HTTP) > 0 {
+		baseRoute := NewEmptyHTTPRoute(routeNameBase).WithDestination(baselineDestination)
+		vsb = vsb.WithHTTPRoute(baseRoute.Build())
+	}
 	vs := (*v1alpha3.VirtualService)(nil)
 	if _, ok := vsb.GetLabels()[experimentInit]; ok {
 		vs, err = r.client.NetworkingV1alpha3().
@@ -286,12 +299,12 @@ func (r *Router) UpdateRouteWithCandidates(instance *iter8v1alpha2.Experiment, c
 	}
 
 	vs := r.rules.virtualService
-	// The first route is used by iter8
-	httproute := vs.Spec.GetHttp()
-	if len(httproute) == 0 {
-		return fmt.Errorf("EmtpyRouteInVs")
+
+	route := getExperimentRoute(vs)
+	if route == nil {
+		return fmt.Errorf("Fail to update route with candidates: experiment route missing in vs")
 	}
-	rb := NewHTTPRoute(httproute[0])
+	rb := NewHTTPRoute(route)
 
 	service := instance.Spec.Service
 	// update candidates
@@ -341,7 +354,10 @@ func (r *Router) UpdateRouteWithCandidates(instance *iter8v1alpha2.Experiment, c
 
 // UpdateRouteWithTrafficUpdate updates routing rules with new traffic state from assessment
 func (r *Router) UpdateRouteWithTrafficUpdate(instance *iter8v1alpha2.Experiment) (err error) {
-	vs := r.updateVSFromExperiment(r.rules.virtualService, instance)
+	vs := r.rules.virtualService
+	if route := getExperimentRoute(vs); route != nil {
+		r.updateRouteFromExperiment(route, instance)
+	}
 
 	vs, err = r.client.NetworkingV1alpha3().VirtualServices(vs.Namespace).Update(vs)
 	if err != nil {
@@ -379,7 +395,18 @@ func (r *Router) UpdateRouteToStable(instance *iter8v1alpha2.Experiment) (err er
 		// otherwise, the routing rule will be remained as its last state
 		vs := r.rules.virtualService
 		if r.rules.isProgressing() {
-			vs = r.updateVSFromExperiment(vs, instance)
+			// retain experiment route only, and rename it to base route
+			route := getExperimentRoute(vs)
+
+			if route != nil {
+				r.updateRouteFromExperiment(route, instance)
+				route.Name = ""
+				route.Match = nil
+				vs = NewVirtualServiceBuilder(vs).
+					InitHTTPRoutes().
+					WithHTTPRoute(route).
+					Build()
+			}
 		}
 
 		// update vs
@@ -408,12 +435,8 @@ func (r *Router) UpdateRouteToStable(instance *iter8v1alpha2.Experiment) (err er
 	return nil
 }
 
-func (r *Router) updateVSFromExperiment(vs *v1alpha3.VirtualService, instance *iter8v1alpha2.Experiment) *v1alpha3.VirtualService {
-	httproutes := vs.Spec.GetHttp()
-	if len(httproutes) == 0 {
-		httproutes = append(httproutes, NewEmptyHTTPRoute().Build())
-	}
-	rb := NewHTTPRoute(httproutes[0]).ClearRoute()
+func (r *Router) updateRouteFromExperiment(route *networkingv1alpha3.HTTPRoute, instance *iter8v1alpha2.Experiment) {
+	rb := NewHTTPRoute(route).ClearRoute()
 	assessment := instance.Status.Assessment
 
 	// update baseline
@@ -437,10 +460,24 @@ func (r *Router) updateVSFromExperiment(vs *v1alpha3.VirtualService, instance *i
 
 		rb = rb.WithDestination(destination)
 	}
+}
 
-	return NewVirtualServiceBuilder(vs).
-		WithHTTPRoute(rb.Build()).
-		Build()
+func getExperimentRoute(vs *v1alpha3.VirtualService) *networkingv1alpha3.HTTPRoute {
+	httproutes := vs.Spec.GetHttp()
+	experimentRouteIndex := -1
+	for i := range httproutes {
+		if httproutes[i].Name == routeNameExperiment {
+			experimentRouteIndex = i
+			break
+		}
+	}
+
+	if experimentRouteIndex == -1 {
+		// experiment route not found
+		return nil
+	}
+
+	return httproutes[experimentRouteIndex]
 }
 
 // CandidateSubsetName returns subset name of a candidate with respect to its index in service spec

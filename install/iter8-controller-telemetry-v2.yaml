@@ -5,7 +5,13 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: iter8
-
+---
+# Source: iter8-controller/templates/default/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: iter8-controller
+  namespace: iter8
 ---
 # Source: iter8-controller/templates/metrics/iter8_metrics.yaml
 apiVersion: v1
@@ -21,7 +27,7 @@ data:
       query_template: sum(increase(istio_requests_total{reporter='source',job='envoy-stats'}[$interval])) by ($version_labels)
     - name: iter8_total_latency
       query_template: sum(increase(istio_request_duration_milliseconds_sum{reporter='source',job='envoy-stats'}[$interval])) by ($version_labels)
-      units: msec # optional
+      units: msec
     - name: iter8_error_count
       query_template: sum(increase(istio_requests_total{response_code=~'5..',reporter='source',job='envoy-stats'}[$interval])) by ($version_labels)
       preferred_direction: lower
@@ -31,12 +37,12 @@ data:
       numerator: iter8_total_latency
       denominator: iter8_request_count
       preferred_direction: lower
+      units: msec
     - name: iter8_error_rate
       numerator: iter8_error_count
       denominator: iter8_request_count
       preferred_direction: lower
       zero_to_one: true
-
 ---
 # Source: iter8-controller/templates/notifier/iter8_notifiers.yaml
 apiVersion: v1
@@ -53,20 +59,8 @@ data:
 ##    url: https://hooks.slack.com/services/TXXXXX/BXXXXXX/xxxxxxxx
 ##    level: normal
 ######################################################################
-  
-
----
-# Source: iter8-controller/templates/default/serviceaccount.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: iter8-controller
-  namespace: iter8
-
 ---
 # Source: iter8-controller/templates/crds/v1alpha2/iter8.tools_experiments.yaml
-
----
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -812,9 +806,6 @@ spec:
             experimentType:
               description: ExperimentType is type of experiment
               type: string
-            grafanaURL:
-              description: GrafanaURL is the url to the Grafana Dashboard
-              type: string
             initTimestamp:
               description: InitTimestamp is the timestamp when the experiment is initialized
               format: date-time
@@ -848,7 +839,6 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
-
 ---
 # Source: iter8-controller/templates/rbac/role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -981,7 +971,6 @@ rules:
   - update
   - patch
   - delete
-
 ---
 # Source: iter8-controller/templates/rbac/role_binding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -997,7 +986,6 @@ subjects:
 - kind: ServiceAccount
   name: iter8-controller
   namespace: iter8
-
 ---
 # Source: iter8-controller/templates/default/manager.yaml
 apiVersion: v1
@@ -1013,6 +1001,7 @@ spec:
   ports:
   - port: 443
 ---
+# Source: iter8-controller/templates/default/manager.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1032,7 +1021,7 @@ spec:
       serviceAccountName: iter8-controller
       containers:
       - name: iter8-controller
-        image: "iter8/iter8-controller:v1.0.0-rc2"
+        image: "iter8/iter8-controller:v1.0.0-rc3"
         imagePullPolicy: Always
         env:
           - name: POD_NAMESPACE
@@ -1048,6 +1037,4 @@ spec:
           requests:
             cpu: 100m
             memory: 50Mi
-          
       terminationGracePeriodSeconds: 10
-
