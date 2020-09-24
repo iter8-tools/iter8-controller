@@ -37,6 +37,7 @@ function random_namespace() {
   echo $ns
 }
 
+set -e
 set -o errtrace
 trap traperr ERR
 trap traperr INT

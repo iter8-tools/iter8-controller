@@ -522,7 +522,7 @@ func getVirtualServiceForDeployments(serviceName, name string, subsets []string,
 	host := util.ServiceToFullHostName(serviceName, Flags.Namespace)
 	ruleName := istio.GetRoutingRuleName(routerID)
 	vsb := istio.NewVirtualService(ruleName, name, Flags.Namespace)
-	rb := istio.NewEmptyHTTPRoute()
+	rb := istio.NewEmptyHTTPRoute("")
 	for i, subset := range subsets {
 		destination := istio.NewHTTPRouteDestination().
 			WithHost(host).
@@ -538,7 +538,7 @@ func getVirtualServiceForServices(serviceName, name string, destinations []strin
 	host := util.ServiceToFullHostName(serviceName, Flags.Namespace)
 	ruleName := istio.GetRoutingRuleName(routerID)
 	vsb := istio.NewVirtualService(ruleName, name, Flags.Namespace)
-	rb := istio.NewEmptyHTTPRoute()
+	rb := istio.NewEmptyHTTPRoute("")
 	for i, name := range destinations {
 		destination := istio.NewHTTPRouteDestination().
 			WithHost(name).
