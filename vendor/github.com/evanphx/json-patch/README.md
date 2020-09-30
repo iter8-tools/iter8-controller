@@ -1,5 +1,5 @@
 # JSON-Patch
-`jsonpatch` is a library which provides functionallity for both applying
+`jsonpatch` is a library which provides functionality for both applying
 [RFC6902 JSON patches](http://tools.ietf.org/html/rfc6902) against documents, as
 well as for calculating & applying [RFC7396 JSON merge patches](https://tools.ietf.org/html/rfc7396).
 
@@ -11,10 +11,11 @@ well as for calculating & applying [RFC7396 JSON merge patches](https://tools.ie
 
 **Latest and greatest**: 
 ```bash
-go get -u github.com/evanphx/json-patch
+go get -u github.com/evanphx/json-patch/v5
 ```
 
 **Stable Versions**:
+* Version 5: `go get -u gopkg.in/evanphx/json-patch.v5`
 * Version 4: `go get -u gopkg.in/evanphx/json-patch.v4`
 
 (previous versions below `v3` are unavailable)
@@ -28,10 +29,15 @@ go get -u github.com/evanphx/json-patch
 
 # Configuration
 
-There is a single global configuration variable `jsonpatch.SupportNegativeIndices'. This
-defaults to `true` and enables the non-standard practice of allowing negative indices
-to mean indices starting at the end of an array. This functionality can be disabled
-by setting `jsonpatch.SupportNegativeIndices = false`.
+* There is a global configuration variable `jsonpatch.SupportNegativeIndices`.
+  This defaults to `true` and enables the non-standard practice of allowing
+  negative indices to mean indices starting at the end of an array. This
+  functionality can be disabled by setting `jsonpatch.SupportNegativeIndices =
+  false`.
+
+* There is a global configuration variable `jsonpatch.AccumulatedCopySizeLimit`,
+  which limits the total size increase in bytes caused by "copy" operations in a
+  patch. It defaults to 0, which means there is no limit.
 
 ## Create and apply a merge patch
 Given both an original JSON document and a modified JSON document, you can create
@@ -77,7 +83,7 @@ When ran, you get the following output:
 ```bash
 $ go run main.go
 patch document:   {"height":null,"name":"Jane"}
-updated tina doc: {"age":28,"name":"Jane"}
+updated alternative doc: {"age":28,"name":"Jane"}
 ```
 
 ## Create and apply a JSON Patch
@@ -159,7 +165,7 @@ func main() {
 	}
 
 	if !jsonpatch.Equal(original, different) {
-		fmt.Println(`"original" is _not_ structurally equal to "similar"`)
+		fmt.Println(`"original" is _not_ structurally equal to "different"`)
 	}
 }
 ```
@@ -168,7 +174,7 @@ When ran, you get the following output:
 ```bash
 $ go run main.go
 "original" is structurally equal to "similar"
-"original" is _not_ structurally equal to "similar"
+"original" is _not_ structurally equal to "different"
 ```
 
 ## Combine merge patches

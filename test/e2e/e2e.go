@@ -23,8 +23,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	v1 "github.com/knative/serving/pkg/apis/serving/v1"
-	servingalpha1 "github.com/knative/serving/pkg/apis/serving/v1alpha1"
 	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -45,8 +43,7 @@ import (
 var Flags = initializeFlags()
 var compoptions = []cmp.Option{
 	cmpopts.IgnoreTypes(metav1.TypeMeta{}, metav1.ObjectMeta{}, metav1.Time{},
-		corev1.ResourceRequirements{}, servingalpha1.ServiceStatus{}),
-	cmpopts.IgnoreFields(v1.RevisionSpec{}, "TimeoutSeconds"),
+		corev1.ResourceRequirements{}),
 }
 
 // EnvironmentFlags define the flags that are needed to run the e2e tests.
@@ -74,12 +71,6 @@ func GetClient() client.Client {
 
 	sch := scheme.Scheme
 	if err := iter8v1alpha2.AddToScheme(sch); err != nil {
-		panic(fmt.Errorf("unable to add scheme (%v)", err))
-	}
-	if err := servingalpha1.AddToScheme(sch); err != nil {
-		panic(fmt.Errorf("unable to add scheme (%v)", err))
-	}
-	if err := v1.AddToScheme(sch); err != nil {
 		panic(fmt.Errorf("unable to add scheme (%v)", err))
 	}
 	if err := istiov1alpha3.AddToScheme(sch); err != nil {

@@ -16,6 +16,7 @@ limitations under the License.
 package notifier
 
 import (
+	"context"
 	"os"
 	"reflect"
 
@@ -33,10 +34,10 @@ const (
 )
 
 // RegisterHandler adds event handlers to k8s cache
-func (nc *NotificationCenter) RegisterHandler(cache cache.Cache) error {
+func (nc *NotificationCenter) RegisterHandler(ctx context.Context, cache cache.Cache) error {
 	typeObj, handler := getTypedHandler(nc)
 
-	informer, err := cache.GetInformer(typeObj)
+	informer, err := cache.GetInformer(ctx, typeObj)
 	if err != nil {
 		return err
 	}

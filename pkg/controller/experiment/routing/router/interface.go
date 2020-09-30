@@ -16,6 +16,8 @@ limitations under the License.
 package router
 
 import (
+	"context"
+
 	runtime "k8s.io/apimachinery/pkg/runtime"
 
 	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
@@ -24,15 +26,15 @@ import (
 // Interface declares functions to be implemented so as to be used by iter8 router
 type Interface interface {
 	// Fetch gets routing rules from cluster
-	Fetch(instance *iter8v1alpha2.Experiment) error
+	Fetch(ctx context.Context, instance *iter8v1alpha2.Experiment) error
 	// UpdateRouteWithBaseline updates routing rules with runtime object of baseline
-	UpdateRouteWithBaseline(instance *iter8v1alpha2.Experiment, baseline runtime.Object) error
+	UpdateRouteWithBaseline(ctx context.Context, instance *iter8v1alpha2.Experiment, baseline runtime.Object) error
 	// UpdateRouteWithCandidates updates routing rules with runtime objects of candidates
-	UpdateRouteWithCandidates(instance *iter8v1alpha2.Experiment, candidates []runtime.Object) error
+	UpdateRouteWithCandidates(ctx context.Context, instance *iter8v1alpha2.Experiment, candidates []runtime.Object) error
 	// UpdateRouteWithTrafficUpdate updates routing rules with new traffic state from assessment
-	UpdateRouteWithTrafficUpdate(instance *iter8v1alpha2.Experiment) error
+	UpdateRouteWithTrafficUpdate(ctx context.Context, instance *iter8v1alpha2.Experiment) error
 	// UpdateRouteToStable updates routing rules to desired stable state
-	UpdateRouteToStable(instance *iter8v1alpha2.Experiment) error
+	UpdateRouteToStable(ctx context.Context, instance *iter8v1alpha2.Experiment) error
 	// Print prints detailed information about the router
 	Print() string
 }
