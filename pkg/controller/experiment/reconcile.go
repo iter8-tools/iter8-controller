@@ -35,7 +35,7 @@ func (r *ReconcileExperiment) completeExperiment(context context.Context, instan
 
 	overrideAssessment(instance)
 	targets.Cleanup(context, instance, r.Client)
-	err := r.router.UpdateRouteToStable(instance)
+	err := r.router.UpdateRouteToStable(context, instance)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func completeStatusMessage(instance *iter8v1alpha2.Experiment) string {
 }
 
 func (r *ReconcileExperiment) checkOrInitRules(context context.Context, instance *iter8v1alpha2.Experiment) error {
-	err := r.router.Fetch(instance)
+	err := r.router.Fetch(context, instance)
 	if err != nil {
 		r.markRoutingRulesError(context, instance, "Error in getting routing rules: %s, Experiment Ended.", err.Error())
 		r.completeExperiment(context, instance)
@@ -109,7 +109,7 @@ func (r *ReconcileExperiment) detectTargets(context context.Context, instance *i
 		}
 	} else {
 		// UpdateBaseline will create DestinationRule and VirtualService if needed
-		if err = r.router.UpdateRouteWithBaseline(instance, targetsHandler.Baseline); err != nil {
+		if err = r.router.UpdateRouteWithBaseline(context, instance, targetsHandler.Baseline); err != nil {
 			r.markRoutingRulesError(context, instance, "Fail in updating routing rule: %v", err)
 			return false, err
 		}
@@ -126,7 +126,7 @@ func (r *ReconcileExperiment) detectTargets(context context.Context, instance *i
 	} else {
 		// Update DestinationRule for candidates
 		// If baseline is also configured (see above), we move set rule to progressing
-		if err = r.router.UpdateRouteWithCandidates(instance, targetsHandler.Candidates); err != nil {
+		if err = r.router.UpdateRouteWithCandidates(context, instance, targetsHandler.Candidates); err != nil {
 			r.markRoutingRulesError(context, instance, "Fail in updating routing rule: %v", err)
 			return false, err
 		}
@@ -258,7 +258,7 @@ func (r *ReconcileExperiment) processIteration(context context.Context, instance
 	}
 
 	if trafficUpdated {
-		if err := r.router.UpdateRouteWithTrafficUpdate(instance); err != nil {
+		if err := r.router.UpdateRouteWithTrafficUpdate(context, instance); err != nil {
 			r.markRoutingRulesError(context, instance, "%v", err)
 			return err
 		}

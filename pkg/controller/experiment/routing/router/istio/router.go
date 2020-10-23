@@ -159,18 +159,18 @@ func (r *Router) Print() string {
 }
 
 // Fetch routing rules from cluster
-func (r *Router) Fetch(instance *iter8v1alpha2.Experiment) error {
+func (r *Router) Fetch(ctx context.Context, instance *iter8v1alpha2.Experiment) error {
 	selector := map[string]string{
 		routerID: getRouterID(instance)}
 
 	drl, err := r.client.NetworkingV1alpha3().DestinationRules(instance.ServiceNamespace()).
-		List(metav1.ListOptions{LabelSelector: labels.Set(selector).String()})
+		List(ctx, metav1.ListOptions{LabelSelector: labels.Set(selector).String()})
 	if err != nil {
 		return err
 	}
 
 	vsl, err := r.client.NetworkingV1alpha3().VirtualServices(instance.ServiceNamespace()).
-		List(metav1.ListOptions{LabelSelector: labels.Set(selector).String()})
+		List(ctx, metav1.ListOptions{LabelSelector: labels.Set(selector).String()})
 	if err != nil {
 		return err
 	}
@@ -184,7 +184,7 @@ func (r *Router) Fetch(instance *iter8v1alpha2.Experiment) error {
 }
 
 // UpdateRouteWithBaseline updates routing rules with runtime object of baseline
-func (r *Router) UpdateRouteWithBaseline(instance *iter8v1alpha2.Experiment, baseline runtime.Object) (err error) {
+func (r *Router) UpdateRouteWithBaseline(ctx context.Context, instance *iter8v1alpha2.Experiment, baseline runtime.Object) (err error) {
 	if r.rules.isProgressing() || r.rules.isInitializing() {
 		return nil
 	}
@@ -252,11 +252,11 @@ func (r *Router) UpdateRouteWithBaseline(instance *iter8v1alpha2.Experiment, bas
 	if _, ok := vsb.GetLabels()[experimentInit]; ok {
 		vs, err = r.client.NetworkingV1alpha3().
 			VirtualServices(r.rules.virtualService.GetNamespace()).
-			Create(vsb.Build())
+			Create(ctx, vsb.Build(), metav1.CreateOptions{})
 	} else {
 		vs, err = r.client.NetworkingV1alpha3().
 			VirtualServices(r.rules.virtualService.GetNamespace()).
-			Update(vsb.Build())
+			Update(ctx, vsb.Build(), metav1.UpdateOptions{})
 	}
 	if err != nil {
 		return err
@@ -276,11 +276,11 @@ func (r *Router) UpdateRouteWithBaseline(instance *iter8v1alpha2.Experiment, bas
 		if _, ok := drb.GetLabels()[experimentInit]; ok {
 			dr, err = r.client.NetworkingV1alpha3().
 				DestinationRules(r.rules.destinationRule.GetNamespace()).
-				Create(drb.Build())
+				Create(ctx, drb.Build(), metav1.CreateOptions{})
 		} else {
 			dr, err = r.client.NetworkingV1alpha3().
 				DestinationRules(r.rules.destinationRule.GetNamespace()).
-				Update(drb.Build())
+				Update(ctx, drb.Build(), metav1.UpdateOptions{})
 		}
 		if err != nil {
 			return err
@@ -293,7 +293,7 @@ func (r *Router) UpdateRouteWithBaseline(instance *iter8v1alpha2.Experiment, bas
 }
 
 // UpdateRouteWithCandidates updates routing rules with runtime objects of candidates
-func (r *Router) UpdateRouteWithCandidates(instance *iter8v1alpha2.Experiment, candidates []runtime.Object) (err error) {
+func (r *Router) UpdateRouteWithCandidates(ctx context.Context, instance *iter8v1alpha2.Experiment, candidates []runtime.Object) (err error) {
 	if r.rules.isProgressing() {
 		return
 	}
@@ -326,7 +326,7 @@ func (r *Router) UpdateRouteWithCandidates(instance *iter8v1alpha2.Experiment, c
 
 	vs, err = r.client.NetworkingV1alpha3().
 		VirtualServices(r.rules.virtualService.GetNamespace()).
-		Update(vs)
+		Update(ctx, vs, metav1.UpdateOptions{})
 	if err != nil {
 		return
 	}
@@ -343,7 +343,7 @@ func (r *Router) UpdateRouteWithCandidates(instance *iter8v1alpha2.Experiment, c
 
 		dr, err = r.client.NetworkingV1alpha3().
 			DestinationRules(dr.GetNamespace()).
-			Update(dr)
+			Update(ctx, dr, metav1.UpdateOptions{})
 		if err != nil {
 			return
 		}
@@ -353,13 +353,13 @@ func (r *Router) UpdateRouteWithCandidates(instance *iter8v1alpha2.Experiment, c
 }
 
 // UpdateRouteWithTrafficUpdate updates routing rules with new traffic state from assessment
-func (r *Router) UpdateRouteWithTrafficUpdate(instance *iter8v1alpha2.Experiment) (err error) {
+func (r *Router) UpdateRouteWithTrafficUpdate(ctx context.Context, instance *iter8v1alpha2.Experiment) (err error) {
 	vs := r.rules.virtualService
 	if route := getExperimentRoute(vs); route != nil {
 		r.updateRouteFromExperiment(route, instance)
 	}
 
-	vs, err = r.client.NetworkingV1alpha3().VirtualServices(vs.Namespace).Update(vs)
+	vs, err = r.client.NetworkingV1alpha3().VirtualServices(vs.Namespace).Update(ctx, vs, metav1.UpdateOptions{})
 	if err != nil {
 		return
 	}
@@ -369,7 +369,7 @@ func (r *Router) UpdateRouteWithTrafficUpdate(instance *iter8v1alpha2.Experiment
 }
 
 // UpdateRouteToStable updates routing rules to desired stable state
-func (r *Router) UpdateRouteToStable(instance *iter8v1alpha2.Experiment) (err error) {
+func (r *Router) UpdateRouteToStable(ctx context.Context, instance *iter8v1alpha2.Experiment) (err error) {
 	if r.rules == nil || !(r.rules.isProgressing() || r.rules.isInitializing()) {
 		r.logger.Info("NoOpInUpdateRouteToStable", "routing rules not initialized", "")
 		return nil
@@ -378,14 +378,14 @@ func (r *Router) UpdateRouteToStable(instance *iter8v1alpha2.Experiment) (err er
 	if instance.Spec.GetCleanup() && r.rules.isInit() {
 		// delete routing rules
 		if err = r.client.NetworkingV1alpha3().VirtualServices(r.rules.virtualService.Namespace).
-			Delete(r.rules.virtualService.Name, &metav1.DeleteOptions{}); err != nil {
+			Delete(ctx, r.rules.virtualService.Name, metav1.DeleteOptions{}); err != nil {
 			r.logger.Info("Err in deleting vs", "err", err)
 			return
 		}
 
 		if r.handler.requireDestinationRule() {
 			if err = r.client.NetworkingV1alpha3().DestinationRules(r.rules.destinationRule.Namespace).
-				Delete(r.rules.destinationRule.Name, &metav1.DeleteOptions{}); err != nil {
+				Delete(ctx, r.rules.destinationRule.Name, metav1.DeleteOptions{}); err != nil {
 				r.logger.Info("Err in deleting dr", "err", err)
 				return
 			}
@@ -415,7 +415,7 @@ func (r *Router) UpdateRouteToStable(instance *iter8v1alpha2.Experiment) (err er
 			RemoveExperimentLabel().Build()
 		if _, err = r.client.NetworkingV1alpha3().
 			VirtualServices(vs.Namespace).
-			Update(vs); err != nil {
+			Update(ctx, vs, metav1.UpdateOptions{}); err != nil {
 			return err
 		}
 
@@ -427,7 +427,7 @@ func (r *Router) UpdateRouteToStable(instance *iter8v1alpha2.Experiment) (err er
 				Build()
 			if _, err = r.client.NetworkingV1alpha3().
 				DestinationRules(r.rules.destinationRule.Namespace).
-				Update(dr); err != nil {
+				Update(ctx, dr, metav1.UpdateOptions{}); err != nil {
 				return err
 			}
 		}

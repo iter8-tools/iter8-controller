@@ -1,62 +1,13 @@
 
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: (unknown)
+    controller-gen.kubebuilder.io/version: (devel)
   creationTimestamp: null
   name: experiments.iter8.tools
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.experimentType
-    description: Type of experiment
-    format: byte
-    name: type
-    type: string
-  - JSONPath: .status.effectiveHosts
-    description: Names of candidates
-    format: byte
-    name: hosts
-    type: string
-  - JSONPath: .status.phase
-    description: Phase of the experiment
-    format: byte
-    name: phase
-    type: string
-  - JSONPath: .status.assessment.winner.winning_version_found
-    description: Winner identified
-    format: byte
-    name: winner found
-    type: boolean
-  - JSONPath: .status.assessment.winner.name
-    description: Current best version
-    format: byte
-    name: current best
-    type: string
-  - JSONPath: .status.assessment.winner.probability_of_winning_for_best_version
-    description: Confidence current bets version will be the winner
-    format: float
-    name: confidence
-    priority: 1
-    type: string
-  - JSONPath: .status.message
-    description: Detailed Status of the experiment
-    format: byte
-    name: status
-    type: string
-  - JSONPath: .spec.service.baseline
-    description: Name of baseline
-    format: byte
-    name: baseline
-    priority: 1
-    type: string
-  - JSONPath: .spec.service.candidates
-    description: Names of candidates
-    format: byte
-    name: candidates
-    priority: 1
-    type: string
   group: iter8.tools
   names:
     kind: Experiment
@@ -64,271 +15,269 @@ spec:
     plural: experiments
     singular: experiment
   scope: Namespaced
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      description: Experiment contains the sections for -- defining an experiment,
-        showing experiment status,
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: ExperimentSpec defines the desired state of Experiment
-          properties:
-            analyticsEndpoint:
-              description: Endpoint of reaching analytics service default is http://iter8-analytics:8080
-              type: string
-            cleanup:
-              description: Cleanup indicates whether routing rules and deployment
-                receiving no traffic should be deleted at the end of experiment
-              type: boolean
-            criteria:
-              description: Criteria contains a list of Criterion for assessing the
-                target service Noted that at most one reward metric is allowed If
-                more than one reward criterion is included, the first would be used
-                while others would be omitted
-              items:
-                description: Criterion defines the criterion for assessing a target
+  versions:
+  - additionalPrinterColumns:
+    - description: Type of experiment
+      format: byte
+      jsonPath: .status.experimentType
+      name: type
+      type: string
+    - description: Names of candidates
+      format: byte
+      jsonPath: .status.effectiveHosts
+      name: hosts
+      type: string
+    - description: Phase of the experiment
+      format: byte
+      jsonPath: .status.phase
+      name: phase
+      type: string
+    - description: Winner identified
+      format: byte
+      jsonPath: .status.assessment.winner.winning_version_found
+      name: winner found
+      type: boolean
+    - description: Current best version
+      format: byte
+      jsonPath: .status.assessment.winner.name
+      name: current best
+      type: string
+    - description: Confidence current bets version will be the winner
+      format: float
+      jsonPath: .status.assessment.winner.probability_of_winning_for_best_version
+      name: confidence
+      priority: 1
+      type: string
+    - description: Detailed Status of the experiment
+      format: byte
+      jsonPath: .status.message
+      name: status
+      type: string
+    - description: Name of baseline
+      format: byte
+      jsonPath: .spec.service.baseline
+      name: baseline
+      priority: 1
+      type: string
+    - description: Names of candidates
+      format: byte
+      jsonPath: .spec.service.candidates
+      name: candidates
+      priority: 1
+      type: string
+    name: v1alpha2
+    schema:
+      openAPIV3Schema:
+        description: Experiment contains the sections for -- defining an experiment, showing experiment status,
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ExperimentSpec defines the desired state of Experiment
+            properties:
+              analyticsEndpoint:
+                description: Endpoint of reaching analytics service default is http://iter8-analytics:8080
+                type: string
+              cleanup:
+                description: Cleanup indicates whether routing rules and deployment receiving no traffic should be deleted at the end of experiment
+                type: boolean
+              criteria:
+                description: Criteria contains a list of Criterion for assessing the target service Noted that at most one reward metric is allowed If more than one reward criterion is included, the first would be used while others would be omitted
+                items:
+                  description: Criterion defines the criterion for assessing a target
+                  properties:
+                    isReward:
+                      description: IsReward indicates whether the metric is a reward metric or not
+                      type: boolean
+                    metric:
+                      description: Name of metric used in the assessment
+                      type: string
+                    threshold:
+                      description: Threshold specifies the numerical value for a success criterion Metric value above threhsold violates the criterion
+                      properties:
+                        cutoffTrafficOnViolation:
+                          description: Once a target metric violates this threshold, traffic to the target should be cutoff or not
+                          type: boolean
+                        type:
+                          description: 'Type of threshold relative: value of threshold specifies the relative amount of changes absolute: value of threshold indicates an absolute value'
+                          enum:
+                          - relative
+                          - absolute
+                          type: string
+                        value:
+                          description: Value of threshold
+                          type: number
+                      required:
+                      - type
+                      - value
+                      type: object
+                  required:
+                  - metric
+                  type: object
+                type: array
+              duration:
+                description: Duration specifies how often/many times the expriment should re-evaluate the assessment
                 properties:
-                  isReward:
-                    description: IsReward indicates whether the metric is a reward
-                      metric or not
-                    type: boolean
-                  metric:
-                    description: Name of metric used in the assessment
+                  interval:
+                    description: Interval specifies duration between iterations default is 30s
                     type: string
-                  threshold:
-                    description: Threshold specifies the numerical value for a success
-                      criterion Metric value above threhsold violates the criterion
-                    properties:
-                      cutoffTrafficOnViolation:
-                        description: Once a target metric violates this threshold,
-                          traffic to the target should be cutoff or not
-                        type: boolean
-                      type:
-                        description: 'Type of threshold relative: value of threshold
-                          specifies the relative amount of changes absolute: value
-                          of threshold indicates an absolute value'
-                        enum:
-                        - relative
-                        - absolute
-                        type: string
-                      value:
-                        description: Value of threshold
-                        format: float64
-                        type: number
-                    required:
-                    - type
-                    - value
-                    type: object
-                required:
-                - metric
-                type: object
-              type: array
-            duration:
-              description: Duration specifies how often/many times the expriment should
-                re-evaluate the assessment
-              properties:
-                interval:
-                  description: Interval specifies duration between iterations default
-                    is 30s
-                  type: string
-                maxIterations:
-                  description: MaxIterations indicates the amount of iteration default
-                    is 100
-                  format: int32
-                  type: integer
-              type: object
-            manualOverride:
-              description: User actions to override the current status of the experiment
-              properties:
-                action:
-                  description: Action to perform
-                  enum:
-                  - pause
-                  - resume
-                  - terminate
-                  type: string
-                trafficSplit:
-                  additionalProperties:
+                  maxIterations:
+                    description: MaxIterations indicates the amount of iteration default is 100
                     format: int32
                     type: integer
-                  description: 'Traffic split status specification Applied to action
-                    terminate only example:   reviews-v2:80   reviews-v3:20'
-                  type: object
-              required:
-              - action
-              type: object
-            metrics:
-              description: The metrics used in the experiment
-              properties:
-                counter_metrics:
-                  description: List of counter metrics definiton
-                  items:
-                    description: CounterMetric is the definition of Counter Metric
-                    properties:
-                      name:
-                        description: Name of metric
-                        type: string
-                      preferred_direction:
-                        description: Preferred direction of the metric value
-                        type: string
-                      query_template:
-                        description: Query template of this metric
-                        type: string
-                      unit:
-                        description: Unit of the metric value
-                        type: string
-                    required:
-                    - name
-                    - query_template
-                    type: object
-                  type: array
-                ratio_metrics:
-                  description: List of ratio metrics definiton
-                  items:
-                    description: RatioMetric is the definiton of Ratio Metric
-                    properties:
-                      denominator:
-                        description: Counter metric used in denominator
-                        type: string
-                      name:
-                        description: name of metric
-                        type: string
-                      numerator:
-                        description: Counter metric used in numerator
-                        type: string
-                      preferred_direction:
-                        description: Preferred direction of the metric value
-                        type: string
-                      zero_to_one:
-                        description: Boolean flag indicating if the value of this
-                          metric is always in the range 0 to 1
-                        type: boolean
-                    required:
-                    - denominator
-                    - name
-                    - numerator
-                    type: object
-                  type: array
-              type: object
-            networking:
-              description: Networking describes how traffic network should be configured
-                for the experiment
-              properties:
-                hosts:
-                  description: List of hosts used to receive external traffic
-                  items:
-                    description: Host holds the name of host and gateway associated
-                      with it
-                    properties:
-                      gateway:
-                        description: The gateway associated with the host
-                        type: string
-                      name:
-                        description: Name of the Host
-                        type: string
-                    required:
-                    - gateway
-                    - name
-                    type: object
-                  type: array
-                id:
-                  description: id of router
-                  type: string
-              type: object
-            service:
-              description: Service is a reference to the service componenets that
-                this experiment is targeting at
-              properties:
-                apiVersion:
-                  description: API version of the referent.
-                  type: string
-                baseline:
-                  description: Name of the baseline deployment
-                  type: string
-                candidates:
-                  description: List of names of candidate deployments
-                  items:
+                type: object
+              manualOverride:
+                description: User actions to override the current status of the experiment
+                properties:
+                  action:
+                    description: Action to perform
+                    enum:
+                    - pause
+                    - resume
+                    - terminate
                     type: string
-                  type: array
-                fieldPath:
-                  description: 'If referring to a piece of an object instead of an
-                    entire object, this string should contain a valid JSON/Go field
-                    access statement, such as desiredState.manifest.containers[2].
-                    For example, if the object reference is to a container within
-                    a pod, this would take on a value like: "spec.containers{name}"
-                    (where "name" refers to the name of the container that triggered
-                    the event) or if no container name is specified "spec.containers[2]"
-                    (container with index 2 in this pod). This syntax is chosen only
-                    to have some well-defined way of referencing a part of an object.
-                    TODO: this design is not final and this field is subject to change
-                    in the future.'
-                  type: string
-                kind:
-                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-                  type: string
-                name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
-                  type: string
-                namespace:
-                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
-                  type: string
-                port:
-                  description: Port number exposed by internal services
-                  format: int32
-                  type: integer
-                resourceVersion:
-                  description: 'Specific resourceVersion to which this reference is
-                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
-                  type: string
-                uid:
-                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
-                  type: string
-              required:
-              - baseline
-              - candidates
-              type: object
-            trafficControl:
-              description: TrafficControl provides instructions on traffic management
-                for an experiment
-              properties:
-                match:
-                  description: Only requests fulfill the match section would be used
-                    in experiment Istio matching rules are used
-                  properties:
-                    http:
-                      description: Matching criteria for HTTP requests
-                      items:
-                        properties:
-                          authority:
-                            description: HTTP Authority
-                            properties:
-                              exact:
-                                type: string
-                              prefix:
-                                type: string
-                              regex:
-                                type: string
-                            type: object
-                          gateways:
-                            description: Gateways for matching
-                            items:
-                              type: string
-                            type: array
-                          headers:
-                            additionalProperties:
+                  trafficSplit:
+                    additionalProperties:
+                      format: int32
+                      type: integer
+                    description: 'Traffic split status specification Applied to action terminate only example:   reviews-v2:80   reviews-v3:20'
+                    type: object
+                required:
+                - action
+                type: object
+              metrics:
+                description: The metrics used in the experiment
+                properties:
+                  counter_metrics:
+                    description: List of counter metrics definiton
+                    items:
+                      description: CounterMetric is the definition of Counter Metric
+                      properties:
+                        name:
+                          description: Name of metric
+                          type: string
+                        preferred_direction:
+                          description: Preferred direction of the metric value
+                          type: string
+                        query_template:
+                          description: Query template of this metric
+                          type: string
+                        unit:
+                          description: Unit of the metric value
+                          type: string
+                      required:
+                      - name
+                      - query_template
+                      type: object
+                    type: array
+                  ratio_metrics:
+                    description: List of ratio metrics definiton
+                    items:
+                      description: RatioMetric is the definiton of Ratio Metric
+                      properties:
+                        denominator:
+                          description: Counter metric used in denominator
+                          type: string
+                        name:
+                          description: name of metric
+                          type: string
+                        numerator:
+                          description: Counter metric used in numerator
+                          type: string
+                        preferred_direction:
+                          description: Preferred direction of the metric value
+                          type: string
+                        zero_to_one:
+                          description: Boolean flag indicating if the value of this metric is always in the range 0 to 1
+                          type: boolean
+                      required:
+                      - denominator
+                      - name
+                      - numerator
+                      type: object
+                    type: array
+                type: object
+              networking:
+                description: Networking describes how traffic network should be configured for the experiment
+                properties:
+                  hosts:
+                    description: List of hosts used to receive external traffic
+                    items:
+                      description: Host holds the name of host and gateway associated with it
+                      properties:
+                        gateway:
+                          description: The gateway associated with the host
+                          type: string
+                        name:
+                          description: Name of the Host
+                          type: string
+                      required:
+                      - gateway
+                      - name
+                      type: object
+                    type: array
+                  id:
+                    description: id of router
+                    type: string
+                type: object
+              service:
+                description: Service is a reference to the service componenets that this experiment is targeting at
+                properties:
+                  apiVersion:
+                    description: API version of the referent.
+                    type: string
+                  baseline:
+                    description: Name of the baseline deployment
+                    type: string
+                  candidates:
+                    description: List of names of candidate deployments
+                    items:
+                      type: string
+                    type: array
+                  fieldPath:
+                    description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object. TODO: this design is not final and this field is subject to change in the future.'
+                    type: string
+                  kind:
+                    description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                    type: string
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                    type: string
+                  namespace:
+                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                    type: string
+                  port:
+                    description: Port number exposed by internal services
+                    format: int32
+                    type: integer
+                  resourceVersion:
+                    description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                    type: string
+                  uid:
+                    description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                    type: string
+                required:
+                - baseline
+                - candidates
+                type: object
+              trafficControl:
+                description: TrafficControl provides instructions on traffic management for an experiment
+                properties:
+                  match:
+                    description: Only requests fulfill the match section would be used in experiment Istio matching rules are used
+                    properties:
+                      http:
+                        description: Matching criteria for HTTP requests
+                        items:
+                          properties:
+                            authority:
+                              description: HTTP Authority
                               properties:
                                 exact:
                                   type: string
@@ -337,236 +286,127 @@ spec:
                                 regex:
                                   type: string
                               type: object
-                            description: Headers to match
-                            type: object
-                          ignore_uri_case:
-                            description: Flag to specify whether the URI matching
-                              should be case-insensitive.
-                            type: boolean
-                          method:
-                            description: HTTP Method
-                            properties:
-                              exact:
+                            gateways:
+                              description: Gateways for matching
+                              items:
                                 type: string
-                              prefix:
-                                type: string
-                              regex:
-                                type: string
-                            type: object
-                          name:
-                            description: The name assigned to a match.
-                            type: string
-                          port:
-                            description: Specifies the ports on the host that is being
-                              addressed.
-                            format: int32
-                            type: integer
-                          query_params:
-                            additionalProperties:
-                              properties:
-                                exact:
-                                  type: string
-                                prefix:
-                                  type: string
-                                regex:
-                                  type: string
-                              type: object
-                            description: Query parameters for matching.
-                            type: object
-                          scheme:
-                            description: Scheme Scheme
-                            properties:
-                              exact:
-                                type: string
-                              prefix:
-                                type: string
-                              regex:
-                                type: string
-                            type: object
-                          sourceLabels:
-                            additionalProperties:
-                              type: string
-                            description: SourceLabels for matching
-                            type: object
-                          uri:
-                            description: URI to match
-                            properties:
-                              exact:
-                                type: string
-                              prefix:
-                                type: string
-                              regex:
-                                type: string
-                            type: object
-                        type: object
-                      type: array
-                  type: object
-                maxIncrement:
-                  description: MaxIncrement is the upperlimit of traffic increment
-                    for a target in one iteration default is 2
-                  format: int32
-                  type: integer
-                onTermination:
-                  description: OnTermination determines traffic split status at the
-                    end of experiment
-                  enum:
-                  - to_winner
-                  - to_baseline
-                  - keep_last
-                  type: string
-                percentage:
-                  description: Percentage specifies the amount of traffic to service
-                    that would be used in experiment default is 100
-                  format: int32
-                  type: integer
-                routerID:
-                  description: RouterID refers to the id of router used to handle
-                    traffic for the experiment If it's not specified, the first entry
-                    of effictive host will be used as the id
-                  type: string
-                strategy:
-                  description: Strategy used to shift traffic default is progressive
-                  enum:
-                  - progressive
-                  - top_2
-                  - uniform
-                  type: string
-              type: object
-          required:
-          - service
-          type: object
-        status:
-          description: ExperimentStatus defines the observed state of Experiment
-          properties:
-            analysisState:
-              description: AnalysisState is the last recorded analysis state
-              type: object
-            assessment:
-              description: Assessment returned by the last analyis
-              properties:
-                baseline:
-                  description: Assessment details of baseline
-                  properties:
-                    criterion_assessments:
-                      items:
-                        description: CriterionAssessment contains assessment for a
-                          version
-                        properties:
-                          id:
-                            description: Id of version
-                            type: string
-                          metric_id:
-                            description: ID of metric
-                            type: string
-                          statistics:
-                            description: Statistics for this metric
-                            properties:
-                              ratio_statitics:
-                                description: RatioStatistics is statistics for a ratio
-                                  metric
+                              type: array
+                            headers:
+                              additionalProperties:
                                 properties:
-                                  credible_interval:
-                                    description: Interval for probability
-                                    properties:
-                                      lower:
-                                        format: float64
-                                        type: number
-                                      upper:
-                                        format: float64
-                                        type: number
-                                    required:
-                                    - lower
-                                    - upper
-                                    type: object
-                                  improvement_over_baseline:
-                                    description: Interval for probability
-                                    properties:
-                                      lower:
-                                        format: float64
-                                        type: number
-                                      upper:
-                                        format: float64
-                                        type: number
-                                    required:
-                                    - lower
-                                    - upper
-                                    type: object
-                                  probability_of_beating_baseline:
-                                    format: float64
-                                    type: number
-                                  probability_of_being_best_version:
-                                    format: float64
-                                    type: number
-                                required:
-                                - credible_interval
-                                - improvement_over_baseline
-                                - probability_of_beating_baseline
-                                - probability_of_being_best_version
+                                  exact:
+                                    type: string
+                                  prefix:
+                                    type: string
+                                  regex:
+                                    type: string
                                 type: object
-                              value:
-                                format: float64
-                                type: number
-                            type: object
-                          threshold_assessment:
-                            description: Assessment of how well this metric is doing
-                              with respect to threshold. Defined only for metrics
-                              with a threshold
-                            properties:
-                              probability_of_satisfying_threshold:
-                                description: Probability of satisfying the threshold.
-                                  Defined only for ratio metrics. This is currently
-                                  computed based on Bayesian estimation
-                                format: float64
-                                type: number
-                              threshold_breached:
-                                description: A flag indicating whether threshold is
-                                  breached
-                                type: boolean
-                            required:
-                            - probability_of_satisfying_threshold
-                            - threshold_breached
-                            type: object
-                        required:
-                        - id
-                        - metric_id
-                        type: object
-                      type: array
-                    id:
-                      type: string
-                    name:
-                      description: name of version
-                      type: string
-                    request_count:
-                      format: int32
-                      type: integer
-                    rollback:
-                      description: A flag indicates whether traffic to this target
-                        should be cutoff
-                      type: boolean
-                    weight:
-                      description: Weight of traffic
-                      format: int32
-                      type: integer
-                    win_probability:
-                      format: float64
-                      type: number
-                  required:
-                  - id
-                  - name
-                  - request_count
-                  - weight
-                  - win_probability
-                  type: object
-                candidates:
-                  description: Assessment details of each candidate
-                  items:
-                    description: VersionAssessment contains assessment details for
-                      each version
+                              description: Headers to match
+                              type: object
+                            ignore_uri_case:
+                              description: Flag to specify whether the URI matching should be case-insensitive.
+                              type: boolean
+                            method:
+                              description: HTTP Method
+                              properties:
+                                exact:
+                                  type: string
+                                prefix:
+                                  type: string
+                                regex:
+                                  type: string
+                              type: object
+                            name:
+                              description: The name assigned to a match.
+                              type: string
+                            port:
+                              description: Specifies the ports on the host that is being addressed.
+                              format: int32
+                              type: integer
+                            query_params:
+                              additionalProperties:
+                                properties:
+                                  exact:
+                                    type: string
+                                  prefix:
+                                    type: string
+                                  regex:
+                                    type: string
+                                type: object
+                              description: Query parameters for matching.
+                              type: object
+                            scheme:
+                              description: Scheme Scheme
+                              properties:
+                                exact:
+                                  type: string
+                                prefix:
+                                  type: string
+                                regex:
+                                  type: string
+                              type: object
+                            sourceLabels:
+                              additionalProperties:
+                                type: string
+                              description: SourceLabels for matching
+                              type: object
+                            uri:
+                              description: URI to match
+                              properties:
+                                exact:
+                                  type: string
+                                prefix:
+                                  type: string
+                                regex:
+                                  type: string
+                              type: object
+                          type: object
+                        type: array
+                    type: object
+                  maxIncrement:
+                    description: MaxIncrement is the upperlimit of traffic increment for a target in one iteration default is 2
+                    format: int32
+                    type: integer
+                  onTermination:
+                    description: OnTermination determines traffic split status at the end of experiment
+                    enum:
+                    - to_winner
+                    - to_baseline
+                    - keep_last
+                    type: string
+                  percentage:
+                    description: Percentage specifies the amount of traffic to service that would be used in experiment default is 100
+                    format: int32
+                    type: integer
+                  routerID:
+                    description: RouterID refers to the id of router used to handle traffic for the experiment If it's not specified, the first entry of effictive host will be used as the id
+                    type: string
+                  strategy:
+                    description: Strategy used to shift traffic default is progressive
+                    enum:
+                    - progressive
+                    - top_2
+                    - uniform
+                    type: string
+                type: object
+            required:
+            - service
+            type: object
+          status:
+            description: ExperimentStatus defines the observed state of Experiment
+            properties:
+              analysisState:
+                description: AnalysisState is the last recorded analysis state
+                type: object
+              assessment:
+                description: Assessment returned by the last analyis
+                properties:
+                  baseline:
+                    description: Assessment details of baseline
                     properties:
                       criterion_assessments:
                         items:
-                          description: CriterionAssessment contains assessment for
-                            a version
+                          description: CriterionAssessment contains assessment for a version
                           properties:
                             id:
                               description: Id of version
@@ -578,17 +418,14 @@ spec:
                               description: Statistics for this metric
                               properties:
                                 ratio_statitics:
-                                  description: RatioStatistics is statistics for a
-                                    ratio metric
+                                  description: RatioStatistics is statistics for a ratio metric
                                   properties:
                                     credible_interval:
                                       description: Interval for probability
                                       properties:
                                         lower:
-                                          format: float64
                                           type: number
                                         upper:
-                                          format: float64
                                           type: number
                                       required:
                                       - lower
@@ -598,20 +435,16 @@ spec:
                                       description: Interval for probability
                                       properties:
                                         lower:
-                                          format: float64
                                           type: number
                                         upper:
-                                          format: float64
                                           type: number
                                       required:
                                       - lower
                                       - upper
                                       type: object
                                     probability_of_beating_baseline:
-                                      format: float64
                                       type: number
                                     probability_of_being_best_version:
-                                      format: float64
                                       type: number
                                   required:
                                   - credible_interval
@@ -620,23 +453,16 @@ spec:
                                   - probability_of_being_best_version
                                   type: object
                                 value:
-                                  format: float64
                                   type: number
                               type: object
                             threshold_assessment:
-                              description: Assessment of how well this metric is doing
-                                with respect to threshold. Defined only for metrics
-                                with a threshold
+                              description: Assessment of how well this metric is doing with respect to threshold. Defined only for metrics with a threshold
                               properties:
                                 probability_of_satisfying_threshold:
-                                  description: Probability of satisfying the threshold.
-                                    Defined only for ratio metrics. This is currently
-                                    computed based on Bayesian estimation
-                                  format: float64
+                                  description: Probability of satisfying the threshold. Defined only for ratio metrics. This is currently computed based on Bayesian estimation
                                   type: number
                                 threshold_breached:
-                                  description: A flag indicating whether threshold
-                                    is breached
+                                  description: A flag indicating whether threshold is breached
                                   type: boolean
                               required:
                               - probability_of_satisfying_threshold
@@ -656,15 +482,13 @@ spec:
                         format: int32
                         type: integer
                       rollback:
-                        description: A flag indicates whether traffic to this target
-                          should be cutoff
+                        description: A flag indicates whether traffic to this target should be cutoff
                         type: boolean
                       weight:
                         description: Weight of traffic
                         format: int32
                         type: integer
                       win_probability:
-                        format: float64
                         type: number
                     required:
                     - id
@@ -673,105 +497,195 @@ spec:
                     - weight
                     - win_probability
                     type: object
-                  type: array
-                winner:
-                  description: Assessment for winner target if exists
-                  properties:
-                    current_best_version:
-                      description: ID of the current winner with the maximum probability
-                        of winning. This is currently computed based on Bayesian estimation
-                      type: string
-                    name:
-                      description: name of winner version
-                      type: string
-                    probability_of_winning_for_best_version:
-                      description: Posterior probability of the version declared as
-                        the current winner. This is None if winner is None. This is
-                        currently computed based on Bayesian estimation
-                      format: float64
-                      type: number
-                    winning_version_found:
-                      description: Indicates whether or not a clear winner has emerged
-                        This is currently computed based on Bayesian estimation and
-                        uses posterior_probability_for_winner from the iteration parameters
-                      type: boolean
-                  required:
-                  - winning_version_found
-                  type: object
-              required:
-              - baseline
-              - candidates
-              type: object
-            conditions:
-              description: List of conditions
-              items:
-                description: ExperimentCondition describes a condition of an experiment
-                properties:
-                  lastTransitionTime:
-                    description: The time when this condition is last updated
-                    format: date-time
-                    type: string
-                  message:
-                    description: Detailed explanation on the update
-                    type: string
-                  reason:
-                    description: Reason for the last update
-                    type: string
-                  status:
-                    description: Status of the condition
-                    type: string
-                  type:
-                    description: Type of the condition
-                    type: string
+                  candidates:
+                    description: Assessment details of each candidate
+                    items:
+                      description: VersionAssessment contains assessment details for each version
+                      properties:
+                        criterion_assessments:
+                          items:
+                            description: CriterionAssessment contains assessment for a version
+                            properties:
+                              id:
+                                description: Id of version
+                                type: string
+                              metric_id:
+                                description: ID of metric
+                                type: string
+                              statistics:
+                                description: Statistics for this metric
+                                properties:
+                                  ratio_statitics:
+                                    description: RatioStatistics is statistics for a ratio metric
+                                    properties:
+                                      credible_interval:
+                                        description: Interval for probability
+                                        properties:
+                                          lower:
+                                            type: number
+                                          upper:
+                                            type: number
+                                        required:
+                                        - lower
+                                        - upper
+                                        type: object
+                                      improvement_over_baseline:
+                                        description: Interval for probability
+                                        properties:
+                                          lower:
+                                            type: number
+                                          upper:
+                                            type: number
+                                        required:
+                                        - lower
+                                        - upper
+                                        type: object
+                                      probability_of_beating_baseline:
+                                        type: number
+                                      probability_of_being_best_version:
+                                        type: number
+                                    required:
+                                    - credible_interval
+                                    - improvement_over_baseline
+                                    - probability_of_beating_baseline
+                                    - probability_of_being_best_version
+                                    type: object
+                                  value:
+                                    type: number
+                                type: object
+                              threshold_assessment:
+                                description: Assessment of how well this metric is doing with respect to threshold. Defined only for metrics with a threshold
+                                properties:
+                                  probability_of_satisfying_threshold:
+                                    description: Probability of satisfying the threshold. Defined only for ratio metrics. This is currently computed based on Bayesian estimation
+                                    type: number
+                                  threshold_breached:
+                                    description: A flag indicating whether threshold is breached
+                                    type: boolean
+                                required:
+                                - probability_of_satisfying_threshold
+                                - threshold_breached
+                                type: object
+                            required:
+                            - id
+                            - metric_id
+                            type: object
+                          type: array
+                        id:
+                          type: string
+                        name:
+                          description: name of version
+                          type: string
+                        request_count:
+                          format: int32
+                          type: integer
+                        rollback:
+                          description: A flag indicates whether traffic to this target should be cutoff
+                          type: boolean
+                        weight:
+                          description: Weight of traffic
+                          format: int32
+                          type: integer
+                        win_probability:
+                          type: number
+                      required:
+                      - id
+                      - name
+                      - request_count
+                      - weight
+                      - win_probability
+                      type: object
+                    type: array
+                  winner:
+                    description: Assessment for winner target if exists
+                    properties:
+                      current_best_version:
+                        description: ID of the current winner with the maximum probability of winning. This is currently computed based on Bayesian estimation
+                        type: string
+                      name:
+                        description: name of winner version
+                        type: string
+                      probability_of_winning_for_best_version:
+                        description: Posterior probability of the version declared as the current winner. This is None if winner is None. This is currently computed based on Bayesian estimation
+                        type: number
+                      winning_version_found:
+                        description: Indicates whether or not a clear winner has emerged This is currently computed based on Bayesian estimation and uses posterior_probability_for_winner from the iteration parameters
+                        type: boolean
+                    required:
+                    - winning_version_found
+                    type: object
                 required:
-                - status
-                - type
+                - baseline
+                - candidates
                 type: object
-              type: array
-            currentIteration:
-              description: CurrentIteration is the current iteration number
-              format: int32
-              type: integer
-            effectiveHosts:
-              description: EffectiveHosts is computed host for experiment. List of
-                spec.Service.Name and spec.Service.Hosts[0].name
-              items:
+              conditions:
+                description: List of conditions
+                items:
+                  description: ExperimentCondition describes a condition of an experiment
+                  properties:
+                    lastTransitionTime:
+                      description: The time when this condition is last updated
+                      format: date-time
+                      type: string
+                    message:
+                      description: Detailed explanation on the update
+                      type: string
+                    reason:
+                      description: Reason for the last update
+                      type: string
+                    status:
+                      description: Status of the condition
+                      type: string
+                    type:
+                      description: Type of the condition
+                      type: string
+                  required:
+                  - status
+                  - type
+                  type: object
+                type: array
+              currentIteration:
+                description: CurrentIteration is the current iteration number
+                format: int32
+                type: integer
+              effectiveHosts:
+                description: EffectiveHosts is computed host for experiment. List of spec.Service.Name and spec.Service.Hosts[0].name
+                items:
+                  type: string
+                type: array
+              endTimestamp:
+                description: EndTimestamp is the timestamp when experiment completes
+                format: date-time
                 type: string
-              type: array
-            endTimestamp:
-              description: EndTimestamp is the timestamp when experiment completes
-              format: date-time
-              type: string
-            experimentType:
-              description: ExperimentType is type of experiment
-              type: string
-            initTimestamp:
-              description: InitTimestamp is the timestamp when the experiment is initialized
-              format: date-time
-              type: string
-            lastUpdateTime:
-              description: LastUpdateTime is the last time iteration has been updated
-              format: date-time
-              type: string
-            message:
-              description: Message specifies message to show in the kubectl printer
-              type: string
-            phase:
-              description: Phase marks the Phase the experiment is at
-              type: string
-            startTimestamp:
-              description: StartTimestamp is the timestamp when the experiment starts
-              format: date-time
-              type: string
-          type: object
-      required:
-      - spec
-      type: object
-  version: v1alpha2
-  versions:
-  - name: v1alpha2
+              experimentType:
+                description: ExperimentType is type of experiment
+                type: string
+              initTimestamp:
+                description: InitTimestamp is the timestamp when the experiment is initialized
+                format: date-time
+                type: string
+              lastUpdateTime:
+                description: LastUpdateTime is the last time iteration has been updated
+                format: date-time
+                type: string
+              message:
+                description: Message specifies message to show in the kubectl printer
+                type: string
+              phase:
+                description: Phase marks the Phase the experiment is at
+                type: string
+              startTimestamp:
+                description: StartTimestamp is the timestamp when the experiment starts
+                format: date-time
+                type: string
+            type: object
+        required:
+        - spec
+        type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""

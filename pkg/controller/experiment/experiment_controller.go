@@ -81,7 +81,7 @@ func newReconciler(mgr manager.Manager) (*ReconcileExperiment, error) {
 
 	// Set up notifier configmap handler
 	nc := iter8notifier.NewNotificationCenter(log)
-	err = nc.RegisterHandler(k8sCache)
+	err = nc.RegisterHandler(context.Background(), k8sCache)
 	if err != nil {
 		log.Error(err, "Failed to register notifier config handlers")
 		return nil, err

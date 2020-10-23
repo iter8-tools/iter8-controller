@@ -49,7 +49,7 @@ run: generate fmt vet load
 
 # Generate iter8 crds and rbac manifests
 manifests:
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd \
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:allowDangerousTypes=true \
 	  paths=./pkg/apis/iter8/${CRD_VERSION} output:crd:dir=./install/helm/iter8-controller/templates/crds/${CRD_VERSION}/
 	./hack/crd_fix.sh ${CRD_VERSION}
 
