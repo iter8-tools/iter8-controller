@@ -1,6 +1,8 @@
-v1.0.0-rc3
-- Updated Experiment model
-- New analytics
+v1.0.0
+- Support for A/B/n rollout
+- Updated Refactored experiment resource
+- Support new analytics engine
+- Increased test coverage
 ===============================
 v0.2.1
 - Support for canary where baseline and candidate are the same
