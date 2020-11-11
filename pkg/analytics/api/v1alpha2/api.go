@@ -178,7 +178,7 @@ type CriterionAssessment struct {
 // Statistics for a metric
 type Statistics struct {
 	Value           *float32         `json:"value,omitempty"`
-	RatioStatistics *RatioStatistics `json:"ratio_statitics,omitempty"`
+	RatioStatistics *RatioStatistics `json:"ratio_statistics,omitempty"`
 }
 
 // RatioStatistics is statistics for a ratio metric
