@@ -186,9 +186,9 @@ func (r *ReconcileExperiment) processIteration(context context.Context, instance
 		}
 
 		abort := true
-		instance.Status.Assessment.Baseline.VersionAssessment = response.BaselineAssessment
+		instance.Status.Assessment.Baseline.VersionAssessment = *response.BaselineAssessment.DeepCopy()
 		for i, ca := range response.CandidateAssessments {
-			instance.Status.Assessment.Candidates[i].VersionAssessment = ca.VersionAssessment
+			instance.Status.Assessment.Candidates[i].VersionAssessment = *ca.VersionAssessment.DeepCopy()
 			instance.Status.Assessment.Candidates[i].Rollback = ca.Rollback
 			if !ca.Rollback {
 				abort = false
