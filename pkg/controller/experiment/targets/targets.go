@@ -106,6 +106,7 @@ func (t *Targets) GetCandidates(context context.Context) (err error) {
 		if err != nil {
 			return
 		}
+
 	}
 	return
 }

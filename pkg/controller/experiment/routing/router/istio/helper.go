@@ -66,6 +66,26 @@ func (b *DestinationRuleBuilder) WithStableLabel() *DestinationRuleBuilder {
 	return b
 }
 
+func (b *DestinationRuleBuilder) WithKialiLabel() *DestinationRuleBuilder {
+	if b.ObjectMeta.GetLabels() == nil {
+		b.ObjectMeta.SetLabels(map[string]string{})
+	}
+	b.ObjectMeta.Labels[kialiWizard] = kialiTrafficShifting
+	return b
+}
+
+func (b *DestinationRuleBuilder) RemoveKialiLabel() *DestinationRuleBuilder {
+	if b.ObjectMeta.Labels == nil {
+		return b
+	}
+
+	if _, ok := b.ObjectMeta.Labels[kialiWizard]; ok {
+		delete(b.ObjectMeta.Labels, kialiWizard)
+	}
+
+	return b
+}
+
 func (b *DestinationRuleBuilder) WithInitializingLabel() *DestinationRuleBuilder {
 	if b.ObjectMeta.GetLabels() == nil {
 		b.ObjectMeta.SetLabels(map[string]string{})
@@ -189,6 +209,26 @@ func (b *VirtualServiceBuilder) WithStableLabel() *VirtualServiceBuilder {
 		b.ObjectMeta.SetLabels(map[string]string{})
 	}
 	b.ObjectMeta.Labels[experimentRole] = roleStable
+	return b
+}
+
+func (b *VirtualServiceBuilder) WithKialiLabel() *VirtualServiceBuilder {
+	if b.ObjectMeta.GetLabels() == nil {
+		b.ObjectMeta.SetLabels(map[string]string{})
+	}
+	b.ObjectMeta.Labels[kialiWizard] = kialiTrafficShifting
+	return b
+}
+
+func (b *VirtualServiceBuilder) RemoveKialiLabel() *VirtualServiceBuilder {
+	if b.ObjectMeta.Labels == nil {
+		return b
+	}
+
+	if _, ok := b.ObjectMeta.Labels[kialiWizard]; ok {
+		delete(b.ObjectMeta.Labels, kialiWizard)
+	}
+
 	return b
 }
 

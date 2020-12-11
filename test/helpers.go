@@ -26,9 +26,8 @@ import (
 )
 
 const (
-	StockImageName = "villardl/stock-60d7d0dbe2427b272042abacd4e1e644"
-	interval       = 1 * time.Second
-	timeout        = 10 * time.Second
+	interval = 1 * time.Second
+	timeout  = 10 * time.Second
 )
 
 // Hook defines a function with a client.
