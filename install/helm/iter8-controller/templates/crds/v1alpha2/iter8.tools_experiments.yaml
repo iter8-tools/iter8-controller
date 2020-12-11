@@ -417,7 +417,7 @@ spec:
                             statistics:
                               description: Statistics for this metric
                               properties:
-                                ratio_statitics:
+                                ratio_statistics:
                                   description: RatioStatistics is statistics for a ratio metric
                                   properties:
                                     credible_interval:
@@ -515,7 +515,7 @@ spec:
                               statistics:
                                 description: Statistics for this metric
                                 properties:
-                                  ratio_statitics:
+                                  ratio_statistics:
                                     description: RatioStatistics is statistics for a ratio metric
                                     properties:
                                       credible_interval:

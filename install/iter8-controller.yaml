@@ -478,7 +478,7 @@ spec:
                             statistics:
                               description: Statistics for this metric
                               properties:
-                                ratio_statitics:
+                                ratio_statistics:
                                   description: RatioStatistics is statistics for a ratio metric
                                   properties:
                                     credible_interval:
@@ -576,7 +576,7 @@ spec:
                               statistics:
                                 description: Statistics for this metric
                                 properties:
-                                  ratio_statitics:
+                                  ratio_statistics:
                                     description: RatioStatistics is statistics for a ratio metric
                                     properties:
                                       credible_interval:
@@ -864,6 +864,18 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
   - configmaps
   verbs:
   - get
@@ -935,7 +947,7 @@ spec:
       serviceAccountName: iter8-controller
       containers:
       - name: iter8-controller
-        image: "iter8/iter8-controller:v1.0.0"
+        image: "iter8/iter8-controller:v1.0.1"
         imagePullPolicy: Always
         env:
           - name: POD_NAMESPACE

@@ -15,9 +15,6 @@ limitations under the License.
 package test
 
 import (
-	"fmt"
-	"k8s.io/apimachinery/pkg/runtime"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -118,21 +115,4 @@ func (d *DeploymentBuilder) WithContainer(name, image string, port int) *Deploym
 // Build converts builder to deployment
 func (d *DeploymentBuilder) Build() *appsv1.Deployment {
 	return (*appsv1.Deployment)(d)
-}
-
-func CheckDeploymentReady(obj runtime.Object) (bool, error) {
-	deploy, ok := obj.(*appsv1.Deployment)
-	if !ok {
-		return false, fmt.Errorf("Expected a Kubernetes Deployment (got: %v)", obj)
-	}
-
-	available := corev1.ConditionUnknown
-	for _, c := range deploy.Status.Conditions {
-		if c.Type == appsv1.DeploymentAvailable {
-			available = c.Status
-		}
-	}
-
-	return deploy.Status.AvailableReplicas > 0 &&
-		deploy.Status.Replicas == deploy.Status.ReadyReplicas && available == corev1.ConditionTrue, nil
 }

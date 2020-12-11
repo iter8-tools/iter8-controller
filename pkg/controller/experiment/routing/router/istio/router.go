@@ -52,6 +52,10 @@ const (
 	experimentRole  = "iter8-tools/role"
 	experimentLabel = "iter8-tools/experiment"
 
+	// Kiali labels
+	kialiWizard          = "kiali_wizard"
+	kialiTrafficShifting = "traffic_shifting"
+
 	// values for experimentRole
 	roleInitializing = "initializing"
 	roleStable       = "stable"
@@ -194,6 +198,7 @@ func (r *Router) UpdateRouteWithBaseline(ctx context.Context, instance *iter8v1a
 		WithExperimentRegistered(util.FullExperimentName(instance)).
 		WithRouterRegistered(getRouterID(instance)).
 		WithInitializingLabel().
+		RemoveKialiLabel().
 		InitGateways().
 		InitHosts().
 		InitHTTPRoutes()
@@ -270,6 +275,7 @@ func (r *Router) UpdateRouteWithBaseline(ctx context.Context, instance *iter8v1a
 			InitSubsets().
 			WithSubset(baseline.(*appsv1.Deployment), SubsetBaseline).
 			WithInitializingLabel().
+			RemoveKialiLabel().
 			WithRouterRegistered(getRouterID(instance)).
 			WithExperimentRegistered(util.FullExperimentName(instance))
 
@@ -412,6 +418,7 @@ func (r *Router) UpdateRouteToStable(ctx context.Context, instance *iter8v1alpha
 		// update vs
 		vs = NewVirtualServiceBuilder(vs).
 			WithStableLabel().
+			WithKialiLabel().
 			RemoveExperimentLabel().Build()
 		if _, err = r.client.NetworkingV1alpha3().
 			VirtualServices(vs.Namespace).
@@ -423,6 +430,7 @@ func (r *Router) UpdateRouteToStable(ctx context.Context, instance *iter8v1alpha
 		if r.handler.requireDestinationRule() {
 			dr := NewDestinationRuleBuilder(r.rules.destinationRule).
 				WithStableLabel().
+				WithKialiLabel().
 				RemoveExperimentLabel().
 				Build()
 			if _, err = r.client.NetworkingV1alpha3().

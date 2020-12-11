@@ -1,3 +1,8 @@
+v1.0.1
+- Bug fixes
+- Expose advanced analytics
+- Support for kiali_wizard label
+===============================
 v1.0.0
 - Support for A/B/n rollout
 - Updated Refactored experiment resource
