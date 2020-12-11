@@ -45,15 +45,15 @@ autodetect() {
 
   if [ "$MIXER_DISABLED" = "false" ]; then
     echo "Using Istio telemetry v1"
-    DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.0/integrations/grafana/grafana-v1.json"
+    DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.1/integrations/grafana/grafana-v1.json"
   else
     echo "Using Istio telemetry v2"
     if verlt "$ISTIO_VERSION" "1.7"; then
       echo "Using job filter envoy-stats"
-      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.0/integrations/grafana/grafana-v2.json"
+      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.1/integrations/grafana/grafana-v2.json"
     else
       echo "Using job filter: kubernetes-pods"
-      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.0/integrations/grafana/grafana-v2-17.json"
+      DASHBOARD_DEFN="https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.1/integrations/grafana/grafana-v2-17.json"
     fi      
   fi
   echo "Installing Grafana dashboard from $DASHBOARD_DEFN"

@@ -21,12 +21,9 @@ package targets
 import (
 	"context"
 
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
@@ -71,6 +68,10 @@ func (t *Targets) GetService(context context.Context) error {
 	}
 
 	t.Service = &corev1.Service{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: corev1.SchemeGroupVersion.String(),
+			Kind:       "Service",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      t.service.Name,
 			Namespace: t.namespace,
@@ -164,34 +165,6 @@ func Cleanup(context context.Context, instance *iter8v1alpha2.Experiment, client
 					util.Logger(context).Error(err, "Error when deleting candidate", "name", candidate)
 				}
 			}
-		}
-	}
-}
-
-// Instantiate runtime object content from k8s cluster
-func getObject(ctx context.Context, c client.Client, obj runtime.Object) error {
-	accessor, err := meta.Accessor(obj)
-	if err != nil {
-		return err
-	}
-
-	return c.Get(ctx, types.NamespacedName{
-		Name:      accessor.GetName(),
-		Namespace: accessor.GetNamespace()},
-		obj)
-}
-
-// Form runtime object with meta info and kind specified
-func getRuntimeObject(om metav1.ObjectMeta, kind string) runtime.Object {
-	switch kind {
-	case "Service":
-		return &corev1.Service{
-			ObjectMeta: om,
-		}
-	default:
-		// Deployment
-		return &appsv1.Deployment{
-			ObjectMeta: om,
 		}
 	}
 }
