@@ -18,7 +18,7 @@ installation process or separately after iter8 is installed.
 
 The following short video introduces Trend:
 
-{{< youtube Sh_4vMcmh6A >}}
+https://www.youtube.com/watch?v=Sh_4vMcmh6A
 
 ## Installation
 

@@ -103,7 +103,7 @@ You can create experiment from exiting local file, import for Github or manual e
 
 ### Short Video about Kiali and Iter8 Integration
 
- {{< youtube bGEJLPHUZiQ>}}
+ https://www.youtube.com/watch?v=bGEJLPHUZiQ
 
 ## Troubleshooting Guide
 
