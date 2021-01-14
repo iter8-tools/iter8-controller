@@ -32,7 +32,7 @@ This rest of this tutorial assumes you have already installed iter8 (including t
 ## Define New Metrics
 
 Out of the box, iter8 comes with a set of predefined metrics.
-For details of metrics definitions provided in iter8, see the [metrics reference]({{< ref "metrics" >}}).
+For details of metrics definitions provided in iter8, see the [metrics reference](../reference/metrics.md).
 
 You can augment the default set of metrics by replacing `ConfigMap` *iter8config-metrics* (defined in the *iter8* namespace) with a new `ConfigMap`.
 
@@ -331,7 +331,7 @@ oc delete namespace bookinfo-iter8
 
 ### Inspect progress using Grafana
 
-You can inspect the progress of your experiment using the sample *iter8 Metrics* dashboard. To install this dashboard, see [here]({{< ref "grafana" >}}).
+You can inspect the progress of your experiment using the sample *iter8 Metrics* dashboard. To install this dashboard, see [here](../integrations/grafana.md).
 
 ### Inspect progress using Kiali
 

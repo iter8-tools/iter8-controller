@@ -203,7 +203,7 @@ kubectl delete namespace bookinfo-iter8
 
 ### Inspect progress using Grafana
 
-You can inspect the progress of your experiment using the sample *iter8 Metrics* dashboard. To install this dashboard, see [here]({{< ref "grafana" >}}).
+You can inspect the progress of your experiment using the sample *iter8 Metrics* dashboard. To install this dashboard, see [here](../integrations/grafana.md).
 
 ### Inspect progress using Kiali
 
