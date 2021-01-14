@@ -1,7 +1,7 @@
 # Prometheus Configuration
 
 ## Learn how to configure Prometheus to scrape application metrics
-Istio provides deployment annotations that direct Prometheus to scrape application pods for metrics. You might use this to scrape application specific metrics such as the reward metric used in the [A/B/n tutorial]({{< ref "abn" >}}).
+Istio provides deployment annotations that direct Prometheus to scrape application pods for metrics. You might use this to scrape application specific metrics such as the reward metric used in the [A/B/n tutorial](../tutorials/abn.md).
 
 The annotations are:
 

@@ -21,7 +21,7 @@ To run the Kui Terminal, use:
 npm start
 ```
 
-To install iter8, refer to the [iter8 installation guidelines]({{< ref "kubernetes" >}}).
+To install iter8, refer to the [iter8 installation guidelines](../installation/kubernetes.md).
 
 ## Currently available commands
 

@@ -29,7 +29,7 @@ These changes enable us to visually distinguish between versions when using a br
 The source code for these changes is available [here](https://github.com/iter8-tools/bookinfoapp-productpage/tree/productpage-reward).
 
 {{% notice info %}}
-This rest of this tutorial assumes you have already installed iter8 (including Istio). If not, do so using the instructions [here]({{< ref "kubernetes" >}}).
+This rest of this tutorial assumes you have already installed iter8 (including Istio). If not, do so using the instructions [here](../installation/kubernetes.md).
 {{% /notice %}}
 
 ## Define New Metrics

@@ -4,7 +4,7 @@
 This tutorial shows how iter8 can be used to perform A/B/n rollout of several versions of a service to select the one that maximizes a reward metric while also satisfiying any other requirements.
 
 {{% notice info %}}
-This tutorial is for use with Red Hat OpenShift. A corresponding tutorial for plain Kubernetes is [here]({{< ref "abn" >}}).
+This tutorial is for use with Red Hat OpenShift. A corresponding tutorial for plain Kubernetes is [here](../tutorials/abn.md).
 {{% /notice %}}
 
 This tutorial has eight steps, which are meant to be tried in order.

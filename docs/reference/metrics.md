@@ -1,7 +1,7 @@
 # Iter8 metrics and customization
 
 ## Iter8's out-of-the-box metrics
-Iter8 leverages the metrics collected by Istio telemetry and stored in Prometheus. Users relying on iter8's out-of-the-box metrics can simply reference them in the criteria section of an `Experiment` specification, as illustrated in [this tutorial]({{< ref "abn" >}}) and documented in the [`Experiment` CRD documentation]({{< ref "experiment" >}}). Iter8's out-of-the-box metrics are as follows.
+Iter8 leverages the metrics collected by Istio telemetry and stored in Prometheus. Users relying on iter8's out-of-the-box metrics can simply reference them in the criteria section of an `Experiment` specification, as illustrated in [this tutorial](../tutorials/abn.md) and documented in the [`Experiment` CRD documentation]({{< ref "experiment" >}}). Iter8's out-of-the-box metrics are as follows.
 
 Metric name        | Description
 -------------------|------------------------
@@ -63,7 +63,7 @@ Field | Type | Description | Required
 
 ### Adding new metrics in iter8
 
-You can add new counter metrics in iter8 by extending the `counter_metrics.yaml` section of the configmap and new ratio metrics in iter8 by extending the `ratio_metrics.yaml` section of the configmap. For example, in the [A/B/n rollout tutorial]({{< ref "abn" >}}), during the step where you defined new metrics, you added the three new counter metrics and two new ratio metrics and extended the configmap as shown below.
+You can add new counter metrics in iter8 by extending the `counter_metrics.yaml` section of the configmap and new ratio metrics in iter8 by extending the `ratio_metrics.yaml` section of the configmap. For example, in the [A/B/n rollout tutorial](../tutorials/abn.md), during the step where you defined new metrics, you added the three new counter metrics and two new ratio metrics and extended the configmap as shown below.
 
 ```yaml
 apiVersion: v1
