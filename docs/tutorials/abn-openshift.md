@@ -27,9 +27,7 @@ The version of the bookinfo *productpage* service used in this tutorial has been
 These changes enable us to visually distinguish between versions when using a browser and to configure the behavior with respect to metrics.
 The source code for these changes is available [here](https://github.com/iter8-tools/bookinfoapp-productpage/tree/productpage-reward).
 
-{{% notice info %}}
-This rest of this tutorial assumes you have already installed iter8 (including the Red Hat OpenShift Service Mesh). If not, do so using the instructions [here]({{< ref "red-hat" >}}).
-{{% /notice %}}
+This rest of this tutorial assumes you have already installed iter8 (including the Red Hat OpenShift Service Mesh). If not, do so using the instructions [here](../installation/openshift.md).
 
 ## Define New Metrics
 

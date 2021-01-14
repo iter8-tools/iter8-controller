@@ -19,7 +19,7 @@ This application comprises 4 microservies: _productpage_, _details_, _reviews_, 
 Of these, _productpage_ is a user-facing service while the others are backend services.
 
 {{% notice info %}}
-This rest of this tutorial assumes you have already installed iter8 (including Red Hat OpenShift Service Mesh). If not, do so using the instructions [here]({{< ref "red-hat" >}}).
+This rest of this tutorial assumes you have already installed iter8 (including Red Hat OpenShift Service Mesh). If not, do so using the instructions [here](../installation/openshift.md).
 {{% /notice %}}
 
 ## Deploy the Bookinfo application

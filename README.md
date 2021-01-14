@@ -11,7 +11,7 @@ The picture below illustrates a metrics-driven A/B/n rollout experiment of deplo
 
 ## Table of Contents
 
-- [Concepts](#concepts)
+- [What is iter8?](#what-is-iter8)
 - Installation
   - [On Kubernetes](docs/installation/kubernetes.md)
   - [On OpenShift](docs/installation/openshift.md)
@@ -37,9 +37,7 @@ The picture below illustrates a metrics-driven A/B/n rollout experiment of deplo
 
 For information on using iter8 for Kubernetes and OpenShift application stacks beyond Istio, visit [iter8.tools](https://iter8.tools).
 
-## Concepts
-
-### What is iter8?
+## What is iter8?
 
 You are developing a distributed microservices-based application on Kubernetes and have created alternative versions of a service. You want to identify the `best` version of your service using a live experiment and rollout this version in a safe and reliable manner.
 
