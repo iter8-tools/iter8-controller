@@ -1,10 +1,4 @@
----
-menuTitle: Metrics
-title: Metrics
-weight: 62
-summary: iter8 metrics and customization
----
-# Metrics
+# Iter8 metrics and customization
 
 ## Iter8's out-of-the-box metrics
 Iter8 leverages the metrics collected by Istio telemetry and stored in Prometheus. Users relying on iter8's out-of-the-box metrics can simply reference them in the criteria section of an `Experiment` specification, as illustrated in [this tutorial]({{< ref "abn" >}}) and documented in the [`Experiment` CRD documentation]({{< ref "experiment" >}}). Iter8's out-of-the-box metrics are as follows.
