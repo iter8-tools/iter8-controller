@@ -22,7 +22,7 @@ jobs:
         uses: peter-evans/link-checker@v1.2.2
         with:
           # Liche arguments
-          args: -r docs -x http://iter8-analytics.iter8:8080
+          args: docs -r -d docs -x http://iter8-analytics.iter8:8080|http://localhost:3000
           # args: -r docs -x http://iter8-analytics.iter8:8080|.*/releases/download/master/.*
       # - name: Create issue from failed links
       #   uses: peter-evans/create-issue-from-file@v2
