@@ -45,7 +45,7 @@ We will use the latter metric as our reward metric -- our experiment will select
 To define the ratio metric, add the following to the `counter_metrics.yaml` field of the map:
 
 {{% notice warning %}}
-The examples below were tested using Istio version 1.7.0 installed using the demo profile with Prometheus enabled. If you are a different version of Istio, the metrics definitions may differ. For Istio using the mixer, see [{{< resourceAbsUrl path="tutorials/abn-tutorial/productpage-metrics-telemetry-v1.yaml" >}}]({{< resourceAbsUrl path="tutorials/abn-tutorial/productpage-metrics-telemetry-v1.yaml" >}}) and for versions of Istio not using the mixer but less than 1.7.0 see [{{< resourceAbsUrl path="tutorials/abn-tutorial/productpage-metrics.yaml" >}}]({{< resourceAbsUrl path="tutorials/abn-tutorial/productpage-metrics.yaml" >}}).
+The examples below were tested using Istio version 1.7.0 installed using the demo profile with Prometheus enabled. If you are a different version of Istio, the metrics definitions may differ. For Istio using the mixer, see [../tutorials/abn-tutorial/productpage-metrics-telemetry-v1.yaml](../tutorials/abn-tutorial/productpage-metrics-telemetry-v1.yaml) and for versions of Istio not using the mixer but less than 1.7.0 see [../tutorials/abn-tutorial/productpage-metrics.yaml](../tutorials/abn-tutorial/productpage-metrics.yaml).
 {{% /notice %}}
 
 ```yaml
@@ -75,7 +75,7 @@ To define the reward metric, `books_purchased_total`, add the following to the `
 We can do all of the above as follows:
 
 ```bash
-kubectl --namespace iter8 apply -f {{< resourceAbsUrl path="tutorials/abn-tutorial/productpage-metrics-17.yaml" >}}
+kubectl --namespace iter8 apply -f ../tutorials/abn-tutorial/productpage-metrics-17.yaml
 ```
 
 ## Configure Application for Prometheus Scraping
@@ -96,13 +96,13 @@ Unfortunately, the Prometheus server installed with some versions of Istio expec
 To deploy the Bookinfo application, create a namespace configured to enable auto-injection of the Istio sidecar. You can use whatever namespace name you wish. By default, the namespace `bookinfo-iter8` is created.
 
 ```bash
-kubectl apply -f {{< resourceAbsUrl path="tutorials/namespace.yaml" >}}
+kubectl apply -f ../tutorials/namespace.yaml
 ```
 
 Next, deploy the application:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/bookinfo-tutorial.yaml" >}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-tutorial.yaml
 ```
 
 You should see pods for each of the four microservices:
@@ -119,7 +119,7 @@ Each pod should have two containers, since the Istio sidecar was injected into e
 Expose the Bookinfo application by defining an Istio `Gateway`, `VirtualService` and `DestinationRule`:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/bookinfo-gateway.yaml" >}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-gateway.yaml
 ```
 
 You can inspect the created resources:
@@ -226,7 +226,7 @@ The additional parameters control how long the experiment should run and how muc
 The experiment can be created using the command:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/abn-tutorial/abn_productpage_v1v2v3.yaml" >}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/abn-tutorial/abn_productpage_v1v2v3.yaml
 ```
 
 Inspection of the new experiment shows that it is paused because the specified candidate versions cannot be found in the cluster:
@@ -247,7 +247,7 @@ Once the candidate versions are deployed, the experiment will start automaticall
 To deploy the *v2* and *v3* versions of the *productpage* microservice, execute:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/productpage-v2.yaml" >}} -f {{< resourceAbsUrl path="tutorials/productpage-v3.yaml" >}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/productpage-v2.yaml -f ../tutorials/productpage-v3.yaml
 ```
 
 Once its corresponding pods have started, the `Experiment` will show that it is progressing:

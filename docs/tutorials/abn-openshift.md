@@ -68,11 +68,11 @@ To define the reward metric, `books_purchased_total`, add the following to the `
 We can do all of the above as follows:
 
 ```bash
-kubectl --namespace iter8 apply -f {{< resourceAbsUrl path="tutorials/abn-tutorial/productpage-metrics-telemetry-v1.yaml" >}}
+kubectl --namespace iter8 apply -f ../tutorials/abn-tutorial/productpage-metrics-telemetry-v1.yaml
 ```
 
 {{% notice tip %}}
-The above discussion and command assumes that you are using a version of the Service Mesh that does not have the Istio *mixer* component disabled. If the mixer is disabled, use [{{< resourceAbsUrl path="tutorials/abn-tutorial/productpage-metrics.yaml" >}}]({{< resourceAbsUrl path="tutorials/abn-tutorial/productpage-metrics.yaml" >}}) instead.
+The above discussion and command assumes that you are using a version of the Service Mesh that does not have the Istio *mixer* component disabled. If the mixer is disabled, use [../tutorials/abn-tutorial/productpage-metrics.yaml](../tutorials/abn-tutorial/productpage-metrics.yaml) instead.
 {{% /notice %}}
 
 ## Configure Application for Prometheus Scraping
@@ -124,13 +124,13 @@ You should only have to do this once.
 To deploy the Bookinfo application, create a namespace configured to enable auto-injection of the Istio sidecar. You can use whatever namespace name you wish. By default, the namespace `bookinfo-iter8` is created.
 
 ```bash
-oc apply -f {{< resourceAbsUrl path="tutorials/namespace.yaml" >}}
+oc apply -f ../tutorials/namespace.yaml
 ```
 
 Next, deploy the application:
 
 ```bash
-oc --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/bookinfo-tutorial.yaml" >}}
+oc --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-tutorial.yaml
 ```
 
 You should see pods for each of the four microservices:
@@ -152,7 +152,7 @@ export GATEWAY_URL=$(oc -n istio-system get route istio-ingressgateway -o jsonpa
 ```
 
 ```bash
-curl -L -s {{< resourceAbsUrl path="tutorials/bookinfo-gateway.yaml" >}} \
+curl -L -s ../tutorials/bookinfo-gateway.yaml \
 | sed "s#bookinfo.example.com#${GATEWAY_URL}#" \
 | oc --namespace bookinfo-iter8 apply -f -
 ```
@@ -254,7 +254,7 @@ The additional parameters control how long the experiment should run and how muc
 The experiment can be created using the command. We modify the dummy host to match the existing rcfoute.
 
 ```bash
-curl -L -s {{< resourceAbsUrl path="tutorials/abn-tutorial/abn_productpage_v1v2v3.yaml" >}} \
+curl -L -s ../tutorials/abn-tutorial/abn_productpage_v1v2v3.yaml \
 | sed sed "s#bookinfo.example.com#${GATEWAY_URL}#" \
 | oc --namespace bookinfo-iter8 apply -f -
 ```
@@ -277,7 +277,7 @@ Once the candidate versions are deployed, the experiment will start automaticall
 To deploy the *v2* and *v3* versions of the *productpage* microservice, execute:
 
 ```bash
-oc --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/productpage-v2.yaml" >}} -f {{< resourceAbsUrl path="tutorials/productpage-v3.yaml" >}}
+oc --namespace bookinfo-iter8 apply -f ../tutorials/productpage-v2.yaml -f ../tutorials/productpage-v3.yaml
 ```
 
 Once its corresponding pods have started, the `Experiment` will show that it is progressing:

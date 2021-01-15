@@ -27,13 +27,13 @@ This rest of this tutorial assumes you have already installed iter8 (including I
 To deploy the Bookinfo application, create a namespace configured to enable auto-injection of the Istio sidecar. You can use whatever namespace name you wish. By default, the namespace `bookinfo-iter8` is created.
 
 ```bash
-kubectl apply -f {{< resourceAbsUrl path="tutorials/namespace.yaml" >}}
+kubectl apply -f ../tutorials/namespace.yaml
 ```
 
 Next, deploy the application:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/bookinfo-tutorial.yaml" >}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-tutorial.yaml
 ```
 
 You should see pods for each of the four microservices:
@@ -50,7 +50,7 @@ Each pod should have two containers, since the Istio sidecar was injected into e
 Expose the Bookinfo application by defining an Istio `Gateway` and `VirtualService`:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/bookinfo-gateway.yaml" >}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-gateway.yaml
 ```
 
 You can inspect the created resources:
@@ -133,7 +133,7 @@ The additional parameters control how long the experiment should run and how muc
 The experiment can be created using the command:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/canary-tutorial/canary_reviews-v2_to_reviews-v3.yaml">}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/canary-tutorial/canary_reviews-v2_to_reviews-v3.yaml">}}
 ```
 
 Inspection of the new experiment shows that it is paused because the specified candidate version cannot be found in the cluster:
@@ -154,7 +154,7 @@ Once the candidate version is deployed, the experiment will start automatically.
 To deploy version *v3* of the *reviews* microservice, execute:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/reviews-v3.yaml" >}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/reviews-v3.yaml
 ```
 
 Once its corresponding pods have started, the `Experiment` will show that it is progressing:
@@ -227,8 +227,8 @@ If you try this version as a candidate, you should see the canary experiment rej
 
 For your reference:
 
-- A YAML for the deployment `reviews-v4` is: [{{< resourceAbsUrl path="tutorials/reviews-v4.yaml" >}}]({{< resourceAbsUrl path="tutorials/reviews-v4.yaml" >}})
-- A YAML for an canary experiment from _reviews-v3_ to _reviews-v4_ is: [{{< resourceAbsUrl path="tutorials/canary-tutorial/canary_reviews-v3_to_reviews-v4.yaml" >}}]({{< resourceAbsUrl path="tutorials/canary-tutorial/canary_reviews-v3_to_reviews-v4.yaml" >}})
+- A YAML for the deployment `reviews-v4` is: [../tutorials/reviews-v4.yaml](../tutorials/reviews-v4.yaml)
+- A YAML for an canary experiment from _reviews-v3_ to _reviews-v4_ is: [../tutorials/canary-tutorial/canary_reviews-v3_to_reviews-v4.yaml](../tutorials/canary-tutorial/canary_reviews-v3_to_reviews-v4.yaml)
 
 ### Try a version which returns errors
 

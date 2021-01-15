@@ -22,13 +22,13 @@ This rest of this tutorial assumes you have already installed iter8 (including I
 To deploy the Bookinfo application, create a namespace configured to enable auto-injection of the Istio sidecar. You can use whatever namespace name you wish. By default, the namespace `bookinfo-iter8` is created.
 
 ```bash
-kubectl apply -f {{< resourceAbsUrl path="tutorials/namespace.yaml" >}}
+kubectl apply -f ../tutorials/namespace.yaml
 ```
 
 Next, deploy the application:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/bookinfo-tutorial.yaml" >}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-tutorial.yaml
 ```
 
 You should see pods for each of the four microservices:
@@ -45,7 +45,7 @@ Each pod should have two containers, since the Istio sidecar was injected into e
 Expose the Bookinfo application by defining an Istio `Gateway` and `VirtualService`:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/bookinfo-gateway.yaml" >}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-gateway.yaml
 ```
 
 You can inspect the created resources:
@@ -124,7 +124,7 @@ Details regarding these parameters are [here](#alter-the-duration-of-the-experim
 The experiment can be created using the command:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f {{< resourceAbsUrl path="tutorials/performance-tutorial/performance-validation_reviews-v2.yaml">}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/performance-tutorial/performance-validation_reviews-v2.yaml">}}
 ```
 
 {{% notice warning %}}
@@ -186,5 +186,5 @@ If you try this version as a candidate, you should see the performance experimen
 
 For your reference:
 
-- A YAML for the deployment `reviews-v4` is: [{{< resourceAbsUrl path="tutorials/reviews-v4.yaml" >}}]({{< resourceAbsUrl path="tutorials/reviews-v4.yaml" >}})
-- A YAML for performance experiment is: [{{< resourceAbsUrl path="tutorials/performance-tutorial/performance-validation_reviews-v4.yaml" >}}]({{< resourceAbsUrl path="tutorials/performance-tutorial/performance-validation_reviews-v4.yaml" >}})
+- A YAML for the deployment `reviews-v4` is: [../tutorials/reviews-v4.yaml](../tutorials/reviews-v4.yaml)
+- A YAML for performance experiment is: [../tutorials/performance-tutorial/performance-validation_reviews-v4.yaml](../tutorials/performance-tutorial/performance-validation_reviews-v4.yaml)
