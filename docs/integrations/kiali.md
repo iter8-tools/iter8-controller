@@ -76,34 +76,36 @@ istioctl dashboard kiali
 
 ### Experiments Overview
 
-{{< figure src="/images/kiali-list-experiments.png" title="iter8 main page" caption="Iter8 main page lists all the experiments in available namespace(s).">}}
+[Iter8 main page lists all the experiments in available namespace(s).]{{< figure src="/images/kiali-list-experiments.png">}}
 
 ### Create Experiment (Form Style)
 
 You can create new experiment from the Action pulldown on the right of the listing page.
 
-{{< figure src="/images/kiali-experiment-create-1.png" title="Experiment creation">}}
+![Experiment creation](../images/kiali-experiment-create-1.png)
 
-{{< figure src="/images/kiali-experiment-create-2.png" title="Experiment creation -- additional configuration options">}}
+![Experiment creation -- additional configuration options](../images/kiali-experiment-create-2.png)
 
-{{< figure src="/images/kiali-experiment-create-duration-traffic.png" title="Experiment creation -- Duration and Traffic options">}}
+![Experiment creation -- Duration and Traffic options](../images/kiali-experiment-create-duration-traffic.png)
 
-{{< figure src="/images/kiali-experiment-create-networking.png" title="Experiment creation -- Networking options">}}
+![Experiment creation -- Networking options](../images/kiali-experiment-create-networking.png)
 
 ### Create Experiment from File
 
 You can create experiment from exiting local file, import for Github or manual enter the YAML in the YAML editor.
-{{< figure src="/images/kiali-experiment-create-from-file.png" title="Experiment creation from file">}}
+![Experiment creation from file](../images/kiali-experiment-create-from-file.png)
 
 ### Experiment Detail
 
-{{< figure src="/images/kiali-experiment-detail.png" title="Experiment detail page" caption="Click on the name of the experiment from the listing page will show the experiment detail page. In the detail page, user can `pause`, `resume`, `terminate with traffic split` from the action pulldown. User can also `delete` experiment.">}}
+Click on the name of the experiment from the listing page will show the experiment detail page. In the detail page, user can `pause`, `resume`, `terminate with traffic split` from the action pulldown. User can also `delete` experiment.
+![Experiment detail page](../images/kiali-experiment-detail.png)
 
-{{< figure src="/images/kiali-experiment-detail-assessment.png" title="Experiment assessment page" caption="Click on the assessment tab will show the experiment assessment information.">}}
+Click on the assessment tab will show the experiment assessment information.
+![Experiment assessment page](../images/kiali-experiment-detail-assessment.png)
 
 ### Short Video about Kiali and Iter8 Integration
 
- https://www.youtube.com/watch?v=bGEJLPHUZiQ
+[![Kiali and Iter8 Integration](http://img.youtube.com/vi/bGEJLPHUZiQ/0.jpg)](http://www.youtube.com/watch?v=bGEJLPHUZiQ "Kiali and Iter8 Integration")
 
 ## Troubleshooting Guide
 
