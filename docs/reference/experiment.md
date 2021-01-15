@@ -40,7 +40,7 @@ spec:
       value: 250
 ```
 
-For other examples of experiment spec objects, refer to the [canary release](../tutorials/canary/#create-a-canary-experiment) and [A/B/n rollout](../tutorials/abn/#create-an-abn-experiment) tutorials.
+For other examples of experiment spec objects, refer to the [canary release](../tutorials/canary.md#create-a-canary-experiment) and [A/B/n rollout](../tutorials/abn.md#create-an-abn-experiment) tutorials.
 
 ***
 
@@ -107,7 +107,7 @@ When the `criteria` field is non-empty in an experiment (this is the usual case)
 
 Field | Type | Description | Required
 ------|------|-------------|---------
-*metric* | string | The metric used in this criterion. Metrics can be iter8's out-of-the-box metrics or custom metrics. See [metrics documentation](../metrics) for more details. Iter8 computes and reports a variety of assessments that describe how each version is performing with respect to this metric. | yes
+*metric* | string | The metric used in this criterion. Metrics can be iter8's out-of-the-box metrics or custom metrics. See [metrics documentation](metrics.md) for more details. Iter8 computes and reports a variety of assessments that describe how each version is performing with respect to this metric. | yes
 *threshold* | Threshold | An optional threshold for this metric. Iter8 computes and reports a variety of assessments that describe how each version is performing with respect to this threshold.  | no
 *isReward* | boolean | This field indicates if the metric used in this criterion is a reward metric. When a metric is marked as reward metric, the winning version in an experiment is one which optimizes the reward while satisfying all thresholds at the same time. Only ratio metrics can be designated as a reward. Default value: `false` | no
 
@@ -118,7 +118,7 @@ Threshold specified for a metric within a criterion.
 Field | Type | Description | Required
 ------|------|-------------|---------
 *value* | float | Threshold value.  | yes
-*type* | Enum: {*absolute*, *relative*} | When the threshold type is `absolute`, the threshold value indicates an absolute limit on the value of the metric. When the threshold type is `relative`, the threshold value indicates a multiplier relative to the baseline. For example, if the metric is *iter8_latency*, and if threshold is `absolute` and value is 250, a candidate is said to satisfy this threshold if its mean latency is within 250 milliseconds; otherwise, if threshold is `relative` and value is 1.6, a candidate is said to satisfy this threshold if its mean latency is within 1.6 times that of the baseline version's mean latency. Relative thresholds can only be used with [ratio metrics](../metrics/#ratio-metrics). The interpretation of threshold depends on the [preferred direction](../metrics/#extending-iter8s-metrics) of the metric. If the preferred direction is `lower`, then the threshold value represents a desired upper limit. If the preferred direction is `higher`, then the threshold value represents a desired lower limit. | yes
+*type* | Enum: {*absolute*, *relative*} | When the threshold type is `absolute`, the threshold value indicates an absolute limit on the value of the metric. When the threshold type is `relative`, the threshold value indicates a multiplier relative to the baseline. For example, if the metric is *iter8_latency*, and if threshold is `absolute` and value is 250, a candidate is said to satisfy this threshold if its mean latency is within 250 milliseconds; otherwise, if threshold is `relative` and value is 1.6, a candidate is said to satisfy this threshold if its mean latency is within 1.6 times that of the baseline version's mean latency. Relative thresholds can only be used with [ratio metrics](metrics.md#ratio-metrics). The interpretation of threshold depends on the [preferred direction](metrics.md#extending-iter8s-metrics) of the metric. If the preferred direction is `lower`, then the threshold value represents a desired upper limit. If the preferred direction is `higher`, then the threshold value represents a desired lower limit. | yes
 
 An example of the `criteria` subsection of an experiment object is as follows.
 
@@ -167,7 +167,7 @@ Configuration that affect how application traffic is split across different vers
 
 Field | Type | Description | Required
 ------|------|-------------|---------
-*strategy* | Enum: {*progressive, top_2, uniform*} | Enum which identifies the algorithm used for shifting traffic during an experiment (refer to [Algorithms](../algorithms) for in-depth descriptions of iter8's algorithms). Default value: `progressive`. | no
+*strategy* | Enum: {*progressive, top_2, uniform*} | Enum which identifies the algorithm used for shifting traffic during an experiment (refer to [Algorithms](algorithms.md) for in-depth descriptions of iter8's algorithms). Default value: `progressive`. | no
 *maxIncrement* | integer | Specifies the maximum percentage by which traffic routed to a candidate can increase during a single iteration of the experiment. Default value: 2 (percent) | no
 *match* | Match | Match rules used to filter out incoming traffic. | no
 *onTermination* | Enum: {to_winner,to_baseline,keep_last} | Enum which determines the traffic split behavior after the termination of the experiment. Setting `to_winner` ensures that, if a winning version is found at the end of the experiment, all traffic will flow to this version after the experiment terminates. Setting `to_baseline` will ensure that all traffic will flow to the baseline version, after the experiment terminates. Setting `keep_last` will ensure that the traffic split used during the final iteration of the experiment continues even after the experiment has terminated. Default value: `to_winner`. | no
