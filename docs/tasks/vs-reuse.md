@@ -22,4 +22,4 @@ If it is not, add it to the `Experiment`:
     id: IDENTIFIER
 ```
 
-For an example, see the [`VirtualService`](../tutorials/bookinfo-gateway.yaml) and [`Experiment`](../tutorials/abn-tutorial/abn_productpage_v1v2v3.yaml) used in the [A/B/n](../tutorials/abn.md) tutorial.
+For an example, see the [`VirtualService`](../yamls/bookinfo-gateway.yaml) and [`Experiment`](../yamls/abn-tutorial/abn_productpage_v1v2v3.yaml) used in the [A/B/n](../tutorials/abn.md) tutorial.

@@ -15,7 +15,7 @@ You will learn:
 - how to define different success criteria for iter8 to analyze canary releases and determine success or failure.
 
 The tutorial is based on the [Bookinfo sample application](https://istio.io/docs/examples/bookinfo/) distributed with [Istio](https://istio.io).
-This application comprises 4 microservies: _productpage_, _details_, _reviews_, and _ratings_.
+This application comprises 4 microservices: _productpage_, _details_, _reviews_, and _ratings_.
 Of these, _productpage_ is a user-facing service while the others are backend services.
 
 
@@ -27,13 +27,13 @@ This rest of this tutorial assumes you have already installed iter8 (including I
 To deploy the Bookinfo application, create a namespace configured to enable auto-injection of the Istio sidecar. You can use whatever namespace name you wish. By default, the namespace `bookinfo-iter8` is created.
 
 ```bash
-kubectl apply -f ../tutorials/namespace.yaml
+kubectl apply -f ../yamls/namespace.yaml
 ```
 
 Next, deploy the application:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-tutorial.yaml
+kubectl --namespace bookinfo-iter8 apply -f ../yamls/bookinfo-tutorial.yaml
 ```
 
 You should see pods for each of the four microservices:
@@ -42,7 +42,7 @@ You should see pods for each of the four microservices:
 kubectl --namespace bookinfo-iter8 get pods
 ```
 
-Note that we deployed version *v2* of the *reviews* microsevice; that is, *reviews-v2*.
+Note that we deployed version *v2* of the *reviews* microservice; that is, *reviews-v2*.
 Each pod should have two containers, since the Istio sidecar was injected into each.
 
 ## Expose the Bookinfo application
@@ -50,7 +50,7 @@ Each pod should have two containers, since the Istio sidecar was injected into e
 Expose the Bookinfo application by defining an Istio `Gateway` and `VirtualService`:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-gateway.yaml
+kubectl --namespace bookinfo-iter8 apply -f ../yamls/bookinfo-gateway.yaml
 ```
 
 You can inspect the created resources:
@@ -133,7 +133,7 @@ The additional parameters control how long the experiment should run and how muc
 The experiment can be created using the command:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f ../tutorials/canary-tutorial/canary_reviews-v2_to_reviews-v3.yaml
+kubectl --namespace bookinfo-iter8 apply -f ../yamls/canary-tutorial/canary_reviews-v2_to_reviews-v3.yaml
 ```
 
 Inspection of the new experiment shows that it is paused because the specified candidate version cannot be found in the cluster:
@@ -154,7 +154,7 @@ Once the candidate version is deployed, the experiment will start automatically.
 To deploy version *v3* of the *reviews* microservice, execute:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f ../tutorials/reviews-v3.yaml
+kubectl --namespace bookinfo-iter8 apply -f ../yamls/reviews-v3.yaml
 ```
 
 Once its corresponding pods have started, the `Experiment` will show that it is progressing:
@@ -168,7 +168,7 @@ NAME                 TYPE     HOSTS       PHASE         WINNER FOUND   CURRENT B
 reviews-v3-rollout   Canary   [reviews]   Progressing   false          reviews-v3     IterationUpdate: Iteration 0/8 completed
 ```
 
-At approximately 15 second intervals, you should see the interation number change. Traffic will gradually be shifted (in 20% increments) from version *v2* to version *v3*.
+At approximately 15 second intervals, you should see the iteration number change. Traffic will gradually be shifted (in 20% increments) from version *v2* to version *v3*.
 iter8 will quickly identify that the best version is the candidate, `reviews-v3` and that it is confident that this choice will be the final choice (by indicating that a *winner* has been found):
 
 ```bash
@@ -227,8 +227,8 @@ If you try this version as a candidate, you should see the canary experiment rej
 
 For your reference:
 
-- A YAML for the deployment `reviews-v4` is: [../tutorials/reviews-v4.yaml](../tutorials/reviews-v4.yaml)
-- A YAML for an canary experiment from _reviews-v3_ to _reviews-v4_ is: [../tutorials/canary-tutorial/canary_reviews-v3_to_reviews-v4.yaml](../tutorials/canary-tutorial/canary_reviews-v3_to_reviews-v4.yaml)
+- A YAML for the deployment `reviews-v4` is: [../yamls/reviews-v4.yaml](../yamls/reviews-v4.yaml)
+- A YAML for an canary experiment from _reviews-v3_ to _reviews-v4_ is: [../yamls/canary-tutorial/canary_reviews-v3_to_reviews-v4.yaml](../yamls/canary-tutorial/canary_reviews-v3_to_reviews-v4.yaml)
 
 ### Try a version which returns errors
 

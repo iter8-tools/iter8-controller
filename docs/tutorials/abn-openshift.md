@@ -1,7 +1,7 @@
 # A/B/n Rollout - OpenShift
 
 ## Learn how to perform an A/B/n rollout on Red Hat OpenShift
-This tutorial shows how iter8 can be used to perform A/B/n rollout of several versions of a service to select the one that maximizes a reward metric while also satisfiying any other requirements.
+This tutorial shows how iter8 can be used to perform A/B/n rollout of several versions of a service to select the one that maximizes a reward metric while also satisfying any other requirements.
 
 
 This tutorial is for use with Red Hat OpenShift. A corresponding tutorial for plain Kubernetes is [here](../tutorials/abn.md).
@@ -15,7 +15,7 @@ You will learn:
 - how to execute an A/B/n experiment with iter8.
 
 The tutorial is based on the [Bookinfo sample application](https://istio.io/docs/examples/bookinfo/) distributed with [Istio](https://istio.io).
-This application comprises 4 microservies: *productpage*, *details*, *reviews*, and *ratings*.
+This application comprises 4 microservices: *productpage*, *details*, *reviews*, and *ratings*.
 Of these, *productpage* is a user-facing service while the others are backend services.
 
 The version of the bookinfo *productpage* service used in this tutorial has been modified from the original to allow the following behaviors (all configurable via environment variables when deploying):
@@ -68,11 +68,11 @@ To define the reward metric, `books_purchased_total`, add the following to the `
 We can do all of the above as follows:
 
 ```bash
-kubectl --namespace iter8 apply -f ../tutorials/abn-tutorial/productpage-metrics-telemetry-v1.yaml
+kubectl --namespace iter8 apply -f ../yamls/abn-tutorial/productpage-metrics-telemetry-v1.yaml
 ```
 
 
-The above discussion and command assumes that you are using a version of the Service Mesh that does not have the Istio *mixer* component disabled. If the mixer is disabled, use [../tutorials/abn-tutorial/productpage-metrics.yaml](../tutorials/abn-tutorial/productpage-metrics.yaml) instead.
+The above discussion and command assumes that you are using a version of the Service Mesh that does not have the Istio *mixer* component disabled. If the mixer is disabled, use [../yamls/abn-tutorial/productpage-metrics.yaml](../yamls/abn-tutorial/productpage-metrics.yaml) instead.
 
 
 ## Configure Application for Prometheus Scraping
@@ -124,13 +124,13 @@ You should only have to do this once.
 To deploy the Bookinfo application, create a namespace configured to enable auto-injection of the Istio sidecar. You can use whatever namespace name you wish. By default, the namespace `bookinfo-iter8` is created.
 
 ```bash
-oc apply -f ../tutorials/namespace.yaml
+oc apply -f ../yamls/namespace.yaml
 ```
 
 Next, deploy the application:
 
 ```bash
-oc --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-tutorial.yaml
+oc --namespace bookinfo-iter8 apply -f ../yamls/bookinfo-tutorial.yaml
 ```
 
 You should see pods for each of the four microservices:
@@ -152,7 +152,7 @@ export GATEWAY_URL=$(oc -n istio-system get route istio-ingressgateway -o jsonpa
 ```
 
 ```bash
-curl -L -s ../tutorials/bookinfo-gateway.yaml \
+curl -L -s ../yamls/bookinfo-gateway.yaml \
 | sed "s#bookinfo.example.com#${GATEWAY_URL}#" \
 | oc --namespace bookinfo-iter8 apply -f -
 ```
@@ -254,7 +254,7 @@ The additional parameters control how long the experiment should run and how muc
 The experiment can be created using the command. We modify the dummy host to match the existing rcfoute.
 
 ```bash
-curl -L -s ../tutorials/abn-tutorial/abn_productpage_v1v2v3.yaml \
+curl -L -s ../yamls/abn-tutorial/abn_productpage_v1v2v3.yaml \
 | sed sed "s#bookinfo.example.com#${GATEWAY_URL}#" \
 | oc --namespace bookinfo-iter8 apply -f -
 ```
@@ -277,7 +277,7 @@ Once the candidate versions are deployed, the experiment will start automaticall
 To deploy the *v2* and *v3* versions of the *productpage* microservice, execute:
 
 ```bash
-oc --namespace bookinfo-iter8 apply -f ../tutorials/productpage-v2.yaml -f ../tutorials/productpage-v3.yaml
+oc --namespace bookinfo-iter8 apply -f ../yamls/productpage-v2.yaml -f ../yamls/productpage-v3.yaml
 ```
 
 Once its corresponding pods have started, the `Experiment` will show that it is progressing:

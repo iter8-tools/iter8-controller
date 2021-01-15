@@ -10,7 +10,7 @@ You will learn:
 - how to define different success criteria for iter8 to analyze canary releases and determine success or failure.
 
 The tutorial is based on the [Bookinfo sample application](https://istio.io/docs/examples/bookinfo/) distributed with [Istio](https://istio.io).
-This application comprises 4 microservies: _productpage_, _details_, _reviews_, and _ratings_.
+This application comprises 4 microservices: _productpage_, _details_, _reviews_, and _ratings_.
 Of these, _productpage_ is a user-facing service while the others are backend services.
 
 
@@ -22,13 +22,13 @@ This rest of this tutorial assumes you have already installed iter8 (including I
 To deploy the Bookinfo application, create a namespace configured to enable auto-injection of the Istio sidecar. You can use whatever namespace name you wish. By default, the namespace `bookinfo-iter8` is created.
 
 ```bash
-kubectl apply -f ../tutorials/namespace.yaml
+kubectl apply -f ../yamls/namespace.yaml
 ```
 
 Next, deploy the application:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-tutorial.yaml
+kubectl --namespace bookinfo-iter8 apply -f ../yamls/bookinfo-tutorial.yaml
 ```
 
 You should see pods for each of the four microservices:
@@ -37,7 +37,7 @@ You should see pods for each of the four microservices:
 kubectl --namespace bookinfo-iter8 get pods
 ```
 
-Note that we deployed version *v2* of the *reviews* microsevice; that is, *reviews-v2*.
+Note that we deployed version *v2* of the *reviews* microservice; that is, *reviews-v2*.
 Each pod should have two containers, since the Istio sidecar was injected into each.
 
 ## Expose the Bookinfo application
@@ -45,7 +45,7 @@ Each pod should have two containers, since the Istio sidecar was injected into e
 Expose the Bookinfo application by defining an Istio `Gateway` and `VirtualService`:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f ../tutorials/bookinfo-gateway.yaml
+kubectl --namespace bookinfo-iter8 apply -f ../yamls/bookinfo-gateway.yaml
 ```
 
 You can inspect the created resources:
@@ -124,7 +124,7 @@ Details regarding these parameters are [here](#alter-the-duration-of-the-experim
 The experiment can be created using the command:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f ../tutorials/performance-tutorial/performance-validation_reviews-v2.yaml
+kubectl --namespace bookinfo-iter8 apply -f ../yamls/performance-tutorial/performance-validation_reviews-v2.yaml
 ```
 
 
@@ -142,7 +142,7 @@ NAME                     TYPE     HOSTS       PHASE       WINNER FOUND   CURRENT
 performance-reviews-v2   Canary   [reviews]   Progressing   false                         IterationUpdate: Iteration 0/8 completed
 ```
 
-At approximately 15 second intervals, you should see the interation number change.
+At approximately 15 second intervals, you should see the iteration number change.
 Initially, the experiment will indicate that no *winner* has been found.
 This means that iter8 is still uncertain that the service satisfies the specified criteria.
 When it gains this confidence, it will indicate that it has found a *winner*.
@@ -167,7 +167,7 @@ NAME                     TYPE     HOSTS       PHASE       WINNER FOUND   CURRENT
 performance-reviews-v2   Canary   [reviews]   Completed   true           reviews-v2     ExperimentCompleted: Traffic To Winner
 ```
 
-If no winner was found, we would conclude that the version of the service we tested does not satisiy the performance criteria.
+If no winner was found, we would conclude that the version of the service we tested does not satisfy the performance criteria.
 
 ## Cleanup
 
@@ -186,5 +186,5 @@ If you try this version as a candidate, you should see the performance experimen
 
 For your reference:
 
-- A YAML for the deployment `reviews-v4` is: [../tutorials/reviews-v4.yaml](../tutorials/reviews-v4.yaml)
-- A YAML for performance experiment is: [../tutorials/performance-tutorial/performance-validation_reviews-v4.yaml](../tutorials/performance-tutorial/performance-validation_reviews-v4.yaml)
+- A YAML for the deployment `reviews-v4` is: [../yamls/reviews-v4.yaml](../yamls/reviews-v4.yaml)
+- A YAML for performance experiment is: [../yamls/performance-tutorial/performance-validation_reviews-v4.yaml](../yamls/performance-tutorial/performance-validation_reviews-v4.yaml)

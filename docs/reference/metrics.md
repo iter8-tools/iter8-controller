@@ -6,7 +6,7 @@ Iter8 leverages the metrics collected by Istio telemetry and stored in Prometheu
 Metric name        | Description
 -------------------|------------------------
 *iter8_request_count*    | total number of HTTP requests to a service version
-*iter8_latency*    | average time in milli seconds taken by a service version to respond to HTTP requests
+*iter8_latency*    | average time in milliseconds taken by a service version to respond to HTTP requests
 *iter8_error_count*| number of HTTP requests that resulted in error (5xx HTTP status codes)
 *iter8_error_rate* | fraction of HTTP requests that resulted in errors, i.e., *iter8_error_count / iter8_request_count*
 
@@ -23,7 +23,7 @@ Field | Type | Description | Required
 *name*    | *string* | Name of the metric | yes
 *query_template*    | *string* | Prometheus query template used to fetch this metric (see [below](#query-template)) | yes
 *preferred_direction*    | *higher* or *lower* | This field indicates if higher values of the metric or preferred or lower values are preferred. It is of type enum with two possible values, *higher* or *lower*. For example, the *iter8_error_count* metric has a preferred direction which is *lower*. Preferred direction needs to be specified if you intend to use this as a reward metric or a metric with thresholds within experiment criteria (see [`Experiment` CRD documentation](experiment.md)) | no
-*units*    | *string* | Unit of measurement for this metric. For example, *iter8_latency* is a metric available out-of-the-box in iter8 and is measured in milli seconds. This field is used by iter8's Kui and Kiali integrations to format display. | no
+*units*    | *string* | Unit of measurement for this metric. For example, *iter8_latency* is a metric available out-of-the-box in iter8 and is measured in milliseconds. This field is used by iter8's Kui and Kiali integrations to format display. | no
 *description*    | *string* | A description of this metric. This field is used by iter8's Kui and Kiali integrations to format display. | no
 
 #### Prometheus query template for a counter metric {#query-template}
@@ -58,7 +58,7 @@ Field | Type | Description | Required
 *denominator*    | *string* | The counter metric in the denominator of the ratio | yes
 *preferred_direction*    | *higher* or *lower* | This field indicates if higher values of the metric or preferred or lower values are preferred. It is of type enum with two possible values, *higher* or *lower*. For example, the *iter8_latency* metric has a preferred direction which is *lower*. Preferred direction needs to be specified if you intend to use this as a reward metric or a metric with thresholds within experiment criteria (see [`Experiment` CRD documentation](experiment.md)) | no
 *zero_to_one*    | *boolean* | This field indicates if the ratio metric always takes value in the range [0, 1]. For example, the *iter8_error_rate* metric has zero_to_one set to true. This field is optional and false by default. However, setting this field to true for metrics which possess this property helps iter8 provide better assessments. | no
-*units*    | *string* | Unit of measurement for this metric. For example, *iter8_latency* has milli seconds as its units. This field is used by iter8's Kui and Kiali integrations to format display. | no
+*units*    | *string* | Unit of measurement for this metric. For example, *iter8_latency* has milliseconds as its units. This field is used by iter8's Kui and Kiali integrations to format display. | no
 *description*    | *string* | A description of this metric. This field is used by iter8's Kui and Kiali integrations to format display. | no
 
 ### Adding new metrics in iter8

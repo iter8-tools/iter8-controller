@@ -16,9 +16,9 @@ Field | Type | Description | Required
 *trafficControl* | TrafficControl | Configuration that affect how application traffic is split across different versions of the service during and after the experiment | no
 *manualOverride* | ManualOverride | User actions that override the current status of an experiment  | no
 *cleanup* | boolean | Boolean field indicating if routing rules set up by iter8 during the experiment should be deleted after the experiment. Default value: `false`  | no
-*analyticsEndoint* | HTTP URL | URL of the *iter8-analytics* service. Default value: [http://iter8-analytics.iter8:8080](http://iter8-analytics.iter8:8080) | no
+*analyticsEndpoint* | HTTP URL | URL of the *iter8-analytics* service. Default value: [http://iter8-analytics.iter8:8080](http://iter8-analytics.iter8:8080) | no
 
-An example of experiment spec is as follows. This experiment spec rolls out a new version of *reviews* (*reviews-v2* candidate deployment), if it has a mean latency of at most *250* milli seconds. Otherwise, it rolls back to the baseline version (*reviews-v1* deployment).
+An example of experiment spec is as follows. This experiment spec rolls out a new version of *reviews* (*reviews-v2* candidate deployment), if it has a mean latency of at most *250* milliseconds. Otherwise, it rolls back to the baseline version (*reviews-v1* deployment).
 
 ```yaml
 # current version of iter8 experiment CRD is v1alpha2
@@ -40,7 +40,7 @@ spec:
       value: 250
 ```
 
-For other examples of experiment spec objects, refer to the [canary release](../../tutorials/canary/#create-a-canary-experiment) and [A/B/n rollout](../../tutorials/abn/#create-an-abn-experiment) tutorials.
+For other examples of experiment spec objects, refer to the [canary release](../tutorials/canary/#create-a-canary-experiment) and [A/B/n rollout](../tutorials/abn/#create-an-abn-experiment) tutorials.
 
 ***
 
@@ -118,7 +118,7 @@ Threshold specified for a metric within a criterion.
 Field | Type | Description | Required
 ------|------|-------------|---------
 *value* | float | Threshold value.  | yes
-*type* | Enum: {*absolute*, *relative*} | When the threshold type is `absolute`, the threshold value indicates an absolute limit on the value of the metric. When the threshold type is `relative`, the threshold value indicates a multiplier relative to the baseline. For example, if the metric is *iter8_latency*, and if threshold is `absolute` and value is 250, a candidate is said to satisfy this threshold if its mean latency is within 250 milli seconds; otherwise, if threshold is `relative` and value is 1.6, a candidate is said to satisfy this threshold if its mean latency is within 1.6 times that of the baseline version's mean latency. Relative thresholds can only be used with [ratio metrics](../metrics/#ratio-metrics). The interpretation of threshold depends on the [preferred direction](../metrics/#extending-iter8s-metrics) of the metric. If the preferred direction is `lower`, then the threshold value represents a desired upper limit. If the preferred direction is `higher`, then the threshold value represents a desired lower limit. | yes
+*type* | Enum: {*absolute*, *relative*} | When the threshold type is `absolute`, the threshold value indicates an absolute limit on the value of the metric. When the threshold type is `relative`, the threshold value indicates a multiplier relative to the baseline. For example, if the metric is *iter8_latency*, and if threshold is `absolute` and value is 250, a candidate is said to satisfy this threshold if its mean latency is within 250 milliseconds; otherwise, if threshold is `relative` and value is 1.6, a candidate is said to satisfy this threshold if its mean latency is within 1.6 times that of the baseline version's mean latency. Relative thresholds can only be used with [ratio metrics](../metrics/#ratio-metrics). The interpretation of threshold depends on the [preferred direction](../metrics/#extending-iter8s-metrics) of the metric. If the preferred direction is `lower`, then the threshold value represents a desired upper limit. If the preferred direction is `higher`, then the threshold value represents a desired lower limit. | yes
 
 An example of the `criteria` subsection of an experiment object is as follows.
 
