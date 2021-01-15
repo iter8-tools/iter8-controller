@@ -35,7 +35,7 @@ Delete and restore operations can be performed on the same page using the _trash
 
 To edit any of the currently available metrics, you can click on the _edit_ icon for that metric. This also opens a form that is pre-filled with the values currently held by that metric as in the following image. Note that standard iter8 metrics such as *iter8_mean_latency*, *iter8_error_count*, etc cannot be edited as they come out-of-the-box with iter8.
 
-![iter8 Kui metric](/gifs/iter8-kui-metric.gif)
+![iter8 Kui metric](../images/gifs/iter8-kui-metric.gif)
 
 #### `iter8 create experiment`
 
@@ -56,7 +56,7 @@ https://www.youtube.com/watch?v=uqC927b8ZKE
 
 This command gives you an overview of the components of iter8, a list of commands available and also directs you to the documentation website, Github repository and Slack channel.
 
-![iter8 Kui about](/gifs/iter8-kui-about.gif)
+![iter8 Kui about](../images/gifs/iter8-kui-about.gif)
 
 #### `iter8 config verify`
 

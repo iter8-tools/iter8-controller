@@ -12,7 +12,7 @@ To import the sample iter8 dashboard use `kubectl port-forward` to forward a loc
 kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}') 3000:3000
 ```
 
-Verify that you can access grafana by accessing it using a browser: http://localhost:3000
+Verify that you can access Grafana by accessing it using a browser: http://localhost:3000
 
 Install the iter8 dashboard using the provided install command:
 
@@ -28,15 +28,15 @@ Verify the installation of the dashboard named *iter8 Metrics* by using a browse
 ## Using the Sample *iter8 Metrics* Dashboard
 
 The iter8 Metrics dashboard shows a number of metrics related to request rate, latency and error.
-To see those relavant to a particular experiment, use the drop down menus at the top of the dashboard.
+To see those relevant to a particular experiment, use the drop down menus at the top of the dashboard.
 You can select the target namespace and service.
 You can then select a baseline version and one or more candidate versions.
 This input will be used as filters to display the graphs. Here is an example for a canary experiment:
 
-![Grafana Dashboard](/images/grafana_reviews-v2-v3.png)
+![Grafana Dashboard](../../image/grafana_reviews-v2-v3.png)
 
 In this example, the request rate diagram shows traffic shifting from one version to another over the course of the experiment.
 
 ## Delete the *iter8 Metrics* Dashboard
 
-To remove the dashboard, use the grafana dashboard to *Manage* dashboards, select it and `Delete`.
+To remove the dashboard, use the Grafana dashboard to *Manage* dashboards, select it and `Delete`.
