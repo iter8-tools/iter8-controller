@@ -28,9 +28,9 @@ The version of the bookinfo *productpage* service used in this tutorial has been
 These changes enable us to visually distinguish between versions when using a browser and to configure the behavior with respect to metrics.
 The source code for these changes is available [here](https://github.com/iter8-tools/bookinfoapp-productpage/tree/productpage-reward).
 
-{{% notice info %}}
+
 This rest of this tutorial assumes you have already installed iter8 (including Istio). If not, do so using the instructions [here](../installation/kubernetes.md).
-{{% /notice %}}
+
 
 ## Define New Metrics
 
@@ -44,9 +44,9 @@ We will use the latter metric as our reward metric -- our experiment will select
 
 To define the ratio metric, add the following to the `counter_metrics.yaml` field of the map:
 
-{{% notice warning %}}
+
 The examples below were tested using Istio version 1.7.0 installed using the demo profile with Prometheus enabled. If you are a different version of Istio, the metrics definitions may differ. For Istio using the mixer, see [../tutorials/abn-tutorial/productpage-metrics-telemetry-v1.yaml](../tutorials/abn-tutorial/productpage-metrics-telemetry-v1.yaml) and for versions of Istio not using the mixer but less than 1.7.0 see [../tutorials/abn-tutorial/productpage-metrics.yaml](../tutorials/abn-tutorial/productpage-metrics.yaml).
-{{% /notice %}}
+
 
 ```yaml
 - name: le_500_ms_latency_request_count
@@ -142,9 +142,9 @@ curl --header 'Host: bookinfo.example.com' -o /dev/null -s -w "%{http_code}\n" "
 If everything is working, the command above should return `200`.
 Note that the curl command above sets the `Host` header to match the host we associated the VirtualService with (`bookinfo.example.com`).
 
-{{% notice tip %}}
+
 If you want to access the application from your browser, you will need to set this header using a browser plugin.
-{{% /notice %}}
+
 
 ## Generate load
 

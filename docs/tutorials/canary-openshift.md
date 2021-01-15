@@ -4,9 +4,9 @@
 This tutorial shows how iter8 can be used to perform a canary release by gradually shifting traffic from one version of a microservice to another while evaluating the behavior of the new version.
 Traffic is fully shifted only if the behavior of the candidate version meets specified acceptance criteria.
 
-{{% notice info %}}
+
 This tutorial is for use with Red Hat OpenShift. A corresponding tutorial for plain Kubernetes is [here](canary.md).
-{{% /notice %}}
+
 
 This tutorial has six steps, which are meant to be tried in order.
 You will learn:
@@ -18,9 +18,9 @@ The tutorial is based on the [Bookinfo sample application](https://istio.io/docs
 This application comprises 4 microservies: _productpage_, _details_, _reviews_, and _ratings_.
 Of these, _productpage_ is a user-facing service while the others are backend services.
 
-{{% notice info %}}
+
 This rest of this tutorial assumes you have already installed iter8 (including Red Hat OpenShift Service Mesh). If not, do so using the instructions [here](../installation/openshift.md).
-{{% /notice %}}
+
 
 ## Deploy the Bookinfo application
 
@@ -132,7 +132,7 @@ The additional parameters control how long the experiment should run and how muc
 The experiment can be created using the command:
 
 ```bash
-oc --namespace bookinfo-iter8 apply -f ../tutorials/canary-tutorial/canary_reviews-v2_to_reviews-v3.yaml">}}
+oc --namespace bookinfo-iter8 apply -f ../tutorials/canary-tutorial/canary_reviews-v2_to_reviews-v3.yaml
 ```
 
 Inspection of the new experiment shows that it is paused because the specified candidate version cannot be found in the cluster:

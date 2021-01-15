@@ -13,9 +13,9 @@ The tutorial is based on the [Bookinfo sample application](https://istio.io/docs
 This application comprises 4 microservies: _productpage_, _details_, _reviews_, and _ratings_.
 Of these, _productpage_ is a user-facing service while the others are backend services.
 
-{{% notice info %}}
+
 This rest of this tutorial assumes you have already installed iter8 (including Istio). If not, do so using the instructions [here](../installation/kubernetes.md).
-{{% /notice %}}
+
 
 ## Deploy the Bookinfo application
 
@@ -68,9 +68,9 @@ curl --header 'Host: bookinfo.example.com' -o /dev/null -s -w "%{http_code}\n" "
 If everything is working, the command above should return `200`.
 Note that the curl command above sets the `Host` header to match the host we associated the VirtualService with (`bookinfo.example.com`).
 
-{{% notice tip %}}
+
 If you want to access the application from your browser, you will need to set this header using a browser plugin.
-{{% /notice %}}
+
 
 ## Generate load
 
@@ -124,12 +124,12 @@ Details regarding these parameters are [here](#alter-the-duration-of-the-experim
 The experiment can be created using the command:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f ../tutorials/performance-tutorial/performance-validation_reviews-v2.yaml">}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/performance-tutorial/performance-validation_reviews-v2.yaml
 ```
 
-{{% notice warning %}}
+
 Iter8 will configure `VirtualService` to send all of the traffic to the version under test. It will not be restored to the original version (which is not specified). Use with caution.
-{{% /notice %}}
+
 
 Since the version to be tested is already running, the experiment should begin immediately. Inspection of the `Experiment`  will show that it is progressing:
 

@@ -3,9 +3,9 @@
 ## Learn how to perform an A/B/n rollout on Red Hat OpenShift
 This tutorial shows how iter8 can be used to perform A/B/n rollout of several versions of a service to select the one that maximizes a reward metric while also satisfiying any other requirements.
 
-{{% notice info %}}
+
 This tutorial is for use with Red Hat OpenShift. A corresponding tutorial for plain Kubernetes is [here](../tutorials/abn.md).
-{{% /notice %}}
+
 
 This tutorial has eight steps, which are meant to be tried in order.
 You will learn:
@@ -71,9 +71,9 @@ We can do all of the above as follows:
 kubectl --namespace iter8 apply -f ../tutorials/abn-tutorial/productpage-metrics-telemetry-v1.yaml
 ```
 
-{{% notice tip %}}
+
 The above discussion and command assumes that you are using a version of the Service Mesh that does not have the Istio *mixer* component disabled. If the mixer is disabled, use [../tutorials/abn-tutorial/productpage-metrics.yaml](../tutorials/abn-tutorial/productpage-metrics.yaml) instead.
-{{% /notice %}}
+
 
 ## Configure Application for Prometheus Scraping
 

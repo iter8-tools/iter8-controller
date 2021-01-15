@@ -4,9 +4,9 @@
 This tutorial shows how iter8 can be used to perform a canary release by gradually shifting traffic from one version of a microservice to another while evaluating the behavior of the new version.
 Traffic is fully shifted only if the behavior of the candidate version meets specified acceptance criteria.
 
-{{% notice info %}}
+
 A version of this tutorial specialized for Red Hat OpenShift is [here](canary-openshift.md).
-{{% /notice %}}
+
 
 This tutorial has six steps, which are meant to be tried in order.
 You will learn:
@@ -18,9 +18,9 @@ The tutorial is based on the [Bookinfo sample application](https://istio.io/docs
 This application comprises 4 microservies: _productpage_, _details_, _reviews_, and _ratings_.
 Of these, _productpage_ is a user-facing service while the others are backend services.
 
-{{% notice info %}}
+
 This rest of this tutorial assumes you have already installed iter8 (including Istio). If not, do so using the instructions [here](../installation/kubernetes.md).
-{{% /notice %}}
+
 
 ## Deploy the Bookinfo application
 
@@ -73,9 +73,9 @@ curl --header 'Host: bookinfo.example.com' -o /dev/null -s -w "%{http_code}\n" "
 If everything is working, the command above should return `200`.
 Note that the curl command above sets the `Host` header to match the host we associated the VirtualService with (`bookinfo.example.com`).
 
-{{% notice tip %}}
+
 If you want to access the application from your browser, you will need to set this header using a browser plugin.
-{{% /notice %}}
+
 
 ## Generate load
 
@@ -133,7 +133,7 @@ The additional parameters control how long the experiment should run and how muc
 The experiment can be created using the command:
 
 ```bash
-kubectl --namespace bookinfo-iter8 apply -f ../tutorials/canary-tutorial/canary_reviews-v2_to_reviews-v3.yaml">}}
+kubectl --namespace bookinfo-iter8 apply -f ../tutorials/canary-tutorial/canary_reviews-v2_to_reviews-v3.yaml
 ```
 
 Inspection of the new experiment shows that it is paused because the specified candidate version cannot be found in the cluster:
