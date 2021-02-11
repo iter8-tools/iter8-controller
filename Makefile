@@ -16,7 +16,7 @@ endif
 # HELM
 HELM_VERSION ?= v$(shell helm version --client --short | sed 's/.*v\([0-9]*\).*/\1/')
 ifeq ($(HELM_VERSION),v2)
-HELM2_NAME := --name iter8-cotroller
+HELM2_NAME := --name iter8-controller
 HELM3_NAME := 
 HELM_INCLUDE_OPTION := -x
 else
