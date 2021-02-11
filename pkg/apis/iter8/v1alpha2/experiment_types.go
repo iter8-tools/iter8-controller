@@ -17,7 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 
-	analyticsv1alpha2 "github.com/iter8-tools/iter8/pkg/analytics/api/v1alpha2"
+	analyticsv1alpha2 "github.com/iter8-tools/iter8-istio/pkg/analytics/api/v1alpha2"
 )
 
 // +genclient

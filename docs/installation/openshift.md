@@ -36,7 +36,7 @@ helm template install/kubernetes/helm/iter8-analytics \
 The default YAML file can be used to install the iter8 controller. The Service Mesh currently uses Istio telemetry version `v1`:
 
 ```bash
-oc --namespace iter8 apply -f https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.1/install/iter8-controller.yaml
+oc --namespace iter8 apply -f https://raw.githubusercontent.com/iter8-tools/iter8-istio/v1.0.1/install/iter8-controller.yaml
 ```
 
 ## Target Services
@@ -50,5 +50,5 @@ Istio relies a sidecar injected into each pod to provide its capabilities. Istio
 If you want to uninstall all of iter8 components from your OpenShift cluster, first delete all instances of `Experiment` from all namespaces. Then, you can delete iter8 by running the following command:
 
 ```bash
-oc delete -f https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.1/install/iter8-controller.yaml
+oc delete -f https://raw.githubusercontent.com/iter8-tools/iter8-istio/v1.0.1/install/iter8-controller.yaml
 ```

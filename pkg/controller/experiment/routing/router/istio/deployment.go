@@ -21,8 +21,8 @@ import (
 	networkingv1alpha3 "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 
-	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
-	"github.com/iter8-tools/iter8/pkg/controller/experiment/util"
+	iter8v1alpha2 "github.com/iter8-tools/iter8-istio/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8-istio/pkg/controller/experiment/util"
 )
 
 var _ destinationHandler = deploymentHandler{}

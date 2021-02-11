@@ -33,9 +33,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	analyticsv1alpha2 "github.com/iter8-tools/iter8/pkg/analytics/api/v1alpha2"
-	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
-	"github.com/iter8-tools/iter8/test"
+	analyticsv1alpha2 "github.com/iter8-tools/iter8-istio/pkg/analytics/api/v1alpha2"
+	iter8v1alpha2 "github.com/iter8-tools/iter8-istio/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8-istio/test"
 )
 
 // Flags holds the command line flags or defaults for settings in the user's environment.

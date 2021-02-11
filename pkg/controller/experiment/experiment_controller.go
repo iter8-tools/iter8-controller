@@ -37,13 +37,13 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	metricsv1alpha2 "github.com/iter8-tools/iter8/pkg/analytics/metrics/v1alpha2"
-	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
-	"github.com/iter8-tools/iter8/pkg/controller/experiment/adapter"
-	"github.com/iter8-tools/iter8/pkg/controller/experiment/routing"
-	"github.com/iter8-tools/iter8/pkg/controller/experiment/routing/router"
-	"github.com/iter8-tools/iter8/pkg/controller/experiment/util"
-	iter8notifier "github.com/iter8-tools/iter8/pkg/notifier"
+	metricsv1alpha2 "github.com/iter8-tools/iter8-istio/pkg/analytics/metrics/v1alpha2"
+	iter8v1alpha2 "github.com/iter8-tools/iter8-istio/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8-istio/pkg/controller/experiment/adapter"
+	"github.com/iter8-tools/iter8-istio/pkg/controller/experiment/routing"
+	"github.com/iter8-tools/iter8-istio/pkg/controller/experiment/routing/router"
+	"github.com/iter8-tools/iter8-istio/pkg/controller/experiment/util"
+	iter8notifier "github.com/iter8-tools/iter8-istio/pkg/notifier"
 )
 
 var log = logf.Log.WithName("experiment-controller")

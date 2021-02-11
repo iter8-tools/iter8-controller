@@ -18,9 +18,9 @@ import (
 	"context"
 	"strings"
 
-	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
-	"github.com/iter8-tools/iter8/pkg/controller/experiment/adapter"
-	"github.com/iter8-tools/iter8/pkg/controller/experiment/util"
+	iter8v1alpha2 "github.com/iter8-tools/iter8-istio/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8-istio/pkg/controller/experiment/adapter"
+	"github.com/iter8-tools/iter8-istio/pkg/controller/experiment/util"
 )
 
 // interState controlls the execution of inter functions in the reconcile logic

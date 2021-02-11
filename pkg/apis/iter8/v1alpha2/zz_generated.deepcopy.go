@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha2
 
 import (
-	apiv1alpha2 "github.com/iter8-tools/iter8/pkg/analytics/api/v1alpha2"
+	apiv1alpha2 "github.com/iter8-tools/iter8-istio/pkg/analytics/api/v1alpha2"
 	v1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )

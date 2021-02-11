@@ -1,4 +1,4 @@
-module github.com/iter8-tools/iter8
+module github.com/iter8-tools/iter8-istio
 
 go 1.12
 

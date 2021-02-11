@@ -19,9 +19,9 @@ import (
 	"flag"
 	"os"
 
-	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
-	"github.com/iter8-tools/iter8/pkg/controller"
-	"github.com/iter8-tools/iter8/pkg/webhook"
+	iter8v1alpha2 "github.com/iter8-tools/iter8-istio/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8-istio/pkg/controller"
+	"github.com/iter8-tools/iter8-istio/pkg/webhook"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"

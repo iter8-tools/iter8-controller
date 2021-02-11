@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/iter8-tools/iter8.svg?branch=master)](https://travis-ci.com/iter8-tools/iter8)
+[![Build Status](https://travis-ci.com/iter8-tools/iter8-istio.svg?branch=master)](https://travis-ci.com/iter8-tools/iter8-istio)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 # iter8
