@@ -20,7 +20,7 @@ import (
 
 	runtime "k8s.io/apimachinery/pkg/runtime"
 
-	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
+	iter8v1alpha2 "github.com/iter8-tools/iter8-istio/pkg/apis/iter8/v1alpha2"
 )
 
 // Interface declares functions to be implemented so as to be used by iter8 router

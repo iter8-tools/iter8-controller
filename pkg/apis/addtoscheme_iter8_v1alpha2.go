@@ -16,7 +16,7 @@ limitations under the License.
 package apis
 
 import (
-	"github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8-istio/pkg/apis/iter8/v1alpha2"
 )
 
 func init() {

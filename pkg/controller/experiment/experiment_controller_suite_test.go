@@ -22,7 +22,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/iter8-tools/iter8/pkg/apis"
+	"github.com/iter8-tools/iter8-istio/pkg/apis"
 	"github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"

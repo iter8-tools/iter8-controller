@@ -16,7 +16,7 @@ endif
 # HELM
 HELM_VERSION ?= v$(shell helm version --client --short | sed 's/.*v\([0-9]*\).*/\1/')
 ifeq ($(HELM_VERSION),v2)
-HELM2_NAME := --name iter8-cotroller
+HELM2_NAME := --name iter8-controller
 HELM3_NAME := 
 HELM_INCLUDE_OPTION := -x
 else
@@ -40,7 +40,7 @@ all: manager
 
 # Build manager binary
 manager: generate fmt vet
-	go build -o bin/manager github.com/iter8-tools/iter8/cmd/manager
+	go build -o bin/manager github.com/iter8-tools/iter8-istio/cmd/manager
 
 # Run against the Kubernetes cluster configured in $KUBECONFIG or ~/.kube/config
 # TODO replace vet

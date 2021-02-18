@@ -18,9 +18,9 @@ package routing
 import (
 	"context"
 
-	iter8v1alpha2 "github.com/iter8-tools/iter8/pkg/apis/iter8/v1alpha2"
-	"github.com/iter8-tools/iter8/pkg/controller/experiment/routing/router"
-	"github.com/iter8-tools/iter8/pkg/controller/experiment/routing/router/istio"
+	iter8v1alpha2 "github.com/iter8-tools/iter8-istio/pkg/apis/iter8/v1alpha2"
+	"github.com/iter8-tools/iter8-istio/pkg/controller/experiment/routing/router"
+	"github.com/iter8-tools/iter8-istio/pkg/controller/experiment/routing/router/istio"
 )
 
 // GetRouter returns the platform specific implementation of Router interface

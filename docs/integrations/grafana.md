@@ -17,7 +17,7 @@ Verify that you can access Grafana by accessing it using a browser: http://local
 Install the iter8 dashboard using the provided install command:
 
 ```bash
-curl -L -s https://raw.githubusercontent.com/iter8-tools/iter8/v1.0.1/integrations/grafana/install_dashboard.sh \
+curl -L -s https://raw.githubusercontent.com/iter8-tools/iter8-istio/v1.0.1/integrations/grafana/install_dashboard.sh \
 | /bin/bash -
 ```
 

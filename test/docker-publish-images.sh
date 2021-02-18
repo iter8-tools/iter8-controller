@@ -2,4 +2,4 @@
 
 set -e
 
-ko publish github.com/iter8-tools/iter8-controller/test/stock -t latest
+ko publish github.com/iter8-tools/iter8-istio/test/stock -t latest
