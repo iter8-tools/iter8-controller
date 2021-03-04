@@ -95,7 +95,7 @@ install() {
   fi
 
   # Install  iter8 analytics
-  kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-analytics/v1.2.1/install/kubernetes/iter8-analytics.yaml
+  kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-analytics/v1.0.1/install/kubernetes/iter8-analytics.yaml
 }
 
 install
